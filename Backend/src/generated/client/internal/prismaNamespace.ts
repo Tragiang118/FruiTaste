@@ -15,7 +15,7 @@
  * model files in the `model` directory!
  */
 
-import * as runtime from "@prisma/client/runtime/library"
+import * as runtime from "@prisma/client/runtime/library.js"
 import type * as Prisma from "../models.js"
 import { type PrismaClient } from "./class.js"
 

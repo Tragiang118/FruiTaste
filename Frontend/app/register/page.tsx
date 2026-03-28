@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import Link from 'next/link';
 import GuestGuard from '@/components/GuestGuard';
 import { toast } from 'sonner';
-import { useForm } from 'react-hook-form';
+import { useForm } from '@/node_modules/react-hook-form/dist';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { RegisterSchema, RegisterValues } from '@/lib/schemas/auth';
 import { Eye, EyeOff } from 'lucide-react';

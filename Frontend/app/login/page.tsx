@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
 import GuestGuard from '@/components/GuestGuard';
-import { useForm } from 'react-hook-form';
+import { useForm } from '@/node_modules/react-hook-form/dist';
 import { Eye, EyeOff } from 'lucide-react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { LoginSchema, LoginValues } from '@/lib/schemas/auth';
