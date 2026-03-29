@@ -4,7 +4,9 @@ export const LoginSchema = z.object({
   email: z
     .string()
     .min(1, { message: "Email không được để trống" })
-    .email({ message: "Email không hợp lệ" }),
+    .regex(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/, {
+      message: "Email không hợp lệ",
+    }),
   password: z.string().min(1, { message: "Mật khẩu không được để trống" }),
 });
 
@@ -12,9 +14,8 @@ export const RegisterSchema = z.object({
   email: z
     .string()
     .min(1, { message: "Email không được để trống" })
-    .email({ message: "Email không hợp lệ" })
     .regex(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/, {
-      message: "Định dạng email không hợp lệ (ví dụ: user@example.com)",
+      message: "Email không hợp lệ",
     }),
   password: z
     .string()
