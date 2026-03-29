@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
       from: 'FruiTaste <no-reply@fruitaste.page>',
       to: [email],
       subject: 'Xác thực Email - FruiTaste',
-      react: EmailTemplate({ firstName, verificationToken }) as React.ReactElement,
+      react: React.createElement(EmailTemplate, { firstName, verificationToken }),
     });
 
     if (error) {

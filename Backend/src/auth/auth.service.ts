@@ -31,9 +31,12 @@ export class AuthService {
       throw new UnauthorizedException('Email không tồn tại trên hệ thống');
     }
 
-    // TODO: Use bcrypt in production
-    // const isMatch = await bcrypt.compare(pass, user.password);
-    const isMatch = user.password === pass; 
+    if (!user.password) {
+      throw new UnauthorizedException('Email hoặc mật khẩu không chính xác');
+    }
+
+    // So sánh mật khẩu gốc với mật khẩu đã hash trong DB
+    const isMatch = await bcrypt.compare(pass, user.password);
 
     if (!isMatch) {
       throw new UnauthorizedException('Email hoặc mật khẩu không chính xác');
