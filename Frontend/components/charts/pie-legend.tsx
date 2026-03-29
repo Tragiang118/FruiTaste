@@ -7,7 +7,7 @@ import {
   ChartContainer,
   ChartLegend,
   ChartLegendContent,
-} from "~/components/ui/chart"
+} from "@/components/ui/chart"
 
 const chartData = [
   { browser: "chrome", visitors: 275, fill: "var(--color-chrome)" },
