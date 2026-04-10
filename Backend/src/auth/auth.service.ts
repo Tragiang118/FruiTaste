@@ -50,8 +50,15 @@ export class AuthService {
     return result;
   }
 
+  async getProfile(id: number) {
+    const user = await this.usersService.findById(id);
+    if (!user) return null;
+    const { password, ...result } = user;
+    return result;
+  }
+
   async login(user: any) {
-    const payload = { email: user.email, sub: user.id, role: user.role };
+    const payload = { email: user.email, sub: user.id, role: user.role, fullName: user.fullName };
     return {
       access_token: this.jwtService.sign(payload),
     };
@@ -63,7 +70,7 @@ export class AuthService {
      const hash = await bcrypt.hash(user.password, salt);
      user.password = hash;
     
-    // Tạo token độ dài 32 bytes ngẫu nhiên cho việc xác thực email (chỉ dùng cho tài khoản mới)
+    // Tạo token dài 32 bytes ngẫu nhiên cho việc xác thực email 
     const crypto = require('crypto');
     const verificationToken = crypto.randomBytes(32).toString('hex');
     
