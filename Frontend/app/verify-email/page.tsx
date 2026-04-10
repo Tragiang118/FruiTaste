@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import api from '@/lib/axios';
 import { Button } from '@/components/ui/button';
+import BackButton from '@/components/BackButton';
 
 function VerifyEmailContent() {
   const searchParams = useSearchParams();
@@ -32,7 +33,8 @@ function VerifyEmailContent() {
   }, [token]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-100 p-4">
+    <div className="relative flex min-h-screen items-center justify-center bg-gray-100 p-4">
+      <BackButton className="absolute top-4 left-4" />
       <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-md text-center">
         <h2 className="text-3xl font-bold mb-6 text-green-600">FruiTaste</h2>
         
@@ -44,14 +46,14 @@ function VerifyEmailContent() {
 
         {status === 'success' && (
           <div className="text-green-700 bg-green-50 p-4 rounded-md border border-green-200 mb-6">
-            <p className="font-semibold text-lg">🎉 Chúc mừng!</p>
+            <p className="font-semibold text-lg">Chúc mừng!</p>
             <p className="mt-2">{message}</p>
           </div>
         )}
 
         {status === 'error' && (
           <div className="text-red-700 bg-red-50 p-4 rounded-md border border-red-200 mb-6">
-            <p className="font-semibold text-lg">❌ Lỗi xác thực</p>
+            <p className="font-semibold text-lg">Lỗi xác thực</p>
             <p className="mt-2">{message}</p>
           </div>
         )}
