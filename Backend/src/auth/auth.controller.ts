@@ -17,7 +17,7 @@ export class AuthController {
   async verifyEmail(@Body('token') token: string) {
     return this.authService.verifyEmailToken(token);
   }
-
+  
   @UseGuards(LocalAuthGuard)
   @Post('login')
   async login(@Request() req, @Res({ passthrough: true }) response: Response) {
