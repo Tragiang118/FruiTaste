@@ -4,8 +4,7 @@ import { useAuthStore } from '@/lib/store';
 import { useRouter, usePathname } from 'next/navigation';
 import { useEffect, useRef } from 'react';
 
-const publicPaths = ['/login', '/register', '/']; // Các trang không cần login
-
+const protectedPaths = ['/profile', '/orders', '/checkout', '/admin']; 
 export default function AuthProvider({ children }: { children: React.ReactNode }) {
   const { checkAuth, isAuthenticated, isLoading } = useAuthStore();
   const router = useRouter();
@@ -21,8 +20,8 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
   }, [checkAuth]);
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated && !publicPaths.includes(pathname)) {
-        // Nếu không public và chưa login -> đá về login
+    if (!isLoading && !isAuthenticated && protectedPaths.some(p => pathname.startsWith(p))) {
+        // Nếu truy cập vào trang yêu cầu xác thực mà chưa đăng nhập, chuyển hướng về trang login
       router.push('/login');
     }
   }, [isLoading, isAuthenticated, pathname, router]);
