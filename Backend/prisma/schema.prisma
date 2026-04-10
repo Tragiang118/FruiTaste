@@ -1,8 +1,11 @@
-﻿generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
-  previewFeatures = ["driverAdapters"]
+generator client {
+  provider = "prisma-client-js"
 }
+
+// generator clientStudio {
+//   provider = "prisma-client"
+//   output   = "../node_modules/.prisma/client"
+// }
 
 datasource db {
   provider = "postgresql"
@@ -97,9 +100,8 @@ model Product {
   stockQuantity    Int       @default(0)
   images           String[]
   
-  nutritionFacts   Json?     
-  healthBenefits   String?   @db.Text
-  healthWarnings   String?   @db.Text
+  healthInfo       Json?
+
   tags             String[]
 
   isActive         Boolean   @default(true)
