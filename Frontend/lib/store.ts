@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 import api from '@/lib/axios';
 
 interface User {
@@ -6,6 +7,7 @@ interface User {
   email: string;
   fullName?: string;
   role: string;
+  avatar?: string | null;
 }
 
 interface AuthState {
@@ -26,26 +28,21 @@ export const useAuthStore = create<AuthState>((set) => ({
   login: async ({ email, password }) => {
     try {
       // Không gán isLoading=true ở đây để tránh GuestGuard ẩn form
-      // set({ isLoading: true });
       await api.post('/auth/login', { email, password });
       // Sau khi login thành công, gọi lại profile để lấy thông tin user
       const res = await api.get('/auth/profile');
       set({ user: res.data, isAuthenticated: true, isLoading: false });
     } catch (error) {
-      // set({ isLoading: false });
       throw error;
     }
   },
 
   register: async ({ email, password, fullName }) => {
     try {
-      // set({ isLoading: true });
       const res = await api.post('/auth/register', { email, password, fullName });
       return res.data;
       // Register không tự động login, nên không đổi state auth
-      // set({ isLoading: false });
     } catch (error) {
-      // set({ isLoading: false });
       throw error;
     }
   },
@@ -70,3 +67,47 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
   },
 }));
+
+export interface CartItem {
+  id: number;
+  name: string;
+  price: number;
+  quantity: number;
+  image: string;
+  stockQuantity: number;
+}
+
+interface CartState {
+  items: CartItem[];
+  addItem: (item: CartItem) => void;
+  removeItem: (id: number) => void;
+  updateQuantity: (id: number, quantity: number) => void;
+  clearCart: () => void;
+}
+
+export const useCartStore = create<CartState>()(
+  persist(
+    (set) => ({
+      items: [],
+      addItem: (item) => set((state) => {
+        const existingItem = state.items.find((i) => i.id === item.id);
+        if (existingItem) {
+          return {
+            items: state.items.map((i) =>
+              i.id === item.id ? { ...i, quantity: Math.min(i.quantity + item.quantity, i.stockQuantity) } : i
+            ),
+          };
+        }
+        return { items: [...state.items, item] };
+      }),
+      removeItem: (id) => set((state) => ({ items: state.items.filter((i) => i.id !== id) })),
+      updateQuantity: (id, quantity) => set((state) => ({
+        items: state.items.map((i) => (i.id === id ? { ...i, quantity } : i)),      
+      })),
+      clearCart: () => set({ items: [] }),
+    }),
+    {
+      name: 'fruitaste-cart-storage',
+    }
+  )
+);
