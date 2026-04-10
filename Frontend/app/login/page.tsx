@@ -38,7 +38,7 @@ export default function LoginPage() {
     setError('');
     try {
       await login(data);
-      router.push('/'); // Login xong về trang chủ hoặc dashboard
+      router.push('/'); 
     } catch (err: any) {
       const message = err.response?.data?.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.';
       setError(message);
@@ -47,9 +47,14 @@ export default function LoginPage() {
 
   return (
     <GuestGuard>
-    <div className="flex min-h-screen items-center justify-center bg-gray-100">
-      <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-md">
-        <h2 className="text-2xl font-bold text-center text-green-700 mb-6">Đăng nhập FruiTaste</h2>
+    <div className="relative flex min-h-[calc(100vh-76px)] items-center justify-center bg-[#FFFDFB] px-4 py-12">
+      <BackButton className="absolute top-4 left-4" />
+      <Card className="w-full max-w-md border-0 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-[2rem] overflow-hidden">
+        <CardHeader className="space-y-1 pb-6">
+          <CardTitle className="text-3xl font-extrabold text-center text-[#1A1A1A] ">Đăng nhập</CardTitle>
+          <p className="text-center text-gray-500 text-sm mt-2">Chào mừng bạn quay lại với FruiTaste</p>
+        </CardHeader>
+        <CardContent>
         {error && (
           <div className="text-sm text-red-500 text-center p-2 bg-red-50 rounded-md mb-4 border border-red-200">
             {error}
