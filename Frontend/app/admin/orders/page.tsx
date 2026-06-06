@@ -167,7 +167,7 @@ export default function AdminOrdersPage() {
           </h1>
           <p className="text-sm text-gray-500 mt-1 font-medium">Theo dõi và cập nhật trạng thái đơn hàng.</p>
         </div>
-        <Button onClick={fetchOrders} variant="outline" className="bg-white rounded-full text-gray-700 cursor-pointer border-gray-200 h-8 px-4 text-xs font-bold shadow-none">
+        <Button onClick={() => fetchOrders()} variant="outline" className="bg-white rounded-full text-gray-700 cursor-pointer border-gray-200 h-8 px-4 text-xs font-bold shadow-none">
           <RefreshCw className={cn("mr-2 h-3.5 w-3.5 text-gray-500", loading && "animate-spin")} /> Làm mới
         </Button>
       </div>
