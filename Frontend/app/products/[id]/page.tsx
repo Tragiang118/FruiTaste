@@ -4,9 +4,10 @@ import { useEffect, useState } from 'react';
 import api from '@/lib/axios';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Minus, Plus, ShoppingCart, CreditCard, ChevronRight, Home, ShieldCheck, Truck, RefreshCcw } from 'lucide-react';
+import { Minus, Plus, ShoppingCart, CreditCard, ChevronRight, ChevronLeft, Home, ShieldCheck, Truck, RefreshCcw } from 'lucide-react';
 import BackButton from '@/components/BackButton';
 import { useCartStore, useAuthStore } from '@/lib/store';
+import { getImageUrl } from '@/lib/utils';
 
 export default function ProductDetailPage() {
   const { id } = useParams();
@@ -14,6 +15,8 @@ export default function ProductDetailPage() {
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState<number | string>(1);
   const { addItem } = useCartStore();
+  const [activeTab, setActiveTab] = useState<'description' | 'nutrition'>('description');
+  const [activeMedia, setActiveMedia] = useState(0);
 
   useEffect(() => {
     api.get(`/products/${id}`)
@@ -64,12 +67,13 @@ export default function ProductDetailPage() {
       return;
     }
     if (product) {
+      const mediaUrls: string[] = product.mediaUrls || [];
       addItem({
         id: product.id,
         name: product.name,
         price: product.price,
         quantity: Number(quantity) || 1,
-        image: (product.images && product.images.length > 0) ? product.images[0] : 'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=800&q=80',
+        image: mediaUrls[0] || 'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=800&q=80',
         stockQuantity: product.stockQuantity
       });
     }
@@ -93,7 +97,11 @@ export default function ProductDetailPage() {
      return <div className="min-h-screen flex justify-center items-center bg-[#FFFDFB]"><h2 className="text-xl">Không tìm thấy sản phẩm.</h2></div>;
   }
 
-  const imageUrl = (product.images && product.images.length > 0) ? product.images[0] : 'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=800&q=80';
+  const mediaUrls: string[] = product.mediaUrls?.length
+    ? product.mediaUrls
+    : ['https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=800&q=80'];
+  const isVideo = (url: string) => /\.(mp4|webm)$/i.test(url.split(/[?#]/)[0]);
+  const currentUrl = mediaUrls[activeMedia] || mediaUrls[0];
 
   return (
     <div className="min-h-screen bg-[#FFFDFB] text-gray-900 font-sans pb-24 pt-8">
@@ -112,15 +120,66 @@ export default function ProductDetailPage() {
 
           <div className="flex flex-col md:flex-row gap-12 lg:gap-16 mb-16">
 
-             <div className="w-full md:w-1/2 flex-shrink-0">
-                <div className="bg-[#FFF4E6] rounded-[3rem] p-8 aspect-square flex items-center justify-center relative overflow-hidden group shadow-sm border border-orange-50">
-                   <img src={imageUrl} alt={product.name} className="w-full h-full object-cover filter drop-shadow-xl group-hover:scale-105 transition-transform duration-500 rounded-[2rem]" />
+             {/* Gallery */}
+             <div className="w-full md:w-1/2 flex-shrink-0 space-y-4">
+                {/* Main display */}
+                <div className="bg-[#FFF4E6] rounded-[3rem] p-4 aspect-square flex items-center justify-center relative overflow-hidden group shadow-sm border border-orange-50">
+                   {isVideo(currentUrl) ? (
+                     <video
+                       src={getImageUrl(currentUrl)}
+                       controls
+                       className="w-full h-full object-contain rounded-[2rem]"
+                     />
+                   ) : (
+                     <img src={getImageUrl(currentUrl)} alt={product.name} className="w-full h-full object-cover filter drop-shadow-xl group-hover:scale-105 transition-transform duration-500 rounded-[2rem]" />
+                   )}
                    {product.stockQuantity <= 0 && (
                       <div className="absolute top-6 left-6 bg-red-500 text-white font-bold px-4 py-1.5 rounded-full shadow-md text-sm tracking-wide">
                          Hết hàng
                       </div>
                    )}
+                   {/* Navigation arrows */}
+                   {mediaUrls.length > 1 && (
+                     <>
+                       <button
+                         onClick={() => setActiveMedia((activeMedia - 1 + mediaUrls.length) % mediaUrls.length)}
+                         className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 hover:bg-white rounded-full flex items-center justify-center shadow-lg transition-all opacity-0 group-hover:opacity-100"
+                       >
+                         <ChevronLeft size={20} />
+                       </button>
+                       <button
+                         onClick={() => setActiveMedia((activeMedia + 1) % mediaUrls.length)}
+                         className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 hover:bg-white rounded-full flex items-center justify-center shadow-lg transition-all opacity-0 group-hover:opacity-100"
+                       >
+                         <ChevronRight size={20} />
+                       </button>
+                     </>
+                   )}
                 </div>
+                {/* Thumbnail strip */}
+                {mediaUrls.length > 1 && (
+                  <div className="flex gap-3 overflow-x-auto pb-2 px-2">
+                    {mediaUrls.map((url, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setActiveMedia(idx)}
+                        className={`w-16 h-16 rounded-xl overflow-hidden border-2 shrink-0 transition-all ${
+                          idx === activeMedia
+                            ? 'border-[#FF6B4A] ring-2 ring-[#FF6B4A]/20 scale-105'
+                            : 'border-gray-200 hover:border-gray-400 opacity-70 hover:opacity-100'
+                        }`}
+                      >
+                        {isVideo(url) ? (
+                          <div className="w-full h-full bg-gray-900 flex items-center justify-center">
+                            <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                          </div>
+                        ) : (
+                          <img src={getImageUrl(url)} alt={`Ảnh ${idx + 1}`} className="w-full h-full object-cover" />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                )}
              </div>
 
              <div className="w-full md:w-1/2 flex flex-col justify-center">
@@ -134,9 +193,6 @@ export default function ProductDetailPage() {
                    <span className="text-lg text-gray-500 mb-1">/ {product.unit || 'kg'}</span>
                 </div>
 
-                <p className="text-gray-600 mb-8 leading-relaxed line-clamp-3">
-                   {product.description || "Một loại trái cây tươi ngon, giàu vitamin và khoáng chất, rất tốt cho sức khỏe của bạn và gia đình. Sản phẩm được thu hoạch và bảo quản cẩn thận để giữ trọn vẹn hương vị tự nhiên."}
-                </p>
 
                 <div className="space-y-6 bg-white p-6 rounded-3xl  mb-6">
                    <div className="flex justify-between items-center text-sm">
@@ -194,23 +250,55 @@ export default function ProductDetailPage() {
              </div>
           </div>
 
-          <div className="bg-white rounded-[3rem] p-8 md:p-12 shadow-[0_4px_30px_-10px_rgba(0,0,0,0.05)] border border-gray-50">
-             <h2 className="text-2xl font-extrabold mb-6 border-b border-gray-100 pb-4 inline-block text-[#1A1A1A]">Mô tả sản phẩm</h2>
-             <div className="prose max-w-none text-gray-600 leading-loose text-lg">
-                {product.description ? (
-                   <div dangerouslySetInnerHTML={{ __html: product.description.replace(/\n/g, '<br/>') }} />
+          <div className="bg-white rounded-[3rem] p-8 md:p-12 shadow-[0_4px_30px_-10px_rgba(0,0,0,0.05)] border border-gray-50 mb-16">
+             <div className="flex flex-wrap gap-8 border-b border-gray-100 mb-8">
+                <button 
+                  onClick={() => setActiveTab('description')}
+                  className={`text-xl md:text-2xl font-extrabold pb-4 transition-all relative ${activeTab === 'description' ? "text-[#1A1A1A]" : "text-gray-400 hover:text-gray-600"}`}
+                >
+                   Mô tả sản phẩm
+                   {activeTab === 'description' && <div className="absolute bottom-0 left-0 w-full h-1 bg-[#FF6B4A] rounded-full" />}
+                </button>
+                {product.healthInfo && (
+                  <button 
+                    onClick={() => setActiveTab('nutrition')}
+                    className={`text-xl md:text-2xl font-extrabold pb-4 transition-all relative ${activeTab === 'nutrition' ? "text-[#1A1A1A]" : "text-gray-400 hover:text-gray-600"}`}
+                  >
+                     Thông tin dinh dưỡng
+                     {activeTab === 'nutrition' && <div className="absolute bottom-0 left-0 w-full h-1 bg-[#FF6B4A] rounded-full" />}
+                  </button>
+                )}
+             </div>
+
+             <div className="min-h-[300px]">
+                {activeTab === 'description' ? (
+                   <div className="prose max-w-none text-gray-600 leading-loose text-lg">
+                      {product.description ? (
+                         <div dangerouslySetInnerHTML={{ __html: product.description }} />
+                      ) : (
+                         <>
+                            <p className="mb-4">
+                               {product.name} là loại trái cây tươi ngon được tuyển chọn kỹ lưỡng từ các vườn trồng đạt tiêu chuẩn VietGAP/GlobalGAP. Chúng tôi cam kết không sử dụng chất bảo quản, giữ nguyên hương vị tự nhiên và giá trị dinh dưỡng cao nhất khi đến tay khách hàng.
+                            </p>
+                            <ul className="list-disc pl-5 mt-4 space-y-2 text-base">
+                               <li>Nguồn gốc xuất xứ rõ ràng, minh bạch thông tin nông trại.</li>
+                               <li>Tuyển chọn cẩn thận từng quả, đảm bảo độ tươi mới và chín tự nhiên.</li>
+                               <li>Đóng gói cẩn thận, bao bì thân thiện với môi trường.</li>
+                               <li>Rất giàu Vitamin nhóm B, Vitamin C và chất xơ, thích hợp dùng mỗi ngày.</li>
+                            </ul>
+                         </>
+                      )}
+                   </div>
                 ) : (
-                   <>
-                      <p className="mb-4">
-                         {product.name} là loại trái cây tươi ngon được tuyển chọn kỹ lưỡng từ các vườn trồng đạt tiêu chuẩn VietGAP/GlobalGAP. Chúng tôi cam kết không sử dụng chất bảo quản, giữ nguyên hương vị tự nhiên và giá trị dinh dưỡng cao nhất khi đến tay khách hàng.
-                      </p>
-                      <ul className="list-disc pl-5 mt-4 space-y-2">
-                         <li>Nguồn gốc xuất xứ rõ ràng, minh bạch thông tin nông trại.</li>
-                         <li>Tuyển chọn cẩn thận từng quả, đảm bảo độ tươi mới và chín tự nhiên.</li>
-                         <li>Đóng gói cẩn thận, bao bì thân thiện với môi trường.</li>
-                         <li>Rất giàu Vitamin nhóm B, Vitamin C và chất xơ, thích hợp dùng mỗi ngày để tăng cường sức khoẻ hoặc làm quà biếu tặng.</li>
-                      </ul>
-                   </>
+                   <div className="flex flex-col h-full">
+                      <div 
+                         className="text-gray-600 leading-loose text-lg"
+                         dangerouslySetInnerHTML={{ 
+                            __html: product.healthInfo || ''
+                         }} 
+                      />
+                      <p className="text-gray-400 mt-12 text-[13px] italic">* Thông tin trên chỉ mang tính chất tham khảo</p>
+                   </div>
                 )}
              </div>
           </div>

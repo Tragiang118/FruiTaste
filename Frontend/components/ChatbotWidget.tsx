@@ -1,0 +1,810 @@
+"use client";
+
+import { useChat } from "@ai-sdk/react";
+import { DefaultChatTransport } from "ai";
+import {
+  Bot,
+  Loader2,
+  MessageCircle,
+  Send,
+  Sparkles,
+  User,
+  X,
+  Plus,
+} from "lucide-react";
+import { usePathname } from "next/navigation";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { Streamdown } from "streamdown";
+import { useCartStore } from "@/lib/store";
+import { toast } from "sonner";
+import { getImageUrl } from "@/lib/utils";
+
+const BACKEND_API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+
+const ChatProductCard = ({ id, name, price, unit = "kg", stock = 0 }: { id: number, name: string, price: number, unit?: string, stock?: number }) => {
+  const { addItem } = useCartStore();
+  const [added, setAdded] = useState(false);
+  const [imageUrl, setImageUrl] = useState<string>("");
+
+  // Tự fetch ảnh sản phẩm từ API
+  useEffect(() => {
+    if (!id) return;
+    fetch(`${BACKEND_API}/products/${id}`)
+      .then((res) => res.json())
+      .then((data) => {
+        const img = data?.mediaUrls?.[0];
+        if (img) setImageUrl(getImageUrl(img) || "");
+      })
+      .catch(() => {});
+  }, [id]);
+
+  const handleAddToCart = () => {
+    addItem({
+      id,
+      name,
+      price,
+      image: imageUrl,
+      stockQuantity: stock,
+      quantity: 1,
+    });
+    setAdded(true);
+    toast.success(`Đã thêm ${name} vào giỏ hàng`);
+    setTimeout(() => setAdded(false), 2000);
+  };
+
+  return (
+    <div className="flex items-center gap-3 bg-white p-3 rounded-xl border border-gray-100 shadow-sm cursor-default" style={{ maxWidth: '280px', fontFamily: 'sans-serif', width: '100%', marginBottom: '1px' }}>
+      {imageUrl ? (
+        <img
+          src={imageUrl}
+          alt={name}
+          className="rounded-md"
+          style={{ width: '56px', height: '56px', objectFit: 'cover', flexShrink: 0, backgroundColor: '#f9fafb' }}
+        />
+      ) : (
+        <div
+          className="rounded-md flex items-center justify-center"
+          style={{ width: '56px', height: '56px', flexShrink: 0, backgroundColor: '#f0fdf4', fontSize: '24px' }}
+        >
+          🍎
+        </div>
+      )}
+      <div className="flex-1 min-w-0" style={{ overflow: 'hidden' }}>
+        <h4 className="font-bold text-sm text-gray-900 truncate m-0 leading-tight">{name}</h4>
+        <p className="text-xs text-[#FF6B4A] font-semibold mt-1 mb-0 leading-none">
+          {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price)} / {unit}
+        </p>
+        <p className="text-[10px] text-gray-500 mt-1 mb-0">Còn {stock} {unit}</p>
+      </div>
+      <button
+        onClick={handleAddToCart}
+        disabled={added}
+        className={`w-8 h-8 flex-shrink-0 rounded-full flex items-center justify-center transition-colors cursor-pointer border ${added ? 'bg-green-500 text-white border-green-500' : 'bg-[#FFF4E6] text-[#FF6B4A] border-[#FFD8CD] hover:bg-[#FF6B4A] hover:text-white'}`}
+        title="Thêm vào giỏ"
+      >
+        <Plus size={16} />
+      </button>
+    </div>
+  );
+};
+
+
+const QUICK_PROMPTS = [
+  "Táo làm được món gì? 🍎",
+  "Gợi ý combo smoothie 🥤",
+  "Dâu tây kết hợp với gì ngon? 🍓",
+];
+
+export default function ChatbotWidget() {
+  const pathname = usePathname();
+  const { messages, sendMessage, status, stop, error, regenerate } = useChat({
+    transport: new DefaultChatTransport({
+      api: "/api/chat",
+    }),
+  });
+  const [input, setInput] = useState("");
+  const [isOpen, setIsOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const bottomRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const sessionIdRef = useRef<number | null>(null);
+  const savedCountRef = useRef(0);
+  const isBusy = status === "submitted" || status === "streaming";
+  const canSubmit = input.trim().length > 0 && !isBusy;
+
+  // Kiểm tra có nội dung bán phần không (stream bị cắt nhưng đã có text)
+  const lastAssistantMsg = messages.filter((m) => m.role === "assistant").pop();
+  const hasPartialResponse = lastAssistantMsg?.parts?.some(
+    (p) => p.type === "text" && (p as { type: "text"; text: string }).text?.trim().length > 0
+  );
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, isBusy, isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const timeout = setTimeout(() => inputRef.current?.focus(), 250);
+    return () => clearTimeout(timeout);
+  }, [isOpen]);
+
+  // Lưu tin nhắn vào DB khi AI trả lời xong
+  useEffect(() => {
+    if (status !== "ready" || messages.length < 2) return;
+
+    const userMsgs = messages.filter((m) => m.role === "user");
+    const botMsgs = messages.filter((m) => m.role === "assistant");
+
+    if (userMsgs.length === 0 || botMsgs.length === 0) return;
+    if (userMsgs.length <= savedCountRef.current) return;
+
+    const lastUser = userMsgs[userMsgs.length - 1];
+    const lastBot = botMsgs[botMsgs.length - 1];
+
+    const userText = lastUser.parts
+      .filter((p) => p.type === "text")
+      .map((p) => p.text)
+      .join("")
+      .trim();
+    const botText = lastBot.parts
+      .filter((p) => p.type === "text")
+      .map((p) => p.text)
+      .join("")
+      .trim();
+
+    if (!userText || !botText) return;
+
+    savedCountRef.current = userMsgs.length;
+
+    const BACKEND = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+    fetch(`${BACKEND}/chat/save`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        sessionId: sessionIdRef.current,
+        userMessage: userText,
+        botMessage: botText,
+      }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.sessionId) sessionIdRef.current = data.sessionId;
+      })
+      .catch(() => {});
+  }, [status, messages]);
+
+  const renderedMessages = useMemo(() => {
+    const mapped: Array<{ id: string, role: "user" | "assistant" | "system" | "data", type: string, text: string, products?: any[] }> = messages.flatMap((message) => {
+      const text = message.parts
+        ? message.parts
+            .filter((part: any) => part.type === "text")
+            .map((part: any) => part.text)
+            .join("")
+            .trim()
+        : (message.content || "").trim();
+
+      const products: any[] = [];
+      
+      // 1) Lấy toolInvocations từ mọi nguồn
+      const toolInvocations = (message as any).toolInvocations || [];
+      const partsToolInvocations = message.parts
+        ?.filter((p: any) => p.type === "tool-invocation")
+        .map((p: any) => p.toolInvocation) || [];
+      const combinedInvocations = [...toolInvocations, ...partsToolInvocations];
+      const hasToolResults = combinedInvocations.some((ti: any) => ti?.state === "result");
+
+      if (!text && !hasToolResults) return [];
+
+      // 2) Parse sản phẩm từ tool results
+      combinedInvocations.forEach((ti: any) => {
+        if (ti?.toolName === "list_products" && ti?.state === "result") {
+          const result = ti.result;
+          if (Array.isArray(result)) {
+            result.forEach((p: any) => {
+              if (!products.some(prev => String(prev.id) === String(p.id))) {
+                products.push({
+                  id: String(p.id),
+                  name: p.name,
+                  price: String(p.price),
+                  unit: p.unit || "kg",
+                  stock: String(p.stockQuantity ?? 0),
+                  image: ""
+                });
+              }
+            });
+          }
+        }
+      });
+
+      // 3) Fallback: Parse sản phẩm từ tag [PRODUCT:id:name:price:unit:stock]
+      const productRegex = /\[PRODUCT:\s*([^:]+)\s*:\s*([^:]+)\s*:\s*([^:]+)\s*:\s*([^:]+)\s*:\s*([^\]]+)\]/gi;
+      let match;
+      while ((match = productRegex.exec(text)) !== null) {
+        const [_, id, name, price, unit, stock] = match;
+        const pId = id.trim();
+        if (!products.some(p => String(p.id) === pId)) {
+          products.push({
+            id: pId,
+            name: name.trim(),
+            price: price.trim(),
+            unit: unit.trim(),
+            stock: stock.trim(),
+            image: ""
+          });
+        }
+      }
+
+      if (message.role === "assistant") {
+        // Dọn dẹp text hiển thị
+        let cleanText = text;
+        cleanText = cleanText.replace(/<[^>]*>.*?<\/[^>]*>/gs, ""); // Xóa thẻ <tag>...</tag>
+        cleanText = cleanText.replace(/\[PRODUCT:.*?\]/gi, "");
+        cleanText = cleanText.replace(/\(function=.*?>.*?<\/function\)\s*/gs, "");
+        cleanText = cleanText.replace(/\(function=.*?\)\{.*?\}\s*<\/function>/gs, "");
+        cleanText = cleanText.replace(/<function>.*?<\/function>/gs, "");
+        cleanText = cleanText.replace(/\(function=.*?\)\{.*?\}/gs, "");
+        cleanText = cleanText.replace(/function=.*?>.*?}/gs, "");
+        cleanText = cleanText.replace(/\[PRODUCT:[^\]]*$/, "").trim();
+
+        return [{ id: message.id, role: message.role, type: "text", text: cleanText, products }];
+      }
+
+      return [{ id: message.id, role: message.role, type: "text", text, products }];
+
+      return [{ id: message.id, role: message.role, type: "text", text, products: [] }];
+    });
+
+    if (mapped.length > 0) return mapped;
+
+    return [
+      {
+        id: "chatbot-welcome",
+        role: "assistant" as const,
+        type: "text",
+        text: "Xin chào! 🍎 Tôi là trợ lý AI của FruiTaste.\nHãy hỏi tôi về món ăn từ trái cây, gợi ý combo, hoặc bất cứ thứ gì về hoa quả nhé!",
+        products: []
+      },
+    ];
+  }, [messages]);
+
+  const isHiddenRoute =
+    pathname.startsWith("/admin") ||
+    pathname === "/login" ||
+    pathname === "/register";
+
+  if (!mounted || isHiddenRoute) {
+    return null;
+  }
+
+  const onSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!canSubmit) return;
+    sendMessage({ text: input.trim() });
+    setInput("");
+  };
+
+  return (
+    <div
+      style={{
+        position: "fixed",
+        bottom: "24px",
+        right: "24px",
+        zIndex: 9999,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "flex-end",
+      }}
+    >
+      {isOpen && (
+        <div
+          style={{
+            marginBottom: "12px",
+            width: "360px",
+            height: "540px",
+            display: "flex",
+            flexDirection: "column",
+            overflow: "hidden",
+            borderRadius: "24px",
+            border: "1px solid #f3f4f6",
+            backgroundColor: "#ffffff",
+            boxShadow: "0 25px 50px -12px rgba(0,0,0,0.15)",
+            animation: "chatbotSlideIn 180ms ease-out",
+          }}
+        >
+          <style>{`
+            @keyframes chatbotSlideIn {
+              from { opacity: 0; transform: translateY(16px) scale(0.97); }
+              to   { opacity: 1; transform: translateY(0)   scale(1); }
+            }
+          `}</style>
+
+          {/* Header */}
+          <div
+            style={{
+              flexShrink: 0,
+              display: "flex",
+              alignItems: "center",
+              gap: "12px",
+              background: "linear-gradient(to right, #22c55e, #16a34a)",
+              padding: "16px",
+            }}
+          >
+            <div
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: "16px",
+                backgroundColor: "rgba(255,255,255,0.2)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Bot size={20} color="#fff" />
+            </div>
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <p
+                style={{
+                  fontSize: "14px",
+                  fontWeight: 700,
+                  color: "#fff",
+                  margin: 0,
+                }}
+              >
+                FruitBot
+              </p>
+              <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                <span
+                  style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: "50%",
+                    backgroundColor: "#bbf7d0",
+                    display: "inline-block",
+                    animation: "pulse 2s infinite",
+                  }}
+                />
+                <p style={{ fontSize: "12px", color: "#dcfce7", margin: 0 }}>
+                  Đang hoạt động
+                </p>
+              </div>
+            </div>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "4px",
+                borderRadius: "999px",
+                backgroundColor: "rgba(255,255,255,0.15)",
+                padding: "4px 8px",
+              }}
+            >
+              <Sparkles size={12} color="#fde047" />
+              <span style={{ fontSize: "12px", fontWeight: 500, color: "#fff" }}>
+                Llama AI
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsOpen(false)}
+              style={{
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                padding: 4,
+                color: "rgba(255,255,255,0.8)",
+                display: "flex",
+                alignItems: "center",
+              }}
+              aria-label="Đóng chatbot"
+            >
+              <X size={20} />
+            </button>
+          </div>
+
+          {/* Messages */}
+          <div
+            style={{
+              flex: 1,
+              overflowY: "auto",
+              padding: "16px",
+              display: "flex",
+              flexDirection: "column",
+              gap: "16px",
+              backgroundColor: "rgba(249,250,251,0.5)",
+            }}
+          >
+            {renderedMessages.map((message) => (
+              <div
+                key={message.id}
+                style={{
+                  display: "flex",
+                  gap: "10px",
+                  flexDirection:
+                    message.role === "user" ? "row-reverse" : "row",
+                }}
+              >
+                <div
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: "50%",
+                    flexShrink: 0,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    backgroundColor:
+                      message.role === "user" ? "#22c55e" : "#ffffff",
+                    border:
+                      message.role === "user"
+                        ? "none"
+                        : "2px solid #dcfce7",
+                    boxShadow:
+                      message.role === "user"
+                        ? "none"
+                        : "0 1px 3px rgba(0,0,0,0.1)",
+                  }}
+                >
+                  {message.role === "user" ? (
+                    <User size={16} color="#fff" />
+                  ) : (
+                    <Bot size={16} color="#16a34a" />
+                  )}
+                </div>
+
+                <div
+                  style={{
+                    maxWidth: "78%",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems:
+                      message.role === "user" ? "flex-end" : "flex-start",
+                  }}
+                >
+                  {message.type === "text" && (
+                    <div
+                      style={{
+                        borderRadius:
+                          message.role === "user"
+                            ? "16px 4px 16px 16px"
+                            : "4px 16px 16px 16px",
+                        padding: "10px 14px",
+                        fontSize: "14px",
+                        lineHeight: 1.6,
+                        boxShadow: "0 1px 3px rgba(0,0,0,0.07)",
+                        backgroundColor:
+                          message.role === "user" ? "#22c55e" : "#ffffff",
+                        color: message.role === "user" ? "#fff" : "#374151",
+                        border:
+                          message.role === "user"
+                            ? "none"
+                            : "1px solid #f3f4f6",
+                        wordBreak: "break-word",
+                        overflowWrap: "anywhere",
+                      }}
+                    >
+                      {message.role === "user" ? (
+                        <div style={{ whiteSpace: "pre-wrap" }}>
+                          {message.text}
+                        </div>
+                      ) : (
+                        <Streamdown mode="static" linkSafety={{ enabled: false }}>
+                          {message.text}
+                        </Streamdown>
+                      )}
+                    </div>
+                  )}
+
+                  {(message.products && message.products.length > 0) && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px' }}>
+                      {message.products.map((p: any, i: number) => (
+                        <ChatProductCard
+                          key={`${p.id}-${i}`}
+                          id={Number(p.id)}
+                          name={p.name}
+                          price={Number(p.price) || 0}
+                          unit={p.unit}
+                          stock={Number(p.stock) || 0}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+
+            {isBusy && (
+              <div style={{ display: "flex", gap: "10px" }}>
+                <div
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: "50%",
+                    border: "2px solid #dcfce7",
+                    backgroundColor: "#fff",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                    flexShrink: 0,
+                  }}
+                >
+                  <Bot size={16} color="#16a34a" />
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    borderRadius: "4px 16px 16px 16px",
+                    border: "1px solid #f3f4f6",
+                    backgroundColor: "#fff",
+                    padding: "10px 14px",
+                    boxShadow: "0 1px 3px rgba(0,0,0,0.07)",
+                  }}
+                >
+                  <Loader2
+                    size={16}
+                    color="#22c55e"
+                    style={{ animation: "spin 1s linear infinite" }}
+                  />
+                  <span style={{ fontSize: "12px", color: "#9ca3af" }}>
+                    Đang soạn...
+                  </span>
+                </div>
+              </div>
+            )}
+            <div ref={bottomRef} />
+          </div>
+
+          {/* Error */}
+          {error && !hasPartialResponse && (
+            <div
+              style={{
+                margin: "0 12px 4px",
+                borderRadius: "12px",
+                border: "1px solid #fecaca",
+                backgroundColor: "#fef2f2",
+                padding: "8px 12px",
+                fontSize: "14px",
+                color: "#b91c1c",
+              }}
+            >
+              Đã xảy ra lỗi.{" "}
+              <button
+                type="button"
+                onClick={() => regenerate()}
+                style={{
+                  fontWeight: 500,
+                  textDecoration: "underline",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  color: "#b91c1c",
+                }}
+              >
+                Thử lại
+              </button>
+            </div>
+          )}
+          {error && hasPartialResponse && (
+            <div
+              style={{
+                margin: "0 12px 4px",
+                borderRadius: "12px",
+                border: "1px solid #fed7aa",
+                backgroundColor: "#fff7ed",
+                padding: "6px 12px",
+                fontSize: "12px",
+                color: "#92400e",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <span>⚠️ Phản hồi bị gián đoạn</span>
+              <button
+                type="button"
+                onClick={() => regenerate()}
+                style={{
+                  fontWeight: 600,
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  color: "#c2410c",
+                  fontSize: "12px",
+                }}
+              >
+                Hỏi lại
+              </button>
+            </div>
+          )}
+
+          {/* Quick prompts */}
+          {renderedMessages.length <= 1 && !isBusy && (
+            <div
+              style={{
+                flexShrink: 0,
+                display: "flex",
+                flexWrap: "wrap",
+                gap: "6px",
+                borderTop: "1px solid #f9fafb",
+                backgroundColor: "#fff",
+                padding: "8px 12px",
+              }}
+            >
+              {QUICK_PROMPTS.map((prompt) => (
+                <button
+                  key={prompt}
+                  type="button"
+                  onClick={() => sendMessage({ text: prompt })}
+                  style={{
+                    borderRadius: "999px",
+                    border: "1px solid #bbf7d0",
+                    backgroundColor: "#f0fdf4",
+                    padding: "6px 12px",
+                    fontSize: "12px",
+                    fontWeight: 500,
+                    color: "#15803d",
+                    cursor: "pointer",
+                    transition: "background 150ms",
+                  }}
+                  onMouseEnter={(e) =>
+                    (e.currentTarget.style.backgroundColor = "#dcfce7")
+                  }
+                  onMouseLeave={(e) =>
+                    (e.currentTarget.style.backgroundColor = "#f0fdf4")
+                  }
+                >
+                  {prompt}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Input */}
+          <form
+            onSubmit={onSubmit}
+            style={{
+              flexShrink: 0,
+              borderTop: "1px solid #f3f4f6",
+              backgroundColor: "#fff",
+              padding: "12px",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <input
+                ref={inputRef}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    if (canSubmit) {
+                      sendMessage({ text: input.trim() });
+                      setInput("");
+                    }
+                  }
+                }}
+                placeholder="Hỏi về hoa quả, món ăn..."
+                style={{
+                  flex: 1,
+                  borderRadius: "999px",
+                  border: "1px solid #e5e7eb",
+                  backgroundColor: "#f9fafb",
+                  padding: "10px 16px",
+                  fontSize: "14px",
+                  outline: "none",
+                  color: "#111827",
+                }}
+                disabled={isBusy}
+              />
+              <button
+                type="submit"
+                disabled={!canSubmit}
+                style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: "50%",
+                  backgroundColor: canSubmit ? "#22c55e" : "#d1d5db",
+                  border: "none",
+                  cursor: canSubmit ? "pointer" : "not-allowed",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  transition: "background 150ms, transform 150ms",
+                  flexShrink: 0,
+                }}
+                onMouseEnter={(e) => {
+                  if (canSubmit)
+                    e.currentTarget.style.backgroundColor = "#16a34a";
+                }}
+                onMouseLeave={(e) => {
+                  if (canSubmit)
+                    e.currentTarget.style.backgroundColor = "#22c55e";
+                }}
+              >
+                <Send size={16} color="#fff" />
+              </button>
+            </div>
+            {isBusy && (
+              <div style={{ marginTop: "8px", display: "flex", justifyContent: "flex-end" }}>
+                <button
+                  type="button"
+                  onClick={() => stop()}
+                  style={{
+                    fontSize: "12px",
+                    fontWeight: 500,
+                    color: "#dc2626",
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    textDecoration: "underline",
+                  }}
+                >
+                  Dừng phản hồi
+                </button>
+              </div>
+            )}
+          </form>
+        </div>
+      )}
+
+      {/* Toggle button */}
+      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+        <button
+          type="button"
+          onClick={() => setIsOpen((prev) => !prev)}
+          style={{
+            position: "relative",
+            width: 56,
+            height: 56,
+            borderRadius: "50%",
+            background: "linear-gradient(135deg, #22c55e, #16a34a)",
+            border: "none",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            boxShadow: "0 8px 24px rgba(34,197,94,0.4)",
+            transition: "transform 150ms, box-shadow 150ms",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = "scale(1.1)";
+            e.currentTarget.style.boxShadow = "0 12px 30px rgba(34,197,94,0.5)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = "scale(1)";
+            e.currentTarget.style.boxShadow = "0 8px 24px rgba(34,197,94,0.4)";
+          }}
+          aria-label={isOpen ? "Đóng chatbot AI" : "Mở chatbot AI"}
+        >
+          {isOpen ? (
+            <X size={24} color="#fff" />
+          ) : (
+            <MessageCircle size={24} color="#fff" />
+          )}
+          {!isOpen && (
+            <span
+              style={{
+                position: "absolute",
+                top: -2,
+                right: -2,
+                width: 16,
+                height: 16,
+                borderRadius: "50%",
+                backgroundColor: "#f97316",
+                border: "2px solid #fff",
+                animation: "pulse 2s infinite",
+              }}
+            />
+          )}
+        </button>
+      </div>
+    </div>
+  );
+}

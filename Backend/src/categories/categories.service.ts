@@ -14,4 +14,21 @@ export class CategoriesService {
       where: { id },
     });
   }
+
+  create(data: any) {
+    return this.prisma.category.create({ data });
+  }
+
+  update(id: number, data: any) {
+    return this.prisma.category.update({
+      where: { id },
+      data,
+    });
+  }
+
+  remove(id: number) {
+    return this.prisma.category.delete({
+      where: { id },
+    });
+  }
 }

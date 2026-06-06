@@ -8,10 +8,42 @@ import { AuthModule } from './auth/auth.module';
 import { CategoriesModule } from './categories/categories.module';
 import { ProductsModule } from './products/products.module';
 import { RecipesModule } from './recipes/recipes.module';
+import { CartModule } from './cart/cart.module';
+import { OrdersModule } from './orders/orders.module';
+import { UploadModule } from './upload/upload.module';
+import { DashboardModule } from './dashboard/dashboard.module';
+import { InventoryModule } from './inventory/inventory.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { ScheduleModule } from '@nestjs/schedule';
+import { join } from 'path';
+import { MailModule } from './mail/mail.module';
+import { PricingModule } from './pricing/pricing.module';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
-  imports: [ConfigModule.forRoot({ isGlobal: true }), PrismaModule, UsersModule, AuthModule, CategoriesModule, ProductsModule, RecipesModule],
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
+    ScheduleModule.forRoot(),
+    PrismaModule,
+    UsersModule,
+    AuthModule,
+    MailModule,
+    CategoriesModule,
+    ProductsModule,
+    RecipesModule,
+    CartModule,
+    OrdersModule,
+    UploadModule,
+    DashboardModule,
+    InventoryModule,
+    PricingModule,
+    ChatModule,
+    ServeStaticModule.forRoot({
+      rootPath: join(process.cwd(), 'uploads'),
+      serveRoot: '/uploads',
+    }),
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }

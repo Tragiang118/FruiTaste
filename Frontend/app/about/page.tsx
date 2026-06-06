@@ -16,12 +16,13 @@ export default function AboutPage() {
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-        <div className="flex justify-end my-4 relative z-20">
-          <div className="flex items-center gap-2 text-sm text-gray-500 leading-tight">
-            <Link href="/" className="hover:text-[#FF6B4A] flex items-center gap-1"><Home size={14} /> Trang chủ</Link>
-            <ChevronRight size={14} />
-            <span className="text-[#FF6B4A] font-medium truncate">Về chúng tôi</span>
-          </div>
+        <div className="flex items-center justify-between w-full mb-8 mt-4">
+            <BackButton className="px-0 h-auto mb-0" />
+            <div className="flex items-center gap-2 text-sm text-gray-500">
+                <Link href="/" className="hover:text-[#FF6B4A] flex items-center gap-1"><Home size={14} /> Trang chủ</Link>
+                <ChevronRight size={14} />
+                <span className="text-[#FF6B4A] font-medium truncate">Về chúng tôi</span>
+            </div>
         </div>
       </div>
 

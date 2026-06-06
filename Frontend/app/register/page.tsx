@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
 import GuestGuard from '@/components/GuestGuard';
-import BackButton from '@/components/BackButton';
 import { toast } from 'sonner';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -93,7 +92,6 @@ export default function RegisterPage() {
   return (
     <GuestGuard>
     <div className="relative flex min-h-[calc(100vh-76px)] items-center justify-center bg-[#FFFDFB] px-4 py-12">
-      <BackButton className="absolute top-4 left-4" />
       <Card className="w-full max-w-md border-0 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-[2rem] overflow-hidden">
         <CardHeader className="space-y-1 pb-6">
           <CardTitle className="text-3xl font-extrabold text-center text-[#1A1A1A]">Đăng ký</CardTitle>

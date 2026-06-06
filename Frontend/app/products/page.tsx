@@ -9,6 +9,7 @@ import { ChevronRight, Home, ChevronDown, ArrowUp, ArrowDown, Search, SlidersHor
 import BackButton from '@/components/BackButton';
 import { useCartStore, useAuthStore } from '@/lib/store';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { getImageUrl, cn } from '@/lib/utils';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,6 +20,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 export default function ProductsPageShell() {
   return (
@@ -40,7 +50,14 @@ function ProductsPage() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>(null);      
   const [priceFilter, setPriceFilter] = useState('all');
   const [addedId, setAddedId] = useState<number | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 20;
   const { addItem } = useCartStore();
+
+  // Reset to first page when any filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, sortOrder, priceFilter, categoryId]);
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -60,13 +77,15 @@ function ProductsPage() {
     fetchInitialData();
   }, []);
 
-  let filteredProducts = products.filter(p => p.name.toLowerCase().includes(search.toLowerCase()));
+  let filteredProducts = products.filter(p => p.isActive && p.name.toLowerCase().includes(search.toLowerCase()));
 
   const selectedCategory = categoryId ? categories.find(c => c.id === Number(categoryId)) : null;
 
   // Category Filtering
   if (categoryId) {
-     filteredProducts = filteredProducts.filter(p => p.categoryId === Number(categoryId));
+     filteredProducts = filteredProducts.filter(p => 
+       p.categories && p.categories.some((c: any) => c.id === Number(categoryId))
+     );
   }
 
   // Price Filtering
@@ -85,6 +104,34 @@ function ProductsPage() {
     filteredProducts.sort((a, b) => b.price - a.price);
   }
 
+  // Pagination Logic
+  const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const paginatedProducts = filteredProducts.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const getPageNumbers = () => {
+    const pages = [];
+    const showEllipsis = totalPages > 5;
+
+    if (!showEllipsis) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      if (currentPage <= 3) {
+        pages.push(1, 2, 3, 4, 'ellipsis', totalPages);
+      } else if (currentPage >= totalPages - 2) {
+        pages.push(1, 'ellipsis', totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+      } else {
+        pages.push(1, 'ellipsis', currentPage - 1, currentPage, currentPage + 1, 'ellipsis', totalPages);
+      }
+    }
+    return pages;
+  };
+
   const handleAdd = (p: any) => {
     const { isAuthenticated } = useAuthStore.getState();
     if (!isAuthenticated) {
@@ -96,7 +143,7 @@ function ProductsPage() {
       name: p.name,
       price: p.price,
       quantity: 1,
-      image: (p.images && p.images[0]) || 'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=400&q=80',
+      image: p.mediaUrls?.[0] || 'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=400&q=80',
       stockQuantity: p.stockQuantity
     });
     setAddedId(p.id);
@@ -108,8 +155,9 @@ function ProductsPage() {
     <div className="min-h-screen bg-[#FFFDFB] text-gray-900 pb-20 overflow-x-hidden">   
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-        <div className="flex justify-end mb-4 mt-4">
-            <div className="flex items-center gap-2 text-sm text-gray-500 leading-tight">
+        <div className="flex items-center justify-between w-full mb-8 mt-4">
+            <BackButton className="px-0 h-auto mb-0" />
+            <div className="flex items-center gap-2 text-sm text-gray-500">
                 <Link href="/" className="hover:text-[#FF6B4A] flex items-center gap-1 "><Home size={14}/> Trang chủ</Link>
                 <ChevronRight size={14} />
                 {selectedCategory ? (
@@ -125,20 +173,27 @@ function ProductsPage() {
         </div>
 
         <div className=" py-6 px-6 md:px-12 mb-8 bg-gradient-to-br from-green-50 to-green-100 p-8 rounded-3xl shadow-lg"> 
-          <div className="max-w-7xl mx-auto text-center md:text-left flex flex-col md:flex-row items-center justify-between">
+          <div className="max-w-7xl mx-auto text-center md:text-left flex flex-col md:flex-row items-center justify-between gap-6">
             <div>
-              <h1 className="text-[60px] font-extrabold text-gray mb-4">Cửa hàng</h1>
-              <p className="text-gray-600 max-w-md">Khám phá các loại trái cây tươi ngon được chọn lọc kỹ càng từ các nhà vườn địa phương và nhập khẩu.</p>       
+              <h1 className="text-[60px] font-extrabold text-gray mb-4 break-words">
+                {selectedCategory ? selectedCategory.name : 'Cửa hàng'}
+              </h1>
+              <p className="text-gray-600 max-w-md break-words">
+                {selectedCategory?.description || 'Khám phá các loại trái cây tươi ngon được chọn lọc kỹ càng từ các nhà vườn địa phương và nhập khẩu.'}
+              </p>       
             </div>
 
-            <div className="relative w-full md:w-80">
-                <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <Input
-                    value={search}
-                    onChange={e => setSearch(e.target.value)}
-                    placeholder="Tìm kiếm trái cây..."
-                    className="pl-5 pr-12 py-6 rounded-full border border-gray-200 bg-white shadow-sm focus-visible:ring-green-400 focus-visible:ring-2 w-full text-base font-medium"
+            <div className="relative w-full max-w-sm md:w-80">
+              <div className="relative flex items-center w-full">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <Input 
+                  type="search" 
+                  placeholder="Tìm kiếm trái cây..." 
+                  className="w-full pl-9 pr-4 h-10 rounded-full border-gray-200 bg-white shadow-sm focus-visible:ring-1 focus-visible:ring-[#FF6B4A]/30 transition-all text-sm [&::-webkit-search-cancel-button]:cursor-pointer [&::-webkit-search-cancel-button]:[filter:grayscale(100%)_opacity(50%)]"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
                 />
+              </div>
             </div>
           </div>
         </div>
@@ -237,16 +292,17 @@ function ProductsPage() {
                 <p className="text-gray-400 text-xl font-bold mb-2">Không tìm thấy sản phẩm</p>
                 <p className="text-gray-300 text-base">Thử tìm với từ khóa hoặc bộ lọc khác</p>
              </div>
-           ) : (
-             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
-                {filteredProducts.map((p, idx) => {
+            ) : (
+              <>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
+                  {paginatedProducts.map((p, idx) => {
                   const added = addedId === p.id;
                   const outStock = p.stockQuantity <= 0;
                   return (
                   <div key={p.id || idx} className="bg-white rounded-3xl border border-gray-100 shadow-sm hover:shadow-xl hover:border-green-100 transition-all flex flex-col group overflow-hidden">
                       <Link href={`/products/${p.id}`} className="relative overflow-hidden flex aspect-[4/3] bg-white w-full flex-shrink-0 items-center justify-center p-0">
                           <img
-                            src={(p.images && p.images[0]) || 'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=400&q=80'}   
+                            src={getImageUrl(p.mediaUrls?.[0] || 'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=400&q=80')}   
                             alt={p.name}
                             className="w-full h-full object-cover filter mix-blend-multiply group-hover:scale-110 transition-transform duration-500"
                           />
@@ -286,10 +342,54 @@ function ProductsPage() {
                             }
                         </button>
                       </div>
+                    </div>
+                  )})}
+                </div>
+
+                {totalPages > 1 && (
+                  <div className="mt-12">
+                    <Pagination>
+                      <PaginationContent>
+                        <PaginationItem>
+                          <PaginationPrevious 
+                            href="#" 
+                            onClick={(e) => { e.preventDefault(); if (currentPage > 1) handlePageChange(currentPage - 1); }}
+                            className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                            text="Trước"
+                          />
+                        </PaginationItem>
+                        
+                        {getPageNumbers().map((page, idx) => (
+                          <PaginationItem key={idx}>
+                            {page === 'ellipsis' ? (
+                              <PaginationEllipsis />
+                            ) : (
+                              <PaginationLink
+                                href="#"
+                                isActive={currentPage === page}
+                                onClick={(e) => { e.preventDefault(); handlePageChange(page as number); }}
+                                className="cursor-pointer"
+                              >
+                                {page}
+                              </PaginationLink>
+                            )}
+                          </PaginationItem>
+                        ))}
+
+                        <PaginationItem>
+                          <PaginationNext 
+                            href="#" 
+                            onClick={(e) => { e.preventDefault(); if (currentPage < totalPages) handlePageChange(currentPage + 1); }}
+                            className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                            text="Sau"
+                          />
+                        </PaginationItem>
+                      </PaginationContent>
+                    </Pagination>
                   </div>
-                )})}
-             </div>
-           )}
+                )}
+              </>
+            )}
         </div>
       </div>
     </div>

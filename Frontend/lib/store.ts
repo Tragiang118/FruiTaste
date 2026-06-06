@@ -1,13 +1,15 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
 import api from '@/lib/axios';
 
 interface User {
   id: number;
   email: string;
   fullName?: string;
+  phone?: string;
   role: string;
   avatar?: string | null;
+  addresses?: any[];
+  mustChangePassword?: boolean;
 }
 
 interface AuthState {
@@ -23,15 +25,20 @@ interface AuthState {
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   isAuthenticated: false,
-  isLoading: true, // Mặc định true để check auth khi load trang
+  isLoading: true, 
 
   login: async ({ email, password }) => {
     try {
-      // Không gán isLoading=true ở đây để tránh GuestGuard ẩn form
-      await api.post('/auth/login', { email, password });
+      const loginRes = await api.post('/auth/login', { email, password });
       // Sau khi login thành công, gọi lại profile để lấy thông tin user
       const res = await api.get('/auth/profile');
-      set({ user: res.data, isAuthenticated: true, isLoading: false });
+      const userData = { ...res.data, mustChangePassword: loginRes.data.mustChangePassword || false };
+      set({ user: userData, isAuthenticated: true, isLoading: false });
+      
+      const cartRes = await api.get('/cart');
+      useCartStore.getState().overwriteItems(cartRes.data.items);
+      // Mặc định chọn tất cả khi mới tải giỏ hàng
+      useCartStore.getState().setSelectedIds(cartRes.data.items.map((i: any) => i.id));
     } catch (error) {
       throw error;
     }
@@ -41,7 +48,6 @@ export const useAuthStore = create<AuthState>((set) => ({
     try {
       const res = await api.post('/auth/register', { email, password, fullName });
       return res.data;
-      // Register không tự động login, nên không đổi state auth
     } catch (error) {
       throw error;
     }
@@ -51,6 +57,8 @@ export const useAuthStore = create<AuthState>((set) => ({
     try {
       await api.post('/auth/logout');
       set({ user: null, isAuthenticated: false });
+      useCartStore.getState().clearCartLocally();
+      useCartStore.getState().setSelectedIds([]);
     } catch (error) {
       console.error('Logout failed:', error);
     }
@@ -61,8 +69,12 @@ export const useAuthStore = create<AuthState>((set) => ({
       set({ isLoading: true });
       const res = await api.get('/auth/profile');
       set({ user: res.data, isAuthenticated: true, isLoading: false });
+      
+      const cartRes = await api.get('/cart');
+      useCartStore.getState().overwriteItems(cartRes.data.items);
+      // Mặc định chọn tất cả khi mới tải giỏ hàng
+      useCartStore.getState().setSelectedIds(cartRes.data.items.map((i: any) => i.id));
     } catch (error) {
-       // Nếu 401 hoặc lỗi khác nghĩa là chưa auth
       set({ user: null, isAuthenticated: false, isLoading: false });
     }
   },
@@ -79,35 +91,79 @@ export interface CartItem {
 
 interface CartState {
   items: CartItem[];
-  addItem: (item: CartItem) => void;
-  removeItem: (id: number) => void;
-  updateQuantity: (id: number, quantity: number) => void;
-  clearCart: () => void;
+  addItem: (item: CartItem) => Promise<void>;
+  removeItem: (id: number) => Promise<void>;
+  updateQuantity: (id: number, quantity: number) => Promise<void>;
+  clearCart: () => Promise<void>;
+  clearCartLocally: () => void;
+  overwriteItems: (items: CartItem[]) => void;
+  selectedIds: number[];
+  setSelectedIds: (ids: number[]) => void;
 }
 
 export const useCartStore = create<CartState>()(
-  persist(
-    (set) => ({
-      items: [],
-      addItem: (item) => set((state) => {
-        const existingItem = state.items.find((i) => i.id === item.id);
-        if (existingItem) {
-          return {
-            items: state.items.map((i) =>
-              i.id === item.id ? { ...i, quantity: Math.min(i.quantity + item.quantity, i.stockQuantity) } : i
-            ),
-          };
-        }
-        return { items: [...state.items, item] };
-      }),
-      removeItem: (id) => set((state) => ({ items: state.items.filter((i) => i.id !== id) })),
-      updateQuantity: (id, quantity) => set((state) => ({
-        items: state.items.map((i) => (i.id === id ? { ...i, quantity } : i)),      
-      })),
-      clearCart: () => set({ items: [] }),
-    }),
-    {
-      name: 'fruitaste-cart-storage',
-    }
-  )
+  (set, get) => ({
+    items: [],
+    selectedIds: [],
+    overwriteItems: (items) => set({ items }),
+    clearCartLocally: () => set({ items: [] }),
+    setSelectedIds: (ids) => set({ selectedIds: ids }),
+    
+    addItem: async (item) => {
+      const { isAuthenticated } = useAuthStore.getState();
+      if (!isAuthenticated) return; 
+
+      try {
+        const res = await api.post('/cart', { productId: item.id, quantity: item.quantity });
+        set({ 
+          items: res.data.items,
+          selectedIds: [...get().selectedIds, item.id]
+        });
+      } catch (e) {
+        console.error('Add cart failed', e);
+      }
+    },
+
+    removeItem: async (id) => {
+      const { isAuthenticated } = useAuthStore.getState();
+      if (!isAuthenticated) return;
+
+      try {
+        const res = await api.delete(`/cart/${id}`);
+        set({ 
+          items: res.data.items,
+          selectedIds: get().selectedIds.filter(sid => sid !== id)
+        });
+      } catch (e) {
+        console.error('Remove cart item failed', e);
+      }
+    },
+
+    updateQuantity: async (id, quantity) => {
+      const { isAuthenticated } = useAuthStore.getState();
+      if (!isAuthenticated) return;
+
+      try {
+        const res = await api.put(`/cart/${id}`, { quantity });
+        set({ items: res.data.items });
+      } catch (e) {
+        console.error('Update cart quantity failed', e);
+      }
+    },
+
+    clearCart: async () => {
+      const { isAuthenticated } = useAuthStore.getState();
+      if (!isAuthenticated) {
+        set({ items: [] });
+        return;
+      }
+
+      try {
+        await api.delete('/cart');
+        set({ items: [] });
+      } catch (e) {
+        console.error('Clear cart failed', e);
+      }
+    },
+  })
 );

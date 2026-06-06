@@ -30,9 +30,14 @@ export default function Footer() {
           <div>
             <h3 className="text-gray-900 font-bold text-sm uppercase tracking-wider mb-4 ">Phân loại</h3>
             <ul className="space-y-2.5 text-sm font-semibold">
-              {['Trái cây theo mùa', 'Trái cây nhiệt đới', 'Trái cây nhập khẩu', 'Trái cây đặc sản vùng miền'].map((l, i) => (
-                <li key={i}>
-                  <Link href="/products" className="hover:text-primary transition-colors text-gray-500">{l}</Link>
+              {[
+                { href: '/products?categoryId=1', label: 'Trái cây theo mùa' },
+                { href: '/products?categoryId=2', label: 'Trái cây nhiệt đới' },
+                { href: '/products?categoryId=3', label: 'Trái cây nhập khẩu' },
+                { href: '/products?categoryId=4', label: 'Trái cây đặc sản vùng miền' },
+              ].map(l => (
+                <li key={l.href}>
+                  <Link href={l.href} className="hover:text-primary transition-colors text-gray-500">{l.label}</Link>
                 </li>
               ))}
             </ul>
@@ -45,8 +50,7 @@ export default function Footer() {
               {[
                 { href: '/products', label: 'Tất cả sản phẩm' },
                 { href: '/orders', label: 'Theo dõi đơn hàng' },
-                { href: '/recipes', label: ' Công thức nấu ăn' },
-                { href: '#', label: 'Chính sách bảo mật' },
+                { href: '/recipes', label: ' Công thức món ăn' },
               ].map(l => (
                 <li key={l.href}>
                   <Link href={l.href} className="hover:text-primary transition-colors text-gray-500">{l.label}</Link>

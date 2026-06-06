@@ -1,0 +1,76 @@
+version: '3.8'
+
+services:
+  # 1. PostgreSQL Database Service
+  postgres-db:
+    image: postgres:15-alpine
+    container_name: fruitaste-db
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: "123456"
+      POSTGRES_DB: fruitaste
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d fruitaste"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - fruitaste-network
+
+  # 2. NestJS Backend Service
+  backend-service:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: fruitaste-backend
+    restart: always
+    ports:
+      - "8000:8000"
+    # Load all environment variables (including email secrets) from local backend/.env
+    env_file:
+      - ./backend/.env
+    # Override only variables that need routing inside the Docker network
+    environment:
+      DATABASE_URL: "postgresql://admin:123456@postgres-db:5432/fruitaste?schema=public"
+      FRONTEND_URL: "http://localhost:3000"
+    command: sh -c "npx prisma db push && npm run start:prod"
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+    networks:
+      - fruitaste-network
+
+  # 3. Next.js Frontend Service
+  frontend-service:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_API_URL=http://localhost:8000/api
+    container_name: fruitaste-frontend
+    restart: always
+    ports:
+      - "3000:3000"
+    # Load all environment variables (Google, Resend, Groq keys) from local frontend/.env
+    env_file:
+      - ./frontend/.env
+    # Override only variables that need routing inside the Docker network
+    environment:
+      NEXT_PUBLIC_API_URL: "http://localhost:8000/api"
+    depends_on:
+      - backend-service
+    networks:
+      - fruitaste-network
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  fruitaste-network:
+    driver: bridge

@@ -4,13 +4,16 @@ import { useAuthStore } from '@/lib/store';
 import { useRouter, usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Package, Warehouse, ShoppingBag, BarChart3, ChevronLeft, ChevronRight, Home, Menu, Bell, Wallet, Clock, MapPin, Leaf, User, Lock, LogOut } from 'lucide-react';
+import { Package, Warehouse, ShoppingBag, BarChart3, ChevronLeft, ChevronRight, Home, Menu, Bell, Wallet, Clock, MapPin, Leaf, User, Users, Lock, LogOut, Tags, LayoutDashboard, ChefHat, UserCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import BackButton from '@/components/BackButton';
 import {
   Drawer,
   DrawerContent,
   DrawerTrigger,
   DrawerClose,
+  DrawerTitle,
+  DrawerDescription,
 } from "@/components/ui/drawer";
 import {
   DropdownMenu,
@@ -22,13 +25,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { getAvatarUrl } from '@/lib/utils';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { user, isAuthenticated, isLoading, logout } = useAuthStore();
   const router = useRouter();
   const pathname = usePathname();
   const [isMounted, setIsMounted] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true); // Default open on desktop
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true); 
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   useEffect(() => {
@@ -49,40 +53,47 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const adminModules = [
     { title: 'Trang chủ', href: '/admin', icon: <Home size={20} /> },
+    { title: 'Quản lý người dùng', href: '/admin/users', icon: <Users size={20} /> },
+    { title: 'Quản lý danh mục', href: '/admin/categories', icon: <Tags size={20} /> },
     { title: 'Quản lý sản phẩm', href: '/admin/products', icon: <Package size={20} /> },
     { title: 'Quản lý kho', href: '/admin/inventory', icon: <Warehouse size={20} /> },
     { title: 'Quản lý đơn hàng', href: '/admin/orders', icon: <ShoppingBag size={20} /> },
+    { title: 'Quản lý món ăn', href: '/admin/recipes', icon: <ChefHat size={20} /> },
     { title: 'Thống kê', href: '/admin/statistics', icon: <BarChart3 size={20} /> },
   ];
 
   return (
     <div className="flex h-screen bg-[#F8F9FA] overflow-hidden">
-      {/* Sidebar Desktop */}
+
       <aside className={`max-md:hidden bg-white border-r border-gray-100 transition-all duration-300 flex flex-col h-full z-20 ${isSidebarOpen ? 'w-64' : 'w-20'}`}>
-        <div className={`h-[88px] border-b border-gray-50 flex items-center flex-shrink-0 transition-all duration-300 ${isSidebarOpen ? 'px-6 justify-start' : 'justify-center w-full'}`}>
-          <Link href="/" className="flex items-center gap-2.5 overflow-hidden">
-             <div className="w-9 h-9 bg-gradient-to-br from-primary to-green-500 rounded-xl flex items-center justify-center shadow-md shadow-primary/20 flex-shrink-0">
-                <Leaf className="w-5 h-5 text-white" />
+        <div className={`h-[88px] flex items-center flex-shrink-0 transition-all duration-300 ${isSidebarOpen ? 'px-8 justify-start' : 'justify-center w-full'}`}>
+          <Link href="/" className="flex items-center gap-3 overflow-hidden group">
+             <div className="w-10 h-10 bg-green-600 rounded-2xl flex items-center justify-center shadow-lg shadow-green-600/20 flex-shrink-0 group-hover:scale-110 transition-transform">
+                <Leaf className="w-6 h-6 text-white" />
              </div>
              <div className={`flex items-center whitespace-nowrap transition-all duration-300 overflow-hidden ${isSidebarOpen ? 'max-w-[200px] opacity-100' : 'max-w-0 opacity-0'}`}>
-               <span className="text-xl font-black text-gray-900 leading-none">Frui<span className="text-primary">Taste</span></span>
+               <span className="text-2xl font-black text-gray-900 leading-none">Frui<span className="text-green-600">Taste</span></span>
              </div>
           </Link>
         </div>
+
+        {/* User Card Removed */}
         
         <div className="flex-1 overflow-y-auto py-6 flex flex-col gap-2">
           {adminModules.map((module, index) => {
             const isActive = pathname === module.href;
             return (
-              <div key={index} className="px-3">
+              <div key={index} className="px-4">
                 <Link href={module.href}>
-                  <div className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all font-bold ${
+                  <div className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-200 group ${
                     isActive 
-                      ? 'bg-[#F2F6F3] text-primary shadow-sm' 
-                      : 'text-gray-400 hover:bg-gray-50 hover:text-gray-600'
+                      ? 'bg-green-50 text-green-600 shadow-sm shadow-green-600/5 font-bold' 
+                      : 'text-gray-400 hover:bg-gray-50 hover:text-gray-600 font-medium'
                   } ${!isSidebarOpen && 'justify-center px-0'}`}>
-                    <div className="flex-shrink-0">{module.icon}</div>
-                    <span className={`whitespace-nowrap transition-all duration-200 ${isSidebarOpen ? 'opacity-100 flex-1' : 'opacity-0 w-0 hidden'}`}>
+                    <div className={`flex-shrink-0 transition-colors ${isActive ? 'text-green-600' : 'text-gray-400 group-hover:text-gray-600'}`}>
+                      {module.icon}
+                    </div>
+                    <span className={`whitespace-nowrap transition-all duration-200 text-[15px] ${isSidebarOpen ? 'opacity-100 flex-1' : 'opacity-0 w-0 hidden'}`}>
                       {module.title}
                     </span>
                   </div>
@@ -95,39 +106,63 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       <main className="flex-1 flex flex-col min-w-0 h-full overflow-hidden relative">
 
+
         <Drawer direction="left" open={isMobileSidebarOpen} onOpenChange={setIsMobileSidebarOpen}>
-          <DrawerContent className="w-[80vw] sm:w-[350px] p-0 rounded-none h-full border-r border-gray-100 flex flex-col bg-white">
-            <div className="p-6 border-b border-gray-50 flex items-center justify-between h-[88px] flex-shrink-0">
-              <Link href="/" className="flex items-center gap-3" onClick={() => setIsMobileSidebarOpen(false)}>
-                <div className="w-10 h-10 bg-gradient-to-br from-primary to-green-500 rounded-xl flex items-center justify-center shadow-lg shadow-primary/20">
-                  <Leaf className="w-6 h-6 text-white" />
-                </div>
-                <span className="text-xl font-bold text-gray-900">
-                  Frui<span className="text-primary font-black uppercase text-sm ml-1 tracking-widest">Taste</span>
-                </span>
-              </Link>
-              <DrawerClose asChild>
-                <Button variant="ghost" size="icon">
-                  <Menu size={20} />
-                </Button>
-              </DrawerClose>
+          <DrawerContent className="w-[85vw] max-w-[320px] p-0 h-full border-none flex flex-col bg-white shadow-2xl outline-none">
+            <div className="sr-only">
+              <DrawerTitle>Menu Quản trị</DrawerTitle>
+              <DrawerDescription>Thanh điều hướng cho thiết bị di động</DrawerDescription>
             </div>
-            <div className="flex-1 overflow-y-auto py-6 px-3 flex flex-col gap-2">
-              {adminModules.map((module, index) => {
-                const isActive = pathname === module.href;
-                return (
-                  <Link key={index} href={module.href} onClick={() => setIsMobileSidebarOpen(false)}>
-                    <div className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all font-bold ${
-                      isActive 
-                        ? 'bg-[#F2F6F3] text-primary shadow-sm' 
-                        : 'text-gray-400 hover:bg-gray-50 hover:text-gray-600'
-                    }`}>
-                      {module.icon}
-                      <span>{module.title}</span>
-                    </div>
-                  </Link>
-                );
-              })}
+            <div className="p-8 flex flex-col h-full">
+              <div className="flex items-center justify-between mb-8">
+                <Link href="/" className="flex items-center gap-3" onClick={() => setIsMobileSidebarOpen(false)}>
+                  <div className="w-10 h-10 bg-green-600 rounded-2xl flex items-center justify-center shadow-lg shadow-green-600/20 flex-shrink-0 group-hover:scale-110 transition-transform">
+                    <Leaf className="w-6 h-6 text-white" />
+                  </div>
+                  <span className="text-2xl font-black text-gray-900">
+                    Frui<span className="text-green-600">Taste</span>
+                  </span>
+                </Link>
+                <DrawerClose asChild>
+                  <Button variant="ghost" size="icon" className="rounded-xl">
+                    <ChevronLeft size={24} />
+                  </Button>
+                </DrawerClose>
+              </div>
+
+              {/* User Card Removed */}
+
+              <div className="flex-1 overflow-y-auto -mx-2 px-2 flex flex-col gap-2">
+                {adminModules.map((module, index) => {
+                  const isActive = pathname === module.href;
+                  return (
+                    <Link key={index} href={module.href} onClick={() => setIsMobileSidebarOpen(false)}>
+                      <div className={`flex items-center gap-3 px-4 py-4 rounded-2xl transition-all ${
+                        isActive 
+                          ? 'bg-green-50 text-green-600 shadow-sm font-bold' 
+                          : 'text-gray-400 hover:bg-gray-50 hover:text-gray-600 font-medium'
+                      }`}>
+                        <div className={isActive ? 'text-green-600' : ''}>{module.icon}</div>
+                        <span className="text-[15px]">{module.title}</span>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+
+              <div className="mt-auto pt-6 border-t border-gray-100">
+                <Button 
+                  variant="ghost" 
+                  className="w-full justify-start gap-3 px-4 py-6 rounded-2xl text-red-500 hover:bg-red-50 hover:text-red-600 font-medium transition-all"
+                  onClick={async () => {
+                    await logout();
+                    router.push('/');
+                  }}
+                >
+                  <LogOut size={20} />
+                  Đăng xuất
+                </Button>
+              </div>
             </div>
           </DrawerContent>
         </Drawer>
@@ -151,12 +186,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <Menu size={20} />
             </Button>
 
-            <Link href="/" className="hidden sm:inline-flex">
-              <Button variant="ghost" className="text-gray-500 hover:text-[#FF6B4A] hover:bg-orange-50 font-semibold rounded-xl flex items-center gap-2 transition-colors h-10 px-4 cursor-pointer">
-                <ChevronLeft size={18} />
-                Về cửa hàng
-              </Button>
-            </Link>
+            <div className="flex items-center gap-2 text-sm text-gray-500 ml-2">
+                {/* Empty space to maintain layout if needed, or just remove if not needed */}
+            </div>
           </div>
           
           <div className="flex items-center gap-4">
@@ -164,7 +196,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <DropdownMenuTrigger asChild>
                 <Button className="gap-2 rounded-full px-2 py-1 h-10 cursor-pointer" variant="outline">
                   <Avatar className="h-7 w-7 border-1 border-transparent hover:border-primary transition-all">
-                    <AvatarImage src={user?.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${user?.fullName || user?.email || 'A'}`} alt={user?.fullName || 'Avatar'} />
+                    <AvatarImage src={getAvatarUrl(user?.avatar, user?.fullName || user?.email)} alt={user?.fullName || 'Avatar'} />
                     <AvatarFallback className="bg-primary text-white font-bold">
                       {(user?.fullName || user?.email || 'A').charAt(0).toUpperCase()}
                     </AvatarFallback>
@@ -176,7 +208,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex items-center gap-3 pb-2 pt-1">
                     <Avatar className="h-10 w-10 border border-gray-100">
-                      <AvatarImage src={user?.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${user?.fullName || user?.email || 'A'}`} alt={user?.fullName || 'Avatar'} />
+                      <AvatarImage src={getAvatarUrl(user?.avatar, user?.fullName || user?.email)} alt={user?.fullName || 'Avatar'} />
                       <AvatarFallback className="font-bold bg-primary text-white">{(user?.fullName || user?.email || 'A').charAt(0).toUpperCase()}</AvatarFallback>
                     </Avatar>
                     <div className="flex flex-col space-y-1 overflow-hidden">
@@ -188,13 +220,21 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <DropdownMenuSeparator />
                 <DropdownMenuLabel>Tài khoản</DropdownMenuLabel>
                 <DropdownMenuGroup>
+                  <DropdownMenuItem className="cursor-pointer py-2.5 hover:text-[#FF6B4A] focus:text-[#FF6B4A] focus:bg-orange-50 transition-colors" onClick={() => router.push('/')}>
+                    <Home className="mr-2" size={16} />
+                    Trang chủ
+                  </DropdownMenuItem>
                   <DropdownMenuItem className="cursor-pointer py-2.5 hover:text-[#FF6B4A] focus:text-[#FF6B4A] focus:bg-orange-50 transition-colors" onClick={() => router.push('/profile')}>
                     <User className="mr-2" size={16} />
                     Hồ sơ cá nhân
                   </DropdownMenuItem>
-                  <DropdownMenuItem className="cursor-pointer py-2.5 hover:text-[#FF6B4A] focus:text-[#FF6B4A] focus:bg-orange-50 transition-colors">
-                    <Lock className="mr-2" size={16} />
-                    Mật khẩu & Bảo mật
+                  <DropdownMenuItem className="cursor-pointer py-2.5 hover:text-[#FF6B4A] focus:text-[#FF6B4A] focus:bg-orange-50 transition-colors" onClick={() => router.push('/orders')}>
+                    <ShoppingBag className="mr-2" size={16} />
+                    Đơn hàng
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="cursor-pointer py-2.5 hover:text-[#FF6B4A] focus:text-[#FF6B4A] focus:bg-orange-50 transition-colors" onClick={() => router.push('/admin')}>
+                    <LayoutDashboard className="mr-2" size={16} />
+                    Quản lý
                   </DropdownMenuItem>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
@@ -215,6 +255,26 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
         <div className="flex-1 overflow-y-auto w-full">
           <div className="p-6 md:p-8 max-w-[1600px] mx-auto w-full">
+            <div className="flex items-center justify-between w-full mb-8">
+                <div>
+                   {pathname.split('/').length > 3 && (
+                     <BackButton />
+                   )}
+                </div>
+                <div className="flex items-center gap-2 text-sm text-gray-500">
+                    <Link href="/" className="hover:text-[#FF6B4A] flex items-center gap-1 font-medium"><Home size={14} /> Trang chủ</Link>
+                    <ChevronRight size={14} />
+                    <Link href="/admin" className={`hover:text-[#FF6B4A] font-medium ${pathname === '/admin' ? 'text-[#FF6B4A]' : ''}`}>Quản trị</Link>
+                    {pathname !== '/admin' && (
+                      <>
+                        <ChevronRight size={14} />
+                        <span className="text-[#FF6B4A] font-medium truncate">
+                          {adminModules.find(m => m.href === pathname)?.title || 'Chi tiết'}
+                        </span>
+                      </>
+                    )}
+                </div>
+            </div>
             {children}
           </div>
         </div>

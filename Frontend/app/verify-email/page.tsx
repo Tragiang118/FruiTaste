@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect, useState, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import api from '@/lib/axios';
 import { Button } from '@/components/ui/button';
@@ -13,14 +13,18 @@ function VerifyEmailContent() {
   
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [message, setMessage] = useState('Đang xác thực email của bạn...');
+  const effectRan = useRef(false);
 
   useEffect(() => {
+    if (effectRan.current) return;
+    
     if (!token) {
       setStatus('error');
       setMessage('Không tìm thấy mã xác thực. Vui lòng kiểm tra lại đường dẫn email.');
       return;
     }
 
+    effectRan.current = true;
     api.post('/auth/verify-email', { token })
       .then(() => {
         setStatus('success');

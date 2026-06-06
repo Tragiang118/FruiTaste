@@ -1,11 +1,12 @@
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { Request } from 'express';
+import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor() {
+  constructor(private usersService: UsersService) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
         (request: Request) => {
@@ -18,6 +19,18 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: any) {
-    return { userId: payload.sub, id: payload.sub, email: payload.email, role: payload.role, fullName: payload.fullName };   
+    const user = await this.usersService.findById(payload.sub);
+    
+    if (!user || !user.isActive) {
+      throw new UnauthorizedException('Tài khoản đã bị khóa hoặc không tồn tại');
+    }
+
+    return {
+      userId: user.id,
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      fullName: user.fullName,
+    };
   }
 }

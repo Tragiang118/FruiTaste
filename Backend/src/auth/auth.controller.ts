@@ -1,4 +1,12 @@
-import { Body, Controller, Request, Post, UseGuards, Get, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Request,
+  Post,
+  UseGuards,
+  Get,
+  Res,
+} from '@nestjs/common';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
@@ -17,7 +25,30 @@ export class AuthController {
   async verifyEmail(@Body('token') token: string) {
     return this.authService.verifyEmailToken(token);
   }
-  
+
+  @Post('forgot-password')
+  async forgotPassword(@Body('email') email: string) {
+    return this.authService.forgotPassword(email);
+  }
+
+  @Post('verify-otp')
+  async verifyOtp(
+    @Body('email') email: string,
+    @Body('otp') otp: string,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const result = await this.authService.verifyOtp(email, otp);
+    // Set cookie đăng nhập tạm thời
+    response.cookie('Authentication', result.access_token, {
+      httpOnly: true,
+      path: '/',
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 24 * 60 * 60 * 1000, // 1 day
+    });
+    return { user: result.user, mustChangePassword: result.mustChangePassword };
+  }
+
   @UseGuards(LocalAuthGuard)
   @Post('login')
   async login(@Request() req, @Res({ passthrough: true }) response: Response) {
@@ -29,7 +60,7 @@ export class AuthController {
       sameSite: 'lax', // for localhost
       maxAge: 24 * 60 * 60 * 1000, // 1 day
     });
-    return req.user;
+    return { ...req.user, mustChangePassword: req.user.mustChangePassword || false };
   }
 
   @Post('logout')
@@ -47,6 +78,6 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Get('profile')
   getProfile(@Request() req) {
-    return req.user;
+    return this.authService.getProfile(req.user.id);
   }
 }

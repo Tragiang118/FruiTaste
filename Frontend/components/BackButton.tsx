@@ -8,15 +8,16 @@ import { cn } from '@/lib/utils';
 interface BackButtonProps {
   className?: string;
   variant?: "link" | "default" | "destructive" | "outline" | "secondary" | "ghost" | null | undefined;
+  href?: string;
 }
 
-export default function BackButton({ className, variant = "ghost" }: BackButtonProps) {
+export default function BackButton({ className, variant = "ghost", href }: BackButtonProps) {
   const router = useRouter();
 
   return (
     <Button
       variant={variant}
-      onClick={() => router.back()}
+      onClick={() => href ? router.push(href) : router.back()}
       className={cn("flex items-center text-gray-500 hover:text-gray-900", className)}
     >
       <ArrowLeft className="mr-2 h-4 w-4" />
