@@ -143,7 +143,7 @@ export default function CheckoutPage() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             email: user?.email,
-            firstName: user?.name?.split(' ').pop() || user?.name || 'Khách hàng',
+            firstName: user?.fullName?.split(' ').pop() || user?.fullName || 'Khách hàng',
             order,
           }),
         });

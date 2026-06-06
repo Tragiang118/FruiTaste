@@ -178,14 +178,14 @@ export default function ChatbotWidget() {
   }, [status, messages]);
 
   const renderedMessages = useMemo(() => {
-    const mapped: Array<{ id: string, role: "user" | "assistant" | "system" | "data", type: string, text: string, products?: any[] }> = messages.flatMap((message) => {
+    const mapped = messages.flatMap((message) => {
       const text = message.parts
         ? message.parts
             .filter((part: any) => part.type === "text")
             .map((part: any) => part.text)
             .join("")
             .trim()
-        : (message.content || "").trim();
+        : ((message as any).content || "").trim();
 
       const products: any[] = [];
       
@@ -250,13 +250,11 @@ export default function ChatbotWidget() {
         cleanText = cleanText.replace(/function=.*?>.*?}/gs, "");
         cleanText = cleanText.replace(/\[PRODUCT:[^\]]*$/, "").trim();
 
-        return [{ id: message.id, role: message.role, type: "text", text: cleanText, products }];
+        return [{ id: message.id, role: message.role as any, type: "text", text: cleanText, products }];
       }
 
-      return [{ id: message.id, role: message.role, type: "text", text, products }];
-
-      return [{ id: message.id, role: message.role, type: "text", text, products: [] }];
-    });
+      return [{ id: message.id, role: message.role as any, type: "text", text, products }];
+    }) as Array<{ id: string, role: "user" | "assistant" | "system" | "data", type: string, text: string, products?: any[] }>;
 
     if (mapped.length > 0) return mapped;
 

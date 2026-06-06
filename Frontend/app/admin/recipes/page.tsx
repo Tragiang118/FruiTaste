@@ -258,7 +258,7 @@ export default function AdminRecipesPage() {
       const payload = {
         ...editingRecipe,
         prepTime: Number(editingRecipe.prepTime),
-        ingredients: editingRecipe.ingredients.map(ing => ({
+        ingredients: (editingRecipe.ingredients || []).map(ing => ({
             productId: ing.productId ? Number(ing.productId) : undefined,
             ingredientName: ing.ingredientName || undefined,
             quantityStr: ing.quantityStr

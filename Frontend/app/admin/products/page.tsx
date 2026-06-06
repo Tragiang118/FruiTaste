@@ -212,7 +212,7 @@ export default function AdminProductsPage() {
   const handleSaveProduct = async () => {
     const newErrors: Record<string, string> = {};
     if (!editingProduct.name?.trim()) newErrors.name = 'Tên không được để trống';
-    if (editingProduct.price === '' || editingProduct.price === undefined) {
+    if ((editingProduct.price as any) === '' || editingProduct.price === undefined) {
       newErrors.price = 'Giá không được để trống';
     } else if (Number(editingProduct.price) < 1000) {
       newErrors.price = 'Giá phải từ 1,000 VNĐ';
@@ -580,11 +580,11 @@ export default function AdminProductsPage() {
                   <label className="text-sm font-bold text-gray-700 ml-1">Giá (VNĐ) (*)</label>
                   <Input
                     type="text"
-                    value={editingProduct.price !== '' ? Number(editingProduct.price).toLocaleString('vi-VN') : ''}
+                    value={(editingProduct.price as any) !== '' ? Number(editingProduct.price).toLocaleString('vi-VN') : ''}
                     onChange={e => {
                       const val = e.target.value.replace(/\./g, '');
                       if (val === '' || /^\d+$/.test(val)) {
-                        setEditingProduct({ ...editingProduct, price: val === '' ? '' : Number(val) });
+                        setEditingProduct({ ...editingProduct, price: val === '' ? '' as any : Number(val) });
                       }
                     }}
                     className="rounded-2xl border-gray-100 h-9 bg-white font-bold text-primary text-[13px]"
