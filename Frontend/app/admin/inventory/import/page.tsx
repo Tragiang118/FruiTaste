@@ -439,7 +439,7 @@ function ImportContent() {
                                     onBlur={(e) => { if (e.target.value === '') updateItem(item.productId, 'quantity', '1'); }}
                                     className="h-10 w-full rounded-xl bg-gray-50 border-gray-100 text-center font-bold text-sm focus:bg-white focus:ring-primary"
                                   />
-                                  {item.quantity !== '' && Number(item.quantity) <= 0 && (
+                                  {(item.quantity as any) !== '' && Number(item.quantity) <= 0 && (
                                     <p className="text-[9px] font-bold text-red-500 uppercase ml-2 mt-1 italic">Tối thiểu 1</p>
                                   )}
                                   {type === 'export' && (
@@ -455,7 +455,7 @@ function ImportContent() {
                                       <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 block">Giá nhập (đ)</label>
                                       <Input 
                                         type="text" 
-                                        value={item.importPrice !== '' ? Number(item.importPrice).toLocaleString('vi-VN') : ''}
+                                        value={(item.importPrice as any) !== '' ? Number(item.importPrice).toLocaleString('vi-VN') : ''}
                                         onChange={(e) => {
                                           const val = e.target.value.replace(/\./g, '');
                                           if (val === '' || /^\d+$/.test(val)) {
@@ -465,7 +465,7 @@ function ImportContent() {
                                         onBlur={(e) => { if (e.target.value === '') updateItem(item.productId, 'importPrice', '0'); }}
                                         className="h-10 w-full rounded-xl bg-gray-50 border-gray-100 text-right font-black text-sm text-primary px-3 focus:bg-white focus:ring-primary"
                                       />
-                                      {item.importPrice !== '' && Number(item.importPrice) < 1000 && (
+                                      {(item.importPrice as any) !== '' && Number(item.importPrice) < 1000 && (
                                         <p className="text-[9px] font-bold text-red-500 uppercase ml-2 mt-1 italic">Tối thiểu 1.000đ</p>
                                       )}
                                    </div>
