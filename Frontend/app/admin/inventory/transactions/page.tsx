@@ -76,6 +76,8 @@ interface Transaction {
     name: string;
     unit: string;
   };
+  transactionReason?: string | null;
+  staffName?: string | null;
 }
 
 export default function InventoryTransactionsPage() {
