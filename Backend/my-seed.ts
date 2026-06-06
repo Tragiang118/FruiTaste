@@ -59,8 +59,10 @@ async function main() {
         stockQuantity: fruit.stockQuantity,
         description: fruit.description,
         unit: fruit.unit,
-        images: fruit.images,
-        categoryId: category.id,
+        mediaUrls: fruit.images,
+        categories: {
+          connect: [{ id: category.id }]
+        },
         isActive: true,
       },
     });
