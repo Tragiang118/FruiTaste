@@ -20,6 +20,7 @@ interface EmailTemplateProps {
 export const EmailTemplate: React.FC<Readonly<EmailTemplateProps>> = ({
   firstName,
   verificationToken,
+}) => {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://fruitaste.page';
   const verifyLink = `${baseUrl}/verify-email?token=${verificationToken}`;
 
