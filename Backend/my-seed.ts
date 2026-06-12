@@ -49,23 +49,36 @@ async function main() {
     { name: 'Dưa Lưới', price: 60000, stockQuantity: 10, description: 'Dưa lưới vỏ xanh gân trắng', unit: 'kg', images: ['https://images.unsplash.com/photo-1598030349646-6aa8c7d5c765?auto=format&fit=crop&w=400&q=80'] },
     { name: 'Quả Lựu', price: 55000, stockQuantity: 150, description: 'Lựu đỏ ngọt', unit: 'kg', images: ['https://images.unsplash.com/photo-1565293627255-a0ed8df359cb?auto=format&fit=crop&w=400&q=80'] },
     { name: 'Mận Hà Nội', price: 45000, stockQuantity: 100, description: 'Mận Hà Nội thơm ngon, chua ngọt nức tiếng', unit: 'kg', images: ['https://images.unsplash.com/photo-1628178121659-1ec8b98161ca?auto=format&fit=crop&w=400&q=80'] },
+    { name: 'Hồng Giòn Đà Lạt', price: 45000, stockQuantity: 90, description: 'Hồng giòn Đà Lạt ngọt lịm thơm ngon', unit: 'kg', images: ['https://images.unsplash.com/photo-1596700684078-43d9642caed9?auto=format&fit=crop&w=400&q=80'] },
+    { name: 'Đào Sa Pa', price: 38000, stockQuantity: 110, description: 'Đào Sa Pa má hồng ngọt mát chua nhẹ', unit: 'kg', images: ['https://images.unsplash.com/photo-1595124253363-c59659b19350?auto=format&fit=crop&w=400&q=80'] },
+    { name: 'Lê Đường Lạng Sơn', price: 42000, stockQuantity: 120, description: 'Lê đường thơm ngọt vỏ mỏng nhiều nước', unit: 'kg', images: ['https://images.unsplash.com/photo-1514756331096-242fdeb70f4a?auto=format&fit=crop&w=400&q=80'] },
+    { name: 'Nhãn Xuồng Tiền Giang', price: 52000, stockQuantity: 130, description: 'Nhãn xuồng Tiền Giang cơm dày ngọt lịm', unit: 'kg', images: ['https://images.unsplash.com/photo-1596752003738-4221199a03cf?auto=format&fit=crop&w=400&q=80'] },
   ];
 
   for (const fruit of fruits) {
-    await prisma.product.create({
-      data: {
-        name: fruit.name,
-        price: fruit.price,
-        stockQuantity: fruit.stockQuantity,
-        description: fruit.description,
-        unit: fruit.unit,
-        mediaUrls: fruit.images,
-        categories: {
-          connect: [{ id: category.id }]
-        },
-        isActive: true,
-      },
+    const existing = await prisma.product.findFirst({
+      where: { name: fruit.name }
     });
+
+    if (!existing) {
+      await prisma.product.create({
+        data: {
+          name: fruit.name,
+          price: fruit.price,
+          stockQuantity: fruit.stockQuantity,
+          description: fruit.description,
+          unit: fruit.unit,
+          mediaUrls: fruit.images,
+          categories: {
+            connect: [{ id: category.id }]
+          },
+          isActive: true,
+        },
+      });
+      console.log(`Đã thêm sản phẩm: ${fruit.name}`);
+    } else {
+      console.log(`Sản phẩm đã tồn tại (bỏ qua): ${fruit.name}`);
+    }
   }
 
   console.log('Seed dữ liệu thành công!');
