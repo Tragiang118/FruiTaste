@@ -101,13 +101,6 @@ export default function HomePage() {
               ))}
             </div>
           )}
-          <div className="flex justify-end mt-2">
-            <Link href="/products">
-              <Button variant="ghost" className="text-gray-600 hover:text-[#FF6B4A] font-medium flex items-center gap-2 hover:bg-transparent text-base cursor-pointer">
-                Xem tất cả danh mục <ArrowRight size={18} />
-              </Button>
-            </Link>
-          </div>
         </section>
 
         <section className="py-0">
