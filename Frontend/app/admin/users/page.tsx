@@ -421,32 +421,22 @@ export default function AdminUsersPage() {
 
       {/* Delete User Confirmation Dialog */}
       <AlertDialog open={confirmDeleteId !== null} onOpenChange={(open) => !open && setConfirmDeleteId(null)}>
-        <AlertDialogContent className="bg-white rounded-[2.5rem] border-none p-8">
-          <AlertDialogHeader className="space-y-4">
-            <div className="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center text-red-500 mb-2">
-              <Trash2 className="w-8 h-8" />
-            </div>
-            <AlertDialogTitle className="text-2xl font-black text-gray-900 leading-tight">
-              Gỡ bỏ tài khoản?
-            </AlertDialogTitle>
-            <AlertDialogDescription className="text-gray-600 font-medium text-sm leading-relaxed">
-              Bạn đang chuẩn bị gỡ bỏ tài khoản <b className="text-gray-900">#{confirmDeleteId}</b>. 
-              Tài khoản này sẽ bị ẩn khỏi danh sách và không thể đăng nhập.
-              <br/><br/>
-              <span className="text-blue-600 text-[10px] font-bold uppercase tracking-wider bg-blue-50 p-3 rounded-xl block">
-                Lưu ý: Email của tài khoản này sẽ được giải phóng để người dùng có thể đăng ký lại nếu cần.
-              </span>
+        <AlertDialogContent className="bg-white rounded-3xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-sm font-bold text-gray-700 ml-1">Xác nhận xóa</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-600">
+              Bạn có chắc chắn muốn xóa tài khoản <b className="text-gray-900">#{confirmDeleteId}</b> không? Tài khoản sẽ bị ẩn khỏi danh sách và không thể đăng nhập. Hành động này không thể hoàn tác.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="mt-8 gap-3">
-            <AlertDialogCancel className="rounded-2xl h-12 flex-1 font-bold border-gray-100 hover:bg-gray-50 cursor-pointer">
-              Hủy bỏ
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-full border-gray-200 cursor-pointer">
+              Hủy
             </AlertDialogCancel>
-            <AlertDialogAction 
+            <AlertDialogAction
               onClick={() => confirmDeleteId && handleDeleteUser(confirmDeleteId)}
-              className="rounded-2xl h-12 flex-1 bg-red-500 hover:bg-red-600 text-white font-black uppercase tracking-widest text-[10px] shadow-lg shadow-red-500/20 border-none cursor-pointer"
+              className="rounded-full bg-red-500 hover:bg-red-600 text-white cursor-pointer"
             >
-              Xác nhận xóa
+              Xác nhận
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
