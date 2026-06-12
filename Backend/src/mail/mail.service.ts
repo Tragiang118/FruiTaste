@@ -6,7 +6,7 @@ export class MailService {
   private resendApiKey: string;
 
   constructor(private configService: ConfigService) {
-    this.resendApiKey = this.configService.get<string>('RESEND_API_KEY');
+    this.resendApiKey = this.configService.get<string>('RESEND_API_KEY') || '';
   }
 
   private async sendMail(options: { to: string; subject: string; html: string }) {
