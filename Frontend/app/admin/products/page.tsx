@@ -788,29 +788,22 @@ export default function AdminProductsPage() {
       )}
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={confirmDeleteId !== null} onOpenChange={(open) => !open && setConfirmDeleteId(null)}>
-        <AlertDialogContent className="bg-white rounded-3xl border-none shadow-2xl p-8">
+        <AlertDialogContent className="bg-white rounded-3xl">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-lg font-bold text-gray-900 flex items-center gap-2">
-              <div className="p-2 bg-red-50 rounded-xl text-red-500">
-                <Trash2 size={20} />
-              </div>
-              Xác nhận gỡ bỏ sản phẩm
-            </AlertDialogTitle>
-            <AlertDialogDescription className="text-gray-500 mt-2 font-medium">
-              Bạn có chắc chắn muốn gỡ bỏ sản phẩm này? 
-              <br/><br/>
-              <span className="text-blue-600 text-xs font-bold uppercase tracking-wider bg-blue-50 p-2 rounded-lg block">
-                Thông tin: Sản phẩm sẽ bị ẩn khỏi cửa hàng và trang quản trị, nhưng lịch sử đơn hàng vẫn được giữ lại để đối soát.
-              </span>
+            <AlertDialogTitle className="text-sm font-bold text-gray-700 ml-1">Xác nhận xóa</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-600">
+              Bạn có chắc chắn muốn gỡ bỏ sản phẩm này không? Sản phẩm sẽ bị ẩn khỏi cửa hàng và trang quản trị, nhưng lịch sử đơn hàng vẫn được giữ lại để đối soát. Hành động này không thể hoàn tác.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="gap-3 mt-6">
-            <AlertDialogCancel className="rounded-full border-gray-200 cursor-pointer h-10 px-6 font-bold text-xs">Hủy</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={() => confirmDeleteId && handleDeleteProduct(confirmDeleteId)} 
-              className="rounded-full bg-red-500 hover:bg-red-600 text-white cursor-pointer h-10 px-6 font-bold text-xs border-none"
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-full border-gray-200 cursor-pointer">
+              Hủy
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => confirmDeleteId && handleDeleteProduct(confirmDeleteId)}
+              className="rounded-full bg-red-500 hover:bg-red-600 text-white cursor-pointer"
             >
-              Xác nhận gỡ bỏ
+              Xác nhận
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
