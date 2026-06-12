@@ -38,11 +38,13 @@ export class AuthController {
     @Res({ passthrough: true }) response: Response,
   ) {
     const result = await this.authService.verifyOtp(email, otp);
+    const isSecure = process.env.NODE_ENV === 'production' || process.env.FRONTEND_URL?.startsWith('https');
+    
     // Set cookie đăng nhập tạm thời
     response.cookie('Authentication', result.access_token, {
       httpOnly: true,
       path: '/',
-      secure: process.env.NODE_ENV === 'production',
+      secure: isSecure,
       sameSite: 'lax',
       maxAge: 24 * 60 * 60 * 1000, // 1 day
     });
@@ -53,10 +55,12 @@ export class AuthController {
   @Post('login')
   async login(@Request() req, @Res({ passthrough: true }) response: Response) {
     const { access_token } = await this.authService.login(req.user);
+    const isSecure = process.env.NODE_ENV === 'production' || process.env.FRONTEND_URL?.startsWith('https');
+    
     response.cookie('Authentication', access_token, {
       httpOnly: true,
       path: '/',
-      secure: process.env.NODE_ENV === 'production',
+      secure: isSecure,
       sameSite: 'lax', // for localhost
       maxAge: 24 * 60 * 60 * 1000, // 1 day
     });
@@ -65,11 +69,13 @@ export class AuthController {
 
   @Post('logout')
   async logout(@Res({ passthrough: true }) response: Response) {
+    const isSecure = process.env.NODE_ENV === 'production' || process.env.FRONTEND_URL?.startsWith('https');
+    
     // Clear cookies consistently
     response.clearCookie('Authentication', {
       httpOnly: true,
       path: '/',
-      secure: process.env.NODE_ENV === 'production',
+      secure: isSecure,
       sameSite: 'lax',
     });
     return { message: 'Logged out successfully' };
