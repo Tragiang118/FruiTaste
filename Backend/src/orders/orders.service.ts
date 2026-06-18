@@ -47,7 +47,8 @@ export class OrdersService {
             where: { id: order.id },
             data: { 
               status: 'CANCELLED',
-              cancelledBy: 'ADMIN' // Hệ thống tự hủy coi như Admin
+              cancelledBy: 'ADMIN', // Hệ thống tự hủy coi như Admin
+              cancelledAt: new Date(),
             },
           });
         });
@@ -215,7 +216,8 @@ export class OrdersService {
           where: { id },
           data: { 
             status,
-            cancelledBy: actorRole === 'ADMIN' ? 'ADMIN' : 'USER'
+            cancelledBy: actorRole === 'ADMIN' ? 'ADMIN' : 'USER',
+            cancelledAt: new Date(),
           },
         });
 
@@ -247,9 +249,20 @@ export class OrdersService {
       });
     }
 
+    const updateData: any = { status };
+    if (status === 'CONFIRMED') {
+      updateData.confirmedAt = new Date();
+    } else if (status === 'PREPARING') {
+      updateData.preparingAt = new Date();
+    } else if (status === 'SHIPPING') {
+      updateData.shippingAt = new Date();
+    } else if (status === 'COMPLETED') {
+      updateData.completedAt = new Date();
+    }
+
     return this.prisma.order.update({
       where: { id },
-      data: { status },
+      data: updateData,
     });
   }
 

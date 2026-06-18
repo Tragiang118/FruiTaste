@@ -246,6 +246,12 @@ model Order {
   status          OrderStatus   @default(PENDING)
   cancelledBy     Role?
 
+  confirmedAt     DateTime?
+  preparingAt     DateTime?
+  shippingAt      DateTime?
+  completedAt     DateTime?
+  cancelledAt     DateTime?
+
   user            User          @relation(fields: [userId], references: [id])
   items           OrderItem[]
   payment         Payment?
