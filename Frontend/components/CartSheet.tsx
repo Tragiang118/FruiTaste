@@ -56,6 +56,7 @@ function CartItemRow({
           <button
             onClick={() => {
               if (item.quantity <= 1) {
+                setInputValue('0');
                 setItemToDelete(item.id);
               } else {
                 updateQuantity(item.id, item.quantity - 1);
