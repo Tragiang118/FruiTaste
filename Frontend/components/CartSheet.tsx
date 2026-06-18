@@ -130,9 +130,14 @@ export default function CartSheet() {
                   </p>
                   <div className="flex items-center gap-2 mt-2 border border-gray-100 rounded-full w-fit bg-gray-50 p-0.5">
                     <button
-                      onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                      disabled={item.quantity <= 1}
-                      className="w-7 h-7 rounded-full flex items-center justify-center bg-white shadow-sm disabled:opacity-50 hover:text-[#FF6B4A] cursor-pointer"
+                      onClick={() => {
+                        if (item.quantity <= 1) {
+                          setItemToDelete(item.id);
+                        } else {
+                          updateQuantity(item.id, item.quantity - 1);
+                        }
+                      }}
+                      className="w-7 h-7 rounded-full flex items-center justify-center bg-white shadow-sm hover:text-[#FF6B4A] cursor-pointer"
                     >
                       <Minus size={14} />
                     </button>
