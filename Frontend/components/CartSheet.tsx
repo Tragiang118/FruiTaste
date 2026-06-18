@@ -11,6 +11,115 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { getImageUrl } from "@/lib/utils";
 
+interface CartItemRowProps {
+  item: any;
+  updateQuantity: (id: number, quantity: number) => void;
+  setItemToDelete: (id: number | null) => void;
+  itemToDelete: number | null;
+  selectedIds: number[];
+  handleSelect: (id: number) => void;
+  getImageUrl: (image: any) => any;
+}
+
+function CartItemRow({
+  item,
+  updateQuantity,
+  setItemToDelete,
+  itemToDelete,
+  selectedIds,
+  handleSelect,
+  getImageUrl,
+}: CartItemRowProps) {
+  const [inputValue, setInputValue] = useState(item.quantity.toString());
+
+  useEffect(() => {
+    setInputValue(item.quantity.toString());
+  }, [item.quantity, itemToDelete]);
+
+  return (
+    <div className="flex gap-4 items-center bg-white p-3 rounded-2xl border border-gray-150 shadow-md relative group">
+      <Checkbox
+        checked={selectedIds.includes(item.id)}
+        onCheckedChange={() => handleSelect(item.id)}
+        className="mr-2"
+        aria-label={`Chọn ${item.name}`}
+      />
+      <div className="w-20 h-20 bg-[#FFF4E6] rounded-xl flex items-center justify-center overflow-hidden flex-shrink-0">
+        <img src={getImageUrl(item.image)} alt={item.name} className="w-full h-full object-contain p-2 mix-blend-multiply" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <h4 className="font-bold text-gray-900 truncate pr-6">{item.name}</h4>
+        <p className="text-[#FF6B4A] font-medium mt-1">
+          {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.price)}
+        </p>
+        <div className="flex items-center gap-2 mt-2 border border-gray-100 rounded-full w-fit bg-gray-50 p-0.5">
+          <button
+            onClick={() => {
+              if (item.quantity <= 1) {
+                setItemToDelete(item.id);
+              } else {
+                updateQuantity(item.id, item.quantity - 1);
+              }
+            }}
+            className="w-7 h-7 rounded-full flex items-center justify-center bg-white shadow-sm hover:text-[#FF6B4A] cursor-pointer"
+          >
+            <Minus size={14} />
+          </button>
+          <input
+            type="text"
+            value={inputValue}
+            onChange={(e) => {
+              const val = e.target.value.replace(/[^0-9]/g, '');
+              if (val === '') {
+                setInputValue('');
+              } else {
+                const num = parseInt(val, 10);
+                if (num === 0) {
+                  setInputValue('0');
+                } else {
+                  const finalNum = Math.min(num, item.stockQuantity);
+                  setInputValue(finalNum.toString());
+                  updateQuantity(item.id, finalNum);
+                }
+              }
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                if (inputValue === '0' || inputValue === '') {
+                  setItemToDelete(item.id);
+                } else {
+                  e.currentTarget.blur();
+                }
+              }
+            }}
+            onBlur={() => {
+              if (inputValue === '0' || inputValue === '') {
+                setItemToDelete(item.id);
+              }
+            }}
+            className="w-8 text-center font-bold text-sm bg-transparent border-none outline-none focus:ring-0 p-0 text-gray-900"
+            placeholder="0"
+          />
+          <button
+            onClick={() => updateQuantity(item.id, item.quantity + 1)}
+            disabled={item.quantity >= item.stockQuantity}
+            className="w-7 h-7 rounded-full flex items-center justify-center bg-white shadow-sm disabled:opacity-50 hover:text-[#FF6B4A] cursor-pointer"
+          >
+            <Plus size={14} />
+          </button>
+        </div>
+      </div>
+      <button
+        onClick={() => setItemToDelete(item.id)}
+        className="absolute top-3 right-3 text-gray-300 hover:text-red-500 transition-colors p-1 cursor-pointer"
+      >
+        <Trash2 size={18} />
+      </button>
+    </div>
+  );
+}
+
 export default function CartSheet() {
   const [isMounted, setIsMounted] = useState(false);
   useEffect(() => { setIsMounted(true); }, []);
@@ -118,75 +227,16 @@ export default function CartSheet() {
             </div>
           ) : (
             items.map((item, index) => (
-              <div key={item.id + '-' + index} className="flex gap-4 items-center bg-white p-3 rounded-2xl border border-gray-150 shadow-md relative group">
-                <Checkbox checked={selectedIds.includes(item.id)} onCheckedChange={() => handleSelect(item.id)} className="mr-2" aria-label={`Chọn ${item.name}`} />
-                <div className="w-20 h-20 bg-[#FFF4E6] rounded-xl flex items-center justify-center overflow-hidden flex-shrink-0">
-                  <img src={getImageUrl(item.image)} alt={item.name} className="w-full h-full object-contain p-2 mix-blend-multiply" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h4 className="font-bold text-gray-900 truncate pr-6">{item.name}</h4>
-                  <p className="text-[#FF6B4A] font-medium mt-1">
-                    {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.price)}
-                  </p>
-                  <div className="flex items-center gap-2 mt-2 border border-gray-100 rounded-full w-fit bg-gray-50 p-0.5">
-                    <button
-                      onClick={() => {
-                        if (item.quantity <= 1) {
-                          setItemToDelete(item.id);
-                        } else {
-                          updateQuantity(item.id, item.quantity - 1);
-                        }
-                      }}
-                      className="w-7 h-7 rounded-full flex items-center justify-center bg-white shadow-sm hover:text-[#FF6B4A] cursor-pointer"
-                    >
-                      <Minus size={14} />
-                    </button>
-                    <input
-                      type="text"
-                      value={item.quantity === 0 ? '' : item.quantity}
-                      onChange={(e) => {
-                        const val = e.target.value.replace(/[^0-9]/g, '');
-                        if (val === '') {
-                          updateQuantity(item.id, 0);
-                        } else {
-                          const num = parseInt(val, 10);
-                          updateQuantity(item.id, Math.min(num, item.stockQuantity));
-                        }
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault();
-                          if (item.quantity === 0) {
-                            setItemToDelete(item.id);
-                          } else {
-                            e.currentTarget.blur();
-                          }
-                        }
-                      }}
-                      onBlur={(e) => {
-                        if (item.quantity === 0 || e.target.value === '' || e.target.value === '0') {
-                          setItemToDelete(item.id);
-                        }
-                      }}
-                      className="w-8 text-center font-bold text-sm bg-transparent border-none outline-none focus:ring-0 p-0 text-gray-900"
-                      placeholder="0"
-                    />
-                    <button
-                      onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                      disabled={item.quantity >= item.stockQuantity}
-                      className="w-7 h-7 rounded-full flex items-center justify-center bg-white shadow-sm disabled:opacity-50 hover:text-[#FF6B4A] cursor-pointer"
-                    >
-                      <Plus size={14} />
-                    </button>
-                  </div>
-                </div>
-                <button
-                  onClick={() => setItemToDelete(item.id)}
-                  className="absolute top-3 right-3 text-gray-300 hover:text-red-500 transition-colors p-1 cursor-pointer"
-                >
-                  <Trash2 size={18} />
-                </button>
-              </div>
+              <CartItemRow
+                key={item.id + '-' + index}
+                item={item}
+                updateQuantity={updateQuantity}
+                setItemToDelete={setItemToDelete}
+                itemToDelete={itemToDelete}
+                selectedIds={selectedIds}
+                handleSelect={handleSelect}
+                getImageUrl={getImageUrl}
+              />
             ))
           )}
         </div>
