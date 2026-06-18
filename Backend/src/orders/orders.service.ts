@@ -221,11 +221,16 @@ export class OrdersService {
           },
         });
 
-        // Tích hợp Module Auto-Ban: Đếm số lượng đơn bị hủy
+        // Tích hợp Module Auto-Ban: Chỉ đếm các đơn bị hủy bởi USER trong vòng 30 ngày gần đây
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
         const failedCount = await tx.order.count({
           where: {
             userId: order.userId,
             status: 'CANCELLED',
+            cancelledBy: 'USER',
+            cancelledAt: { gte: thirtyDaysAgo }
           }
         });
 
@@ -235,7 +240,7 @@ export class OrdersService {
             where: { id: order.userId },
             data: { isActive: false }
           });
-          console.log(`[Auto-Ban] Đã TỰ ĐỘNG KHÓA tài khoản ID: ${order.userId} do có ${failedCount} đơn hàng bị hủy.`);
+          console.log(`[Auto-Ban] Đã TỰ ĐỘNG KHÓA tài khoản ID: ${order.userId} do có ${failedCount} đơn hàng bị khách hàng tự hủy trong 30 ngày qua.`);
         }
 
         return updatedOrder;

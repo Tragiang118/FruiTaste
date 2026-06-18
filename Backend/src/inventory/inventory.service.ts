@@ -80,14 +80,14 @@ export class InventoryService {
             lastImportDate: new Date(),
           },
           update: {
-            currentStock: newStock,
+            currentStock: { increment: item.quantity },
             lastImportDate: new Date(),
           }
         });
 
         await tx.product.update({
           where: { id: item.productId },
-          data: { stockQuantity: newStock }
+          data: { stockQuantity: { increment: item.quantity } }
         });
 
         await tx.stockTransaction.create({
@@ -134,21 +134,25 @@ export class InventoryService {
           throw new BadRequestException(`Sản phẩm ID ${item.productId} không đủ tồn kho`);
         }
 
-        const prevStock = inventory.currentStock;
-        const newStock = prevStock - item.quantity;
-
-        await tx.inventory.update({
+        const updatedInventory = await tx.inventory.update({
           where: { productId: item.productId },
           data: { 
-            currentStock: newStock,
+            currentStock: { decrement: item.quantity },
             lastExportDate: new Date()
           }
         });
 
+        if (updatedInventory.currentStock < 0) {
+          throw new BadRequestException(`Sản phẩm ID ${item.productId} không đủ tồn kho`);
+        }
+
         await tx.product.update({
           where: { id: item.productId },
-          data: { stockQuantity: newStock }
+          data: { stockQuantity: { decrement: item.quantity } }
         });
+
+        const prevStock = updatedInventory.currentStock + item.quantity;
+        const newStock = updatedInventory.currentStock;
 
         await tx.stockTransaction.create({
           data: {
@@ -212,19 +216,22 @@ export class InventoryService {
   }
 
   async exportStockOnOrder(tx: any, productId: number, quantity: number, orderId: number) {
-    const inventory = await tx.inventory.findUnique({ where: { productId } });
-    const prevStock = inventory ? inventory.currentStock : 0;
-    const newStock = prevStock - quantity;
-
-    await tx.inventory.update({
+    const updatedInventory = await tx.inventory.update({
       where: { productId },
-      data: { currentStock: newStock }
+      data: { currentStock: { decrement: quantity } }
     });
 
-    await tx.product.update({
+    if (updatedInventory.currentStock < 0) {
+      throw new BadRequestException(`Sản phẩm ID ${productId} không đủ tồn kho`);
+    }
+
+    const updatedProduct = await tx.product.update({
       where: { id: productId },
-      data: { stockQuantity: newStock }
+      data: { stockQuantity: { decrement: quantity } }
     });
+
+    const prevStock = updatedInventory.currentStock + quantity;
+    const newStock = updatedInventory.currentStock;
 
     await tx.stockTransaction.create({
       data: {
@@ -240,19 +247,18 @@ export class InventoryService {
   }
 
   async returnStockOnCancel(tx: any, productId: number, quantity: number, orderId: number) {
-    const inventory = await tx.inventory.findUnique({ where: { productId } });
-    const prevStock = inventory ? inventory.currentStock : 0;
-    const newStock = prevStock + quantity;
-
-    await tx.inventory.update({
+    const updatedInventory = await tx.inventory.update({
       where: { productId },
-      data: { currentStock: newStock }
+      data: { currentStock: { increment: quantity } }
     });
 
     await tx.product.update({
       where: { id: productId },
-      data: { stockQuantity: newStock }
+      data: { stockQuantity: { increment: quantity } }
     });
+
+    const prevStock = updatedInventory.currentStock - quantity;
+    const newStock = updatedInventory.currentStock;
 
     await tx.stockTransaction.create({
       data: {

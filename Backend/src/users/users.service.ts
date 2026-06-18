@@ -233,6 +233,7 @@ export class UsersService {
       data: {
         resetOtp: hashedOtp,
         resetOtpExpiry: expiry,
+        otpAttempts: 0,
       },
     });
   }
@@ -243,6 +244,16 @@ export class UsersService {
       data: {
         resetOtp: null,
         resetOtpExpiry: null,
+        otpAttempts: 0,
+      },
+    });
+  }
+
+  async incrementOtpAttempts(email: string) {
+    return this.prisma.user.update({
+      where: { email },
+      data: {
+        otpAttempts: { increment: 1 },
       },
     });
   }

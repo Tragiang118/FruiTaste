@@ -29,13 +29,9 @@ NHIỆM VỤ:
           }),
           execute: async ({ search }: { search?: string }) => {
             try {
-              const res = await fetch(`${BACKEND_URL}/products`);
-              const dataRaw = await res.json();
-              let data = dataRaw.filter((p: any) => p.isActive && !p.isDeleted);
-              if (search) {
-                const kw = search.toLowerCase();
-                data = data.filter((p: any) => p.name.toLowerCase().includes(kw));
-              }
+              const url = `${BACKEND_URL}/products?search=${encodeURIComponent(search || "")}`;
+              const res = await fetch(url);
+              const data = await res.json();
               return data.slice(0, 3).map((p: any) => ({
                 id: p.id,
                 name: p.name,

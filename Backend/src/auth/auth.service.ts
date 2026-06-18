@@ -62,6 +62,12 @@ export class AuthService {
       throw new BadRequestException('Không tìm thấy yêu cầu khôi phục mật khẩu. Vui lòng yêu cầu gửi lại OTP.');
     }
 
+    // Kiểm tra xem đã vượt quá số lần thử chưa
+    if (user.otpAttempts >= 5) {
+      await this.usersService.clearResetOtp(email);
+      throw new BadRequestException('Bạn đã nhập sai OTP quá 5 lần. Yêu cầu khôi phục mật khẩu này đã bị hủy, vui lòng yêu cầu gửi lại mã OTP mới.');
+    }
+
     // Kiểm tra OTP đã hết hạn chưa
     if (new Date() > user.resetOtpExpiry) {
       await this.usersService.clearResetOtp(email);
@@ -71,7 +77,13 @@ export class AuthService {
     // So sánh OTP
     const isMatch = await bcrypt.compare(otp, user.resetOtp);
     if (!isMatch) {
-      throw new BadRequestException('Mã OTP không chính xác.');
+      const updatedUser = await this.usersService.incrementOtpAttempts(email);
+      const remaining = 5 - updatedUser.otpAttempts;
+      if (remaining <= 0) {
+        await this.usersService.clearResetOtp(email);
+        throw new BadRequestException('Bạn đã nhập sai OTP quá 5 lần. Yêu cầu khôi phục mật khẩu này đã bị hủy, vui lòng yêu cầu gửi lại mã OTP mới.');
+      }
+      throw new BadRequestException(`Mã OTP không chính xác. Bạn còn ${remaining} lần thử.`);
     }
 
     // OTP hợp lệ → Xoá OTP, đặt mustChangePassword = true

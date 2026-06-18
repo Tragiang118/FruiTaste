@@ -57,6 +57,7 @@ model User {
   pendingEmail      String?
   resetOtp          String?
   resetOtpExpiry    DateTime?
+  otpAttempts       Int       @default(0)
   mustChangePassword Boolean  @default(false)
 
   isActive          Boolean   @default(true)

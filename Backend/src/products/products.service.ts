@@ -5,9 +5,16 @@ import { PrismaService } from '../prisma/prisma.service';
 export class ProductsService {
   constructor(private prisma: PrismaService) { }
 
-  async findAll() {
+  async findAll(search?: string) {
+    const where: any = { isActive: true, isDeleted: false };
+    if (search) {
+      where.name = {
+        contains: search,
+        mode: 'insensitive',
+      };
+    }
     return this.prisma.product.findMany({
-      where: { isActive: true, isDeleted: false },
+      where,
       include: {
         categories: true,
         inventory: true,
