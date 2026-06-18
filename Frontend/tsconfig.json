@@ -32,9 +32,6 @@
     "**/*.mts"
   ],
   "exclude": [
-    "node_modules",
-    "components/examples",
-    "components/charts/pie-interactive.tsx",
-    "components/ui/advanced-calendar.tsx"
+    "node_modules"
   ]
 }
