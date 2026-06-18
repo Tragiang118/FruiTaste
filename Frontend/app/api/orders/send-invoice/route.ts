@@ -3,9 +3,8 @@ import { Resend } from 'resend';
 import { NextRequest, NextResponse } from 'next/server';
 import { OrderInvoiceEmail } from '@/components/order-invoice-email';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 export async function POST(request: NextRequest) {
+  const resend = new Resend(process.env.RESEND_API_KEY);
   try {
     const { email, firstName, order } = await request.json();
 
