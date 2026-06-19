@@ -84,9 +84,7 @@ export default function Header() {
               <div className="p-8 flex flex-col h-full">
                 <div className="flex items-center justify-between mb-8 pb-4 border-b border-gray-50">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-green-600 rounded-2xl flex items-center justify-center shadow-lg shadow-green-600/20">
-                      <Leaf className="w-6 h-6 text-white" />
-                    </div>
+                    <img src="/durian-logo.png" alt="FruiTaste Logo" className="w-10 h-10 object-contain rounded-xl" />
                     <span className="text-2xl font-black text-gray-900 leading-none">
                       Frui<span className="text-green-600">Taste</span>
                     </span>
@@ -143,10 +141,8 @@ export default function Header() {
             </DrawerContent>
           </Drawer>
 
-          <div className="w-9 h-9 bg-green-600 rounded-xl flex items-center justify-center shadow-md shadow-green-600/20">
-            <Leaf className="w-5 h-5 text-white" />
-          </div>
-          <Link href="/" className="text-2xl font-extrabold text-[#1A1A1A] flex items-center gap-2">
+          <Link href="/" className="text-2xl font-extrabold text-[#1A1A1A] flex items-center gap-2.5">
+            <img src="/durian-logo.png" alt="FruiTaste Logo" className="w-9 h-9 object-contain rounded-lg" />
             <span className="text-xl font-black text-gray-900 leading-none">Frui<span className="text-green-600">Taste</span></span>
           </Link>
         </div>
