@@ -84,7 +84,7 @@ export default function Header() {
               <div className="p-8 flex flex-col h-full">
                 <div className="flex items-center justify-between mb-8 pb-4 border-b border-gray-50">
                   <div className="flex items-center gap-3">
-                    <img src="/durian-logo.png" alt="FruiTaste Logo" className="w-10 h-10 object-contain rounded-xl" />
+                    <img src="/durian-logo.png" alt="FruiTaste Logo" className="w-14 h-14 object-contain rounded-2xl" />
                     <span className="text-2xl font-black text-gray-900 leading-none">
                       Frui<span className="text-green-600">Taste</span>
                     </span>
@@ -142,7 +142,7 @@ export default function Header() {
           </Drawer>
 
           <Link href="/" className="text-2xl font-extrabold text-[#1A1A1A] flex items-center gap-2.5">
-            <img src="/durian-logo.png" alt="FruiTaste Logo" className="w-9 h-9 object-contain rounded-lg" />
+            <img src="/durian-logo.png" alt="FruiTaste Logo" className="w-14 h-14 object-contain rounded-xl" />
             <span className="text-xl font-black text-gray-900 leading-none">Frui<span className="text-green-600">Taste</span></span>
           </Link>
         </div>
