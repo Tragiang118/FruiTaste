@@ -11,7 +11,7 @@ export async function POST(req: Request) {
     const recentMessages = messages.slice(-5);
 
     const result = (streamText as any)({
-      model: groq("llama-3.3-70b-versatile"),
+      model: groq("meta-llama/llama-4-scout-17b-16e-instruct"),
       system: `Bạn là trợ lý ảo FruiTaste. 
 NHIỆM VỤ:
 - Trả lời về hoa quả, món ăn.
