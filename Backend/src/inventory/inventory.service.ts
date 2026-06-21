@@ -216,29 +216,42 @@ export class InventoryService {
   }
 
   async exportStockOnOrder(tx: any, productId: number, quantity: number, orderId: number) {
-    const updatedInventory = await tx.inventory.update({
-      where: { productId },
-      data: { currentStock: { decrement: quantity } }
+    const inventory = await tx.inventory.findUnique({
+      where: { productId }
     });
 
-    if (updatedInventory.currentStock < 0) {
-      throw new BadRequestException(`Sản phẩm ID ${productId} không đủ tồn kho`);
+    const currentStock = inventory ? inventory.currentStock : 0;
+    const newStock = currentStock - quantity;
+
+    if (newStock < 0) {
+      const product = await tx.product.findUnique({ where: { id: productId } });
+      const productName = product ? `'${product.name}'` : `ID ${productId}`;
+      throw new BadRequestException(`Sản phẩm ${productName} không đủ tồn kho (Còn: ${currentStock})`);
     }
 
-    const updatedProduct = await tx.product.update({
+    await tx.inventory.upsert({
+      where: { productId },
+      create: {
+        productId,
+        currentStock: newStock,
+        lowStockThreshold: 10,
+      },
+      update: {
+        currentStock: { decrement: quantity }
+      }
+    });
+
+    await tx.product.update({
       where: { id: productId },
       data: { stockQuantity: { decrement: quantity } }
     });
-
-    const prevStock = updatedInventory.currentStock + quantity;
-    const newStock = updatedInventory.currentStock;
 
     await tx.stockTransaction.create({
       data: {
         productId,
         type: TransactionType.EXPORT,
         quantity: -quantity,
-        previousStock: prevStock,
+        previousStock: currentStock,
         newStock: newStock,
         reason: `Xuất kho - Đơn hàng #${orderId}`,
         referenceId: orderId.toString()
@@ -247,9 +260,23 @@ export class InventoryService {
   }
 
   async returnStockOnCancel(tx: any, productId: number, quantity: number, orderId: number) {
-    const updatedInventory = await tx.inventory.update({
+    const inventory = await tx.inventory.findUnique({
+      where: { productId }
+    });
+
+    const currentStock = inventory ? inventory.currentStock : 0;
+    const newStock = currentStock + quantity;
+
+    await tx.inventory.upsert({
       where: { productId },
-      data: { currentStock: { increment: quantity } }
+      create: {
+        productId,
+        currentStock: newStock,
+        lowStockThreshold: 10,
+      },
+      update: {
+        currentStock: { increment: quantity }
+      }
     });
 
     await tx.product.update({
@@ -257,15 +284,12 @@ export class InventoryService {
       data: { stockQuantity: { increment: quantity } }
     });
 
-    const prevStock = updatedInventory.currentStock - quantity;
-    const newStock = updatedInventory.currentStock;
-
     await tx.stockTransaction.create({
       data: {
         productId,
         type: TransactionType.RETURN,
         quantity,
-        previousStock: prevStock,
+        previousStock: currentStock,
         newStock: newStock,
         reason: `Hoàn kho - Hủy đơn #${orderId}`,
         referenceId: orderId.toString()
