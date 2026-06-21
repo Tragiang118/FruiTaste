@@ -1,4 +1,4 @@
-import { Leaf, Phone, Mail, MapPin } from 'lucide-react'
+import { Phone, Mail, MapPin } from 'lucide-react'
 import Link from 'next/link'
 
 export default function Footer() {
@@ -9,9 +9,7 @@ export default function Footer() {
           {/* Brand */}
           <div className="space-y-4">
             <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 bg-gradient-to-br from-primary to-green-400 rounded-xl flex items-center justify-center shadow-md shadow-primary/20">
-                <Leaf className="w-5 h-5 text-white" />
-              </div>
+              <img src="/durian-logo.png?v=3" alt="FruiTaste Logo" className="w-10 h-10 object-contain" />
               <span className="text-xl font-black text-gray-900">Frui<span className="text-primary">Taste</span></span>
             </div>
             <p className="text-sm text-gray-500 leading-relaxed">

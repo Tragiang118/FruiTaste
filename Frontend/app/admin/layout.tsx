@@ -4,7 +4,7 @@ import { useAuthStore } from '@/lib/store';
 import { useRouter, usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Package, Warehouse, ShoppingBag, BarChart3, ChevronLeft, ChevronRight, Home, Menu, Bell, Wallet, Clock, MapPin, Leaf, User, Users, Lock, LogOut, Tags, LayoutDashboard, ChefHat, UserCircle } from 'lucide-react';
+import { Package, Warehouse, ShoppingBag, BarChart3, ChevronLeft, ChevronRight, Home, Menu, Bell, Wallet, Clock, MapPin, User, Users, Lock, LogOut, Tags, LayoutDashboard, ChefHat, UserCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import BackButton from '@/components/BackButton';
 import {
@@ -68,9 +68,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <aside className={`max-md:hidden bg-white border-r border-gray-100 transition-all duration-300 flex flex-col h-full z-20 ${isSidebarOpen ? 'w-64' : 'w-20'}`}>
         <div className={`h-[88px] flex items-center flex-shrink-0 transition-all duration-300 ${isSidebarOpen ? 'px-8 justify-start' : 'justify-center w-full'}`}>
           <Link href="/" className="flex items-center gap-3 overflow-hidden group">
-             <div className="w-10 h-10 bg-green-600 rounded-2xl flex items-center justify-center shadow-lg shadow-green-600/20 flex-shrink-0 group-hover:scale-110 transition-transform">
-                <Leaf className="w-6 h-6 text-white" />
-             </div>
+             <img src="/durian-logo.png?v=3" alt="FruiTaste Logo" className="w-12 h-12 object-contain flex-shrink-0 group-hover:scale-110 transition-transform" />
              <div className={`flex items-center whitespace-nowrap transition-all duration-300 overflow-hidden ${isSidebarOpen ? 'max-w-[200px] opacity-100' : 'max-w-0 opacity-0'}`}>
                <span className="text-2xl font-black text-gray-900 leading-none">Frui<span className="text-green-600">Taste</span></span>
              </div>
@@ -116,9 +114,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <div className="p-8 flex flex-col h-full">
               <div className="flex items-center justify-between mb-8">
                 <Link href="/" className="flex items-center gap-3" onClick={() => setIsMobileSidebarOpen(false)}>
-                  <div className="w-10 h-10 bg-green-600 rounded-2xl flex items-center justify-center shadow-lg shadow-green-600/20 flex-shrink-0 group-hover:scale-110 transition-transform">
-                    <Leaf className="w-6 h-6 text-white" />
-                  </div>
+                  <img src="/durian-logo.png?v=3" alt="FruiTaste Logo" className="w-12 h-12 object-contain flex-shrink-0" />
                   <span className="text-2xl font-black text-gray-900">
                     Frui<span className="text-green-600">Taste</span>
                   </span>
