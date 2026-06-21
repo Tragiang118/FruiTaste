@@ -39,13 +39,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
+
 import {
   ImageCrop,
   ImageCropContent,
@@ -654,41 +648,53 @@ export default function AdminRecipesPage() {
       </AlertDialog>
 
       {/* Recipe Image Crop Dialog */}
-      <Dialog open={isCropDialogOpen} onOpenChange={setIsCropDialogOpen}>
-        <DialogContent className="rounded-[2.5rem] max-w-xl border-none p-8">
-          <DialogHeader>
-            <DialogTitle className="text-sm font-bold text-gray-700 ml-1">Cắt ảnh món ăn</DialogTitle>
-          </DialogHeader>
-          <div className="flex flex-col items-center gap-6 py-4">
-            {imageFile && (
-              <ImageCrop file={imageFile} aspect={1.7778} onCrop={setCroppedImage}>
-                <ImageCropContent className="max-w-full rounded-2xl overflow-hidden shadow-inner border border-gray-100" />
-                <div className="mt-4 flex justify-center gap-4">
-                  <ImageCropReset className="rounded-xl hover:bg-gray-100" />
-                  <ImageCropApply className="rounded-xl bg-primary text-white hover:bg-primary/90" />
+      {isCropDialogOpen && imageFile && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-[2rem] p-8 w-full max-w-lg shadow-2xl animate-in zoom-in-95 duration-200">
+            <h3 className="text-sm font-bold text-gray-700 ml-1 mb-6 flex items-center gap-2">
+              <div className="p-2 bg-primary/10 rounded-xl text-primary">
+                <ImageIcon size={20} />
+              </div>
+              Căn chỉnh hình ảnh
+            </h3>
+
+            <div className="flex flex-col items-center gap-6">
+              <ImageCrop
+                file={imageFile}
+                aspect={1.7778}
+                onCrop={(cropped) => {
+                  uploadRecipeImage(cropped);
+                }}
+              >
+                <div className="rounded-2xl overflow-hidden border border-gray-100 bg-gray-50 max-h-[400px]">
+                  <ImageCropContent className="max-w-full" />
+                </div>
+                <div className="flex justify-center gap-4 mt-6">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setIsCropDialogOpen(false);
+                      setImageFile(null);
+                    }}
+                    className="rounded-full px-8 font-bold text-xs h-9 border-gray-200 cursor-pointer"
+                  >
+                    Hủy bỏ
+                  </Button>
+                  <div className="flex gap-2">
+                    <ImageCropReset className="h-9 w-9 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200" />
+                    <ImageCropApply
+                      disabled={isUploading}
+                      className="h-9 w-9 rounded-full bg-primary text-white shadow-lg shadow-primary/20 hover:scale-110 flex items-center justify-center p-0 cursor-pointer"
+                    >
+                      {isUploading ? <Loader2 className="w-4 h-4 animate-spin text-white" /> : <ImageIcon size={16} />}
+                    </ImageCropApply>
+                  </div>
                 </div>
               </ImageCrop>
-            )}
-            {croppedImage && (
-              <div className="flex flex-col items-center gap-2 animate-in fade-in zoom-in duration-300 w-full">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Xem trước</span>
-                <div className="p-1 bg-white rounded-2xl shadow-md border border-gray-50 overflow-hidden w-full aspect-video">
-                  <img src={croppedImage} alt="Cropped" className="w-full h-full object-cover rounded-xl" />
-                </div>
-              </div>
-            )}
+            </div>
           </div>
-          <DialogFooter>
-            <Button 
-              onClick={() => croppedImage && uploadRecipeImage(croppedImage)} 
-              disabled={!croppedImage || isUploading}
-              className="w-full bg-primary hover:bg-primary/90 text-white rounded-2xl h-14 font-black uppercase tracking-widest shadow-lg shadow-primary/20"
-            >
-              {isUploading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Sử dụng ảnh này'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        </div>
+      )}
     </div>
   );
 }
