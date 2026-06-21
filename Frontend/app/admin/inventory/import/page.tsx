@@ -43,7 +43,7 @@ import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import { toast } from 'sonner';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { cn } from '@/lib/utils';
+import { cn, getImageUrl } from '@/lib/utils';
 import BackButton from '@/components/BackButton';
 
 interface Product {
@@ -375,7 +375,7 @@ function ImportContent() {
                          >
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center font-bold text-gray-400 text-xs group-hover:bg-primary/10 group-hover:text-primary overflow-hidden">
-                                  {p.mediaUrls?.[0] ? <img src={p.mediaUrls[0]} className="w-full h-full object-cover" /> : <Package size={16} />}
+                                  {p.mediaUrls?.[0] ? <img src={getImageUrl(p.mediaUrls[0])} className="w-full h-full object-cover" /> : <Package size={16} />}
                                 </div>
                                 <div>
                                   <p className="font-black text-gray-800 text-[14px] group-hover:text-primary transition-colors">{p.name}</p>
@@ -416,7 +416,7 @@ function ImportContent() {
                             {/* Top Section: Product Name & Unit */}
                             <div className="flex items-start gap-4">
                                <div className="w-12 h-12 rounded-xl bg-gray-50 border border-gray-100 flex-shrink-0 overflow-hidden flex items-center justify-center">
-                                  {item.productImage ? <img src={item.productImage} className="w-full h-full object-cover" /> : <Package size={20} className="text-gray-300" />}
+                                  {item.productImage ? <img src={getImageUrl(item.productImage)} className="w-full h-full object-cover" /> : <Package size={20} className="text-gray-300" />}
                                </div>
                                <div className="space-y-1">
                                   <h3 className="font-black text-gray-900 text-sm sm:text-base leading-snug break-words">

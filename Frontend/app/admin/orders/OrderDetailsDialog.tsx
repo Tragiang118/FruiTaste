@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Eye, Package, User, Phone, MapPin, CreditCard, ChevronDown, CheckCircle2, Clock, Truck, Box, XCircle, RefreshCw } from 'lucide-react';
 import api from '@/lib/axios';
 import { toast } from 'sonner';
-import { cn } from '@/lib/utils';
+import { cn, getImageUrl } from '@/lib/utils';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -342,7 +342,7 @@ export default function OrderDetailsDialog({ orderId, onUpdate }: OrderDetailsDi
                             <div className="flex items-center gap-3">
                               <div className="w-12 h-12 rounded-xl bg-gray-100 overflow-hidden shrink-0 border border-gray-50">
                                 {item.product?.mediaUrls?.[0] ? (
-                                  <img src={item.product.mediaUrls[0]} alt={item.product.name} className="w-full h-full object-cover" />
+                                  <img src={getImageUrl(item.product.mediaUrls[0])} alt={item.product.name} className="w-full h-full object-cover" />
                                 ) : (
                                   <div className="w-full h-full flex items-center justify-center text-gray-300">
                                     <Package size={16} />

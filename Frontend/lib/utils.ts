@@ -7,12 +7,48 @@ export function cn(...inputs: ClassValue[]) {
 
 export function getImageUrl(path: string | null | undefined) {
   if (!path) return undefined;
-  if (path.startsWith('http') || path.startsWith('data:')) {
+  
+  let cleanPath = path;
+  
+  // If the path is a full URL, let's see if it's one of our backend/frontend URLs
+  if (path.startsWith('http')) {
+    try {
+      const urlObj = new URL(path);
+      // If the URL is our api domain or localhost, extract the pathname
+      if (urlObj.hostname === 'api.fruitaste.page' || urlObj.hostname === 'localhost' || urlObj.hostname === '127.0.0.1') {
+        cleanPath = urlObj.pathname + urlObj.search + urlObj.hash;
+      } else {
+        return path; // Keep external URLs as-is (e.g. unsplash, dicebear)
+      }
+    } catch (e) {
+      return path;
+    }
+  } else if (path.startsWith('data:')) {
     return path;
   }
+
   // Remove leading slash if exists to avoid double slashes
-  const cleanPath = path.startsWith('/') ? path : `/${path}`;
-  return `http://localhost:8000${cleanPath}`;
+  const finalPath = cleanPath.startsWith('/') ? cleanPath : `/${cleanPath}`;
+
+  // Check if we are running in the browser
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname;
+    // Local development hostnames
+    if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname.startsWith('192.168.')) {
+      return `http://localhost:8000${finalPath}`;
+    }
+    // Production domain mapping
+    if (hostname === 'fruitaste.page' || hostname === 'www.fruitaste.page') {
+      return `https://api.fruitaste.page${finalPath}`;
+    }
+  }
+
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (apiUrl) {
+    const baseUrl = apiUrl.replace(/\/api\/?$/, '');
+    return `${baseUrl}${finalPath}`;
+  }
+  return `http://localhost:8000${finalPath}`;
 }
 
 export function getAvatarUrl(avatarPath: string | null | undefined, nameOrEmail?: string) {

@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { MapPin, Package, Truck, CheckCircle2, Copy, FileText, XCircle, Home, ChevronRight, Store } from 'lucide-react';
 import BackButton from '@/components/BackButton';
 import Link from 'next/link';
+import { getImageUrl } from '@/lib/utils';
 
 interface OrderDetail {
   id: number;
@@ -154,7 +155,7 @@ export default function CheckoutSuccessDetailPage() {
                 <Link href={`/products/${item.product.id}`} key={item.id} className="flex gap-4 group">
                   <div className="w-20 h-20 bg-gray-100 rounded-2xl overflow-hidden border border-gray-100 flex-shrink-0 group-hover:ring-2 ring-primary ring-offset-2 transition-all">
                     {item.product.mediaUrls?.[0] ? (
-                      <img src={item.product.mediaUrls[0]} alt={item.product.name} className="w-full h-full object-cover mix-blend-multiply" />
+                      <img src={getImageUrl(item.product.mediaUrls[0])} alt={item.product.name} className="w-full h-full object-cover mix-blend-multiply" />
                     ) : (
                       <div className="w-full h-full bg-gray-200" />
                     )}

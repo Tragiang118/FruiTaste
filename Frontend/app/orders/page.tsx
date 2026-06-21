@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Truck, CheckCircle2, ChevronRight, PackageSearch, XCircle, Home, Store, Search, RotateCcw, Calendar as CalendarIcon, ChevronDown } from 'lucide-react';
 import Link from 'next/link';
 import BackButton from '@/components/BackButton';
-import { cn } from '@/lib/utils';
+import { cn, getImageUrl } from '@/lib/utils';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { vi } from 'date-fns/locale';
@@ -269,7 +269,7 @@ export default function OrderHistoryPage() {
                       <div key={idx} className="flex gap-4 items-start relative z-10 py-2 first:pt-0 last:pb-0">
                         <Link href={`/products/${item.product.id}`} className="w-20 h-20 bg-gray-50 rounded-xl overflow-hidden border border-gray-100 flex-shrink-0 relative hover:ring-2 ring-primary/20 transition-all">
                           {item.product.mediaUrls?.[0] ? (
-                            <img src={item.product.mediaUrls[0]} alt={item.product.name} className="w-full h-full object-cover mix-blend-multiply" />
+                            <img src={getImageUrl(item.product.mediaUrls[0])} alt={item.product.name} className="w-full h-full object-cover mix-blend-multiply" />
                           ) : (
                             <div className="w-full h-full bg-gray-200" />
                           )}

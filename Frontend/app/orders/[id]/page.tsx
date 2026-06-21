@@ -10,6 +10,7 @@ import BackButton from '@/components/BackButton';
 import Link from 'next/link';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale/vi';
+import { getImageUrl } from '@/lib/utils';
 
 interface OrderItem {
   id: number;
@@ -226,7 +227,7 @@ export default function OrderDetailPage() {
                 <Link href={`/products/${item.product.id}`} key={item.id} className="flex gap-4 group">
                   <div className="w-16 h-16 bg-gray-100 rounded-xl overflow-hidden border border-gray-100 flex-shrink-0 group-hover:ring-2 ring-primary ring-offset-2 transition-all">
                     {item.product.mediaUrls?.[0] ? (
-                      <img src={item.product.mediaUrls[0]} alt={item.product.name} className="w-full h-full object-cover mix-blend-multiply" />
+                      <img src={getImageUrl(item.product.mediaUrls[0])} alt={item.product.name} className="w-full h-full object-cover mix-blend-multiply" />
                     ) : (
                       <div className="w-full h-full bg-gray-200" />
                     )}
