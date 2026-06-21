@@ -29,9 +29,10 @@ export default function Footer() {
             <h3 className="text-gray-900 font-bold text-sm uppercase tracking-wider mb-4 ">Phân loại</h3>
             <ul className="space-y-2.5 text-sm font-semibold">
               {[
+                { href: '/products', label: 'Tất cả sản phẩm' },
                 { href: '/products?categoryId=2', label: 'Trái cây nhiệt đới' },
                 { href: '/products?categoryId=3', label: 'Trái cây nhập khẩu' },
-                { href: '/products?categoryId=4', label: 'Trái cây đặc sản vùng miền' },
+                { href: '/products?categoryId=1', label: 'Trái cây đặc sản vùng miền' },
               ].map(l => (
                 <li key={l.href}>
                   <Link href={l.href} className="hover:text-primary transition-colors text-gray-500">{l.label}</Link>
@@ -75,7 +76,7 @@ export default function Footer() {
             </ul>
           </div>
         </div>
-      
+
 
         <div className="mt-12 mb-12 text-sm text-gray-400 flex flex-col md:flex-row justify-center items-center gap-2">
           <p>© 2026 FruiTaste - Hoa quả tươi mới mỗi ngày.</p>
