@@ -55,4 +55,29 @@ export class UploadController {
     const url = `/uploads/products/${file.filename}`;
     return { url };
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('category')
+  @UseInterceptors(FileInterceptor('file', {
+    storage: diskStorage({
+      destination: './uploads/categories',
+      filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+        cb(null, `${uniqueSuffix}${extname(file.originalname)}`);
+      },
+    }),
+    fileFilter: (req, file, cb) => {
+      if (!file.mimetype.match(/\/(jpg|jpeg|png|webp|avif)$/)) {
+        return cb(new BadRequestException('Chỉ cho phép các định dạng ảnh (jpg, jpeg, png, webp, avif)'), false);
+      }
+      cb(null, true);
+    },
+    limits: {
+      fileSize: 5 * 1024 * 1024, // 5MB
+    }
+  }))
+  async uploadCategoryImage(@UploadedFile() file: Express.Multer.File) {
+    const imageUrl = `/uploads/categories/${file.filename}`;
+    return { imageUrl };
+  }
 }

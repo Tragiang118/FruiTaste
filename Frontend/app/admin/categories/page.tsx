@@ -5,7 +5,7 @@ import api from '@/lib/axios';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { PlusCircle, Search, Edit2, Trash2, Tag, BookOpen, MoreHorizontal, RefreshCw, Edit, ArrowUpDown, Layers } from 'lucide-react';
+import { PlusCircle, Search, Edit2, Trash2, Tag, BookOpen, MoreHorizontal, RefreshCw, Edit, ArrowUpDown, Layers, Image as ImageIcon, Loader2 } from 'lucide-react';
 import { 
   Table, 
   TableBody, 
@@ -34,6 +34,7 @@ import { toast } from "sonner";
 import { cn, getImageUrl } from "@/lib/utils";
 import { Field, FieldLabel, FieldDescription } from '@/components/ui/field';
 import { Textarea } from '@/components/ui/textarea';
+import { ImageCrop, ImageCropContent, ImageCropApply, ImageCropReset } from '@/components/ui/image-crop';
 
 interface Category {
   id: number;
@@ -52,6 +53,35 @@ export default function AdminCategoriesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCat, setEditingCat] = useState<Partial<Category>>({ name: '', description: '', imageUrl: '' });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [cropFile, setCropFile] = useState<File | null>(null);
+  const [isCropModalOpen, setIsCropModalOpen] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+
+  const uploadCategoryImage = async (base64Image: string) => {
+    setIsUploading(true);
+    try {
+      const res = await fetch(base64Image);
+      const blob = await res.blob();
+      const file = new File([blob], 'category.png', { type: 'image/png' });
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const uploadRes = await api.post('/upload/category', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+
+      setEditingCat(prev => ({ ...prev, imageUrl: uploadRes.data.imageUrl }));
+      toast.success('Tải ảnh lên thành công!');
+      setIsCropModalOpen(false);
+      setCropFile(null);
+    } catch (error) {
+      console.error('Upload failed', error);
+      toast.error('Tải ảnh lên thất bại.');
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   // State for confirm delete
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
@@ -322,13 +352,14 @@ export default function AdminCategoriesPage() {
                       onChange={(e) => {
                         const file = e.target.files?.[0];
                         if (file) {
-                          const reader = new FileReader();
-                          reader.onloadend = () => {
-                            setEditingCat({...editingCat, imageUrl: reader.result as string});
-                            if (errors.imageUrl) setErrors(prev => ({...prev, imageUrl: ''}));
-                          };
-                          reader.readAsDataURL(file);
+                          if (file.size > 5 * 1024 * 1024) {
+                            toast.error('Hình ảnh vượt quá dung lượng giới hạn (tối đa 5MB)');
+                            return;
+                          }
+                          setCropFile(file);
+                          setIsCropModalOpen(true);
                         }
+                        e.target.value = '';
                       }}
                     />
                   </div>
@@ -377,6 +408,52 @@ export default function AdminCategoriesPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Crop Modal Integration */}
+      {isCropModalOpen && cropFile && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-md p-4">
+          <div className="bg-white rounded-[2rem] p-8 w-full max-w-lg shadow-2xl animate-in zoom-in-95">
+            <h3 className="text-sm font-bold text-gray-700 ml-1 mb-6 flex items-center gap-2">
+              <div className="p-2 bg-primary/10 rounded-xl text-primary">
+                <ImageIcon size={20} />
+              </div>
+              Căn chỉnh hình ảnh
+            </h3>
+
+            <div className="flex flex-col items-center gap-6">
+              <ImageCrop
+                file={cropFile}
+                aspect={1}
+                onCrop={(cropped) => {
+                  uploadCategoryImage(cropped);
+                }}
+              >
+                <div className="rounded-2xl overflow-hidden border border-gray-100 bg-gray-50 max-h-[400px]">
+                  <ImageCropContent className="max-w-full" />
+                </div>
+                <div className="flex justify-center gap-4 mt-6">
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsCropModalOpen(false)}
+                    className="rounded-full px-8 font-bold text-xs h-9 border-gray-200"
+                  >
+                    Hủy bỏ
+                  </Button>
+                  <div className="flex gap-2">
+                    <ImageCropReset className="h-9 w-9 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200" />
+                    <ImageCropApply
+                      disabled={isUploading}
+                      className="h-9 w-9 rounded-full bg-primary text-white shadow-lg shadow-primary/20 hover:scale-110 flex items-center justify-center p-0"
+                    >
+                      {isUploading ? <Loader2 className="w-4 h-4 animate-spin text-white" /> : <ImageIcon size={16} />}
+                    </ImageCropApply>
+                  </div>
+                </div>
+              </ImageCrop>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
