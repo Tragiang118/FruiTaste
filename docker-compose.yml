@@ -48,7 +48,7 @@ services:
   # 3. Next.js Frontend Service
   frontend-service:
     build:
-      context: ./frontend
+      context: ./Frontend
       dockerfile: Dockerfile
       args:
         - NEXT_PUBLIC_API_URL=http://localhost:8000/api
@@ -58,7 +58,7 @@ services:
       - "3000:3000"
     # Load all environment variables (Google, Resend, Groq keys) from local frontend/.env
     env_file:
-      - ./frontend/.env
+      - ./Frontend/.env
     # Override only variables that need routing inside the Docker network
     environment:
       NEXT_PUBLIC_API_URL: "http://localhost:8000/api"
