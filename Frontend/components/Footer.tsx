@@ -29,7 +29,6 @@ export default function Footer() {
             <h3 className="text-gray-900 font-bold text-sm uppercase tracking-wider mb-4 ">Phân loại</h3>
             <ul className="space-y-2.5 text-sm font-semibold">
               {[
-                { href: '/products?categoryId=1', label: 'Trái cây theo mùa' },
                 { href: '/products?categoryId=2', label: 'Trái cây nhiệt đới' },
                 { href: '/products?categoryId=3', label: 'Trái cây nhập khẩu' },
                 { href: '/products?categoryId=4', label: 'Trái cây đặc sản vùng miền' },
@@ -63,15 +62,15 @@ export default function Footer() {
             <ul className="space-y-3 text-sm font-semibold text-gray-500">
               <li className="flex items-center gap-2">
                 <Phone className="w-4 h-4 text-primary shrink-0" />
-                <span>0978513301</span>
+                <span>0838512301</span>
               </li>
               <li className="flex items-center gap-2">
                 <Mail className="w-4 h-4 text-primary shrink-0" />
-                <span>micucai2711@gmail.com</span>
+                <span>micucai1@gmail.com</span>
               </li>
               <li className="flex items-start gap-2">
                 <MapPin className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-                <span>85 Khương Thượng, Đống Đa,Hà Nội</span>
+                <span>85 Khương Thượng, Đống Đa, Hà Nội</span>
               </li>
             </ul>
           </div>
