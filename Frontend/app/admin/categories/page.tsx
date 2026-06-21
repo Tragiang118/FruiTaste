@@ -31,7 +31,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
+import { cn, getImageUrl } from "@/lib/utils";
 import { Field, FieldLabel, FieldDescription } from '@/components/ui/field';
 import { Textarea } from '@/components/ui/textarea';
 
@@ -39,7 +39,7 @@ interface Category {
   id: number;
   name: string;
   description: string;
-  image?: string;
+  imageUrl?: string;
 }
 
 export default function AdminCategoriesPage() {
@@ -50,7 +50,7 @@ export default function AdminCategoriesPage() {
 
   // States for adding / editing modal logic
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingCat, setEditingCat] = useState<Partial<Category>>({ name: '', description: '', image: '' });
+  const [editingCat, setEditingCat] = useState<Partial<Category>>({ name: '', description: '', imageUrl: '' });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   // State for confirm delete
@@ -74,7 +74,7 @@ export default function AdminCategoriesPage() {
 
   const openAddModal = () => {
     setErrors({});
-    setEditingCat({ name: '', description: '', image: '' });
+    setEditingCat({ name: '', description: '', imageUrl: '' });
     setIsModalOpen(true);
   };
 
@@ -88,7 +88,7 @@ export default function AdminCategoriesPage() {
     const newErrors: Record<string, string> = {};
     if (!editingCat.name?.trim()) newErrors.name = 'Tên danh mục không được để trống';
     if (!editingCat.description?.trim()) newErrors.description = 'Mô tả không được để trống';
-    if (!editingCat.image) newErrors.image = 'Hình ảnh danh mục là bắt buộc';
+    if (!editingCat.imageUrl) newErrors.imageUrl = 'Hình ảnh danh mục là bắt buộc';
 
     if (editingCat.description && editingCat.description.length > 300) {
       newErrors.description = 'Mô tả không được vượt quá 300 ký tự';
@@ -104,7 +104,7 @@ export default function AdminCategoriesPage() {
       const payload = {
         name: editingCat.name,
         description: editingCat.description,
-        image: editingCat.image
+        imageUrl: editingCat.imageUrl
       };
 
       if (editingCat.id) {
@@ -202,8 +202,8 @@ export default function AdminCategoriesPage() {
                      <TableCell className="text-center font-medium text-gray-500">{c.id}</TableCell>
                       <TableCell>
                         <div className="w-10 h-10 rounded-xl overflow-hidden bg-gray-100 border border-gray-100 flex-shrink-0">
-                          {c.image ? (
-                            <img src={c.image} alt={c.name} className="w-full h-full object-cover" />
+                          {c.imageUrl ? (
+                            <img src={getImageUrl(c.imageUrl)} alt={c.name} className="w-full h-full object-cover" />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center">
                               <Tag className="w-4 h-4 text-gray-300" />
@@ -304,10 +304,10 @@ export default function AdminCategoriesPage() {
                   <div className="relative group">
                     <div className={cn(
                       "w-16 h-16 rounded-2xl border-2 border-dashed flex items-center justify-center bg-gray-50/50 overflow-hidden shrink-0 group hover:border-primary/50 transition-colors cursor-pointer",
-                      errors.image ? "border-red-500 bg-red-50/30" : "border-gray-100"
+                      errors.imageUrl ? "border-red-500 bg-red-50/30" : "border-gray-100"
                     )}>
-                      {editingCat.image ? (
-                        <img src={editingCat.image} alt="Preview" className="w-full h-full object-cover" />
+                      {editingCat.imageUrl ? (
+                        <img src={getImageUrl(editingCat.imageUrl)} alt="Preview" className="w-full h-full object-cover" />
                       ) : (
                         <div className="text-gray-300 group-hover:text-primary/50 transition-colors">
                           <PlusCircle size={20} />
@@ -324,8 +324,8 @@ export default function AdminCategoriesPage() {
                         if (file) {
                           const reader = new FileReader();
                           reader.onloadend = () => {
-                            setEditingCat({...editingCat, image: reader.result as string});
-                            if (errors.image) setErrors(prev => ({...prev, image: ''}));
+                            setEditingCat({...editingCat, imageUrl: reader.result as string});
+                            if (errors.imageUrl) setErrors(prev => ({...prev, imageUrl: ''}));
                           };
                           reader.readAsDataURL(file);
                         }
@@ -336,19 +336,19 @@ export default function AdminCategoriesPage() {
                     <p className="text-[11px] font-bold text-gray-400">Bạn có thể tải ảnh lên, hoặc dán link ảnh trực tiếp vào bên dưới.</p>
                     <Input 
                       placeholder="Dán link ảnh tại đây (https://...)" 
-                      value={editingCat.image || ''} 
+                      value={editingCat.imageUrl || ''} 
                       onChange={e => {
-                        setEditingCat({...editingCat, image: e.target.value});
-                        if (errors.image) setErrors(prev => ({...prev, image: ''}));
+                        setEditingCat({...editingCat, imageUrl: e.target.value});
+                        if (errors.imageUrl) setErrors(prev => ({...prev, imageUrl: ''}));
                       }} 
                       className={cn(
                         "rounded-xl border-gray-100 h-10 bg-white text-[12px] font-bold",
-                        errors.image && "border-red-500"
+                        errors.imageUrl && "border-red-500"
                       )} 
                     />
                   </div>
                 </div>
-                {errors.image && <p className="text-red-500 text-[9px] font-bold uppercase ml-2 mt-1">{errors.image}</p>}
+                {errors.imageUrl && <p className="text-red-500 text-[9px] font-bold uppercase ml-2 mt-1">{errors.imageUrl}</p>}
               </div>
             </div>
             <div className="p-6 bg-gray-50 border-t border-gray-100 flex justify-end gap-3">

@@ -32,14 +32,24 @@ export class CategoriesController {
     return this.categoriesService.create({
       name: data.name,
       description: data.description,
-      imageUrl: data.imageUrl,
+      imageUrl: data.imageUrl || data.image,
     });
   }
 
   @Put(':id')
   @UseGuards(JwtAuthGuard)
   update(@Param('id', ParseIntPipe) id: number, @Body() data: any) {
-    return this.categoriesService.update(id, data);
+    const updateData: any = {};
+    if (data.name !== undefined) updateData.name = data.name;
+    if (data.description !== undefined) updateData.description = data.description;
+    
+    if (data.imageUrl !== undefined) {
+      updateData.imageUrl = data.imageUrl;
+    } else if (data.image !== undefined) {
+      updateData.imageUrl = data.image;
+    }
+
+    return this.categoriesService.update(id, updateData);
   }
 
   @Delete(':id')
