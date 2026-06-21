@@ -358,76 +358,100 @@ export default function ProfileInfo({ user, activeTab }: ProfileInfoProps) {
           }
         }}
       >
-        <DialogContent className="rounded-[2.5rem] max-w-md border-none p-8">
+        <DialogContent className="rounded-[2.5rem] max-w-md border-none p-0 overflow-hidden bg-white shadow-2xl animate-in zoom-in-95 duration-200">
           {isWaitingVerification ? (
-            <div className="py-8 flex flex-col items-center text-center space-y-6">
-              <DialogHeader className="sr-only">
-                <DialogTitle>Xác thực Email</DialogTitle>
+            <div className="flex flex-col h-full bg-white">
+              <DialogHeader className="p-8 border-b border-gray-100 bg-white space-y-1">
+                <DialogTitle className="text-sm font-bold text-gray-700 ml-1">Xác thực Email</DialogTitle>
+                <p className="text-sm text-gray-500 mt-1 font-medium ml-1">Yêu cầu thay đổi địa chỉ email của bạn.</p>
               </DialogHeader>
-              <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center">
-                <Loader2 className="w-10 h-10 text-green-500 animate-spin" />
+              
+              <div className="p-8 flex flex-col items-center text-center space-y-6 max-h-[60vh] overflow-y-auto bg-gray-50/30">
+                <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center">
+                  <Loader2 className="w-10 h-10 text-green-500 animate-spin" />
+                </div>
+                <div className="space-y-2">
+                  <h3 className="text-xl font-black text-gray-900">Đang chờ xác thực</h3>
+                  <p className="text-gray-500 text-sm leading-relaxed px-4">
+                    Chúng tôi đã gửi một liên kết xác thực đến <span className="font-bold text-gray-900">{formData.email}</span>.
+                    Hồ sơ sẽ tự động cập nhật ngay khi bạn xác thực thành công.
+                  </p>
+                </div>
+                <div className="bg-blue-50 p-4 rounded-2xl flex items-start gap-3 text-left">
+                  <CheckCircle2 className="w-5 h-5 text-blue-500 mt-0.5" />
+                  <p className="text-xs text-blue-700 leading-relaxed font-medium">
+                    Đừng đóng trình duyệt này. Hệ thống sẽ tự động chuyển hướng khi hoàn tất.
+                  </p>
+                </div>
               </div>
-              <div className="space-y-2">
-                <h3 className="text-xl font-black text-gray-900">Đang chờ xác thực</h3>
-                <p className="text-gray-500 text-sm leading-relaxed px-4">
-                  Chúng tôi đã gửi một liên kết xác thực đến <span className="font-bold text-gray-900">{formData.email}</span>.
-                  Hồ sơ sẽ tự động cập nhật ngay khi bạn xác thực thành công.
-                </p>
-              </div>
-              <div className="bg-blue-50 p-4 rounded-2xl flex items-start gap-3 text-left">
-                <CheckCircle2 className="w-5 h-5 text-blue-500 mt-0.5" />
-                <p className="text-xs text-blue-700 leading-relaxed font-medium">
-                  Đừng đóng trình duyệt này. Hệ thống sẽ tự động chuyển hướng khi hoàn tất.
-                </p>
+              
+              <div className="p-8 border-t border-gray-100 flex justify-end gap-3 bg-white">
+                <Button 
+                  variant="ghost" 
+                  onClick={() => {
+                    setEditingField(null);
+                    setIsWaitingVerification(false);
+                  }} 
+                  className="rounded-full px-6 cursor-pointer font-bold h-8 text-xs"
+                >
+                  Hủy
+                </Button>
               </div>
             </div>
           ) : (
-            <>
-              <DialogHeader>
-                <DialogTitle className="text-2xl font-black text-gray-900">
+            <div className="flex flex-col h-full bg-white">
+              <DialogHeader className="p-8 border-b border-gray-100 bg-white space-y-1">
+                <DialogTitle className="text-sm font-bold text-gray-700 ml-1">
                   {editingField === 'fullName' ? 'Cập nhật Họ và tên' : 
                    editingField === 'phone' ? 'Cập nhật Số điện thoại' : 
                    editingField === 'password' ? 'Thay đổi mật khẩu' :
                    'Cập nhật Email'}
                 </DialogTitle>
+                <p className="text-sm text-gray-500 mt-1 font-medium ml-1">
+                  {editingField === 'fullName' ? 'Thay đổi họ tên hiển thị của tài khoản.' : 
+                   editingField === 'phone' ? 'Thay đổi số điện thoại dùng để nhận hàng.' : 
+                   editingField === 'password' ? 'Thiết lập mật khẩu mới để bảo mật tài khoản.' :
+                   'Yêu cầu thay đổi địa chỉ email của bạn.'}
+                </p>
               </DialogHeader>
-              <div className="space-y-6 py-6">
+
+              <div className="p-8 space-y-5 max-h-[60vh] overflow-y-auto bg-gray-50/30">
                 {editingField === 'password' ? (
                   <div className="space-y-5">
                     <div className="space-y-2">
-                      <Label className="text-xs font-black uppercase tracking-widest text-gray-400 ml-1">Mật khẩu hiện tại</Label>
+                      <Label className="text-xs font-bold uppercase tracking-wider text-gray-400 ml-1">Mật khẩu hiện tại</Label>
                       <Input 
                         type="password"
                         value={formData.oldPassword} 
                         onChange={(e) => setFormData({...formData, oldPassword: e.target.value})}
-                        className={`rounded-2xl border-gray-100 h-14 font-bold ${errors.oldPassword ? 'border-red-500' : ''}`} 
+                        className={`rounded-2xl border-gray-100 h-9 bg-white font-bold text-[13px] ${errors.oldPassword ? 'border-red-500' : ''}`} 
                       />
                       {errors.oldPassword && <p className="text-[10px] text-red-500 font-bold ml-1 uppercase">{errors.oldPassword}</p>}
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-xs font-black uppercase tracking-widest text-gray-400 ml-1">Mật khẩu mới</Label>
+                      <Label className="text-xs font-bold uppercase tracking-wider text-gray-400 ml-1">Mật khẩu mới</Label>
                       <Input 
                         type="password"
                         value={formData.newPassword} 
                         onChange={(e) => setFormData({...formData, newPassword: e.target.value})}
-                        className={`rounded-2xl border-gray-100 h-14 font-bold ${errors.newPassword ? 'border-red-500' : ''}`} 
+                        className={`rounded-2xl border-gray-100 h-9 bg-white font-bold text-[13px] ${errors.newPassword ? 'border-red-500' : ''}`} 
                       />
                       {errors.newPassword && <p className="text-[10px] text-red-500 font-bold ml-1 uppercase">{errors.newPassword}</p>}
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-xs font-black uppercase tracking-widest text-gray-400 ml-1">Xác nhận mật khẩu mới</Label>
+                      <Label className="text-xs font-bold uppercase tracking-wider text-gray-400 ml-1">Xác nhận mật khẩu mới</Label>
                       <Input 
                         type="password"
                         value={formData.confirmPassword} 
                         onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
-                        className={`rounded-2xl border-gray-100 h-14 font-bold ${errors.confirmPassword ? 'border-red-500' : ''}`} 
+                        className={`rounded-2xl border-gray-100 h-9 bg-white font-bold text-[13px] ${errors.confirmPassword ? 'border-red-500' : ''}`} 
                       />
                       {errors.confirmPassword && <p className="text-[10px] text-red-500 font-bold ml-1 uppercase">{errors.confirmPassword}</p>}
                     </div>
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    <Label className="text-xs font-black uppercase tracking-widest text-gray-400 ml-1">
+                    <Label className="text-xs font-bold uppercase tracking-wider text-gray-400 ml-1">
                       {editingField === 'fullName' ? 'Họ và tên mới' : 
                        editingField === 'phone' ? 'Số điện thoại mới' : 
                        'Địa chỉ Email mới'}
@@ -442,7 +466,7 @@ export default function ProfileInfo({ user, activeTab }: ProfileInfoProps) {
                         if (editingField === 'email') setFormData({...formData, email: e.target.value});
                         setErrors({});
                       }}
-                      className={`rounded-2xl border-gray-100 h-14 font-bold text-gray-900 focus-visible:ring-green-500/20 ${
+                      className={`rounded-2xl border-gray-100 h-9 bg-white font-bold text-[13px] text-gray-900 focus-visible:ring-green-500/20 ${
                         (editingField === 'fullName' && errors.fullName) || 
                         (editingField === 'phone' && errors.phone) || 
                         (editingField === 'email' && errors.email) ? 'border-red-500 focus-visible:ring-red-500/20' : ''
@@ -454,27 +478,40 @@ export default function ProfileInfo({ user, activeTab }: ProfileInfoProps) {
                   </div>
                 )}
               </div>
-              <DialogFooter>
+              
+              <div className="p-8 border-t border-gray-100 flex justify-end gap-3 bg-white">
+                <Button 
+                  variant="ghost" 
+                  onClick={() => {
+                    setEditingField(null);
+                    setIsWaitingVerification(false);
+                  }} 
+                  className="rounded-full px-6 cursor-pointer font-bold h-8 text-xs"
+                >
+                  Hủy
+                </Button>
                 <Button 
                   onClick={handleUpdate} 
                   disabled={loading}
-                  className="w-full bg-green-500 hover:bg-green-600 text-white rounded-2xl h-14 font-black uppercase tracking-widest shadow-lg shadow-green-500/20"
+                  className="rounded-full bg-primary text-white px-6 shadow-lg shadow-primary/20 hover:scale-[1.02] transition-all cursor-pointer h-8 font-black uppercase tracking-widest text-[9px]"
                 >
-                  {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Cập nhật ngay'}
+                  {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Xác nhận'}
                 </Button>
-              </DialogFooter>
-            </>
+              </div>
+            </div>
           )}
         </DialogContent>
       </Dialog>
 
-      {/* Avatar Crop Dialog (giữ nguyên logic cũ nhưng cập nhật style) */}
+      {/* Avatar Crop Dialog */}
       <Dialog open={isCropDialogOpen} onOpenChange={setIsCropDialogOpen}>
-        <DialogContent className="rounded-[2.5rem] max-w-md border-none p-8">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-black text-gray-900">Cắt ảnh đại diện</DialogTitle>
+        <DialogContent className="rounded-[2.5rem] max-w-md border-none p-0 overflow-hidden bg-white shadow-2xl animate-in zoom-in-95 duration-200">
+          <DialogHeader className="p-8 border-b border-gray-100 bg-white space-y-1">
+            <DialogTitle className="text-sm font-bold text-gray-700 ml-1">Cập nhật ảnh đại diện</DialogTitle>
+            <p className="text-sm text-gray-500 mt-1 font-medium ml-1">Căn chỉnh ảnh đại diện tài khoản của bạn.</p>
           </DialogHeader>
-          <div className="flex flex-col items-center gap-6 py-4">
+          
+          <div className="p-8 flex flex-col items-center gap-6 max-h-[60vh] overflow-y-auto bg-gray-50/30">
             {avatarFile && (
               <ImageCrop file={avatarFile} aspect={1} onCrop={setCroppedAvatar}>
                 <ImageCropContent className="max-w-full rounded-2xl overflow-hidden shadow-inner border border-gray-100" />
@@ -493,15 +530,23 @@ export default function ProfileInfo({ user, activeTab }: ProfileInfoProps) {
               </div>
             )}
           </div>
-          <DialogFooter>
+          
+          <div className="p-8 border-t border-gray-100 flex justify-end gap-3 bg-white">
+            <Button 
+              variant="ghost" 
+              onClick={() => setIsCropDialogOpen(false)} 
+              className="rounded-full px-6 cursor-pointer font-bold h-8 text-xs"
+            >
+              Hủy
+            </Button>
             <Button 
               onClick={() => croppedAvatar && uploadAvatar(croppedAvatar)} 
               disabled={!croppedAvatar || loading}
-              className="w-full bg-green-600 hover:bg-green-700 text-white rounded-2xl h-12 font-black uppercase tracking-widest"
+              className="rounded-full bg-primary text-white px-6 shadow-lg shadow-primary/20 hover:scale-[1.02] transition-all cursor-pointer h-8 font-black uppercase tracking-widest text-[9px]"
             >
-              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Lưu ảnh đại diện'}
+              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Xác nhận'}
             </Button>
-          </DialogFooter>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

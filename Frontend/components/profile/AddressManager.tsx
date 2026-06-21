@@ -248,77 +248,86 @@ export default function AddressManager() {
 
       {/* Shared Dialog for Add/Edit */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="rounded-3xl border-none p-8 max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-black">{isEditing ? 'Sửa địa chỉ' : 'Thêm địa chỉ mới'}</DialogTitle>
+        <DialogContent className="rounded-[2.5rem] border-none p-0 overflow-hidden max-w-md bg-white shadow-2xl animate-in zoom-in-95 duration-200">
+          <DialogHeader className="p-8 border-b border-gray-100 bg-white space-y-1">
+            <DialogTitle className="text-sm font-bold text-gray-700 ml-1">{isEditing ? 'Sửa địa chỉ' : 'Thêm địa chỉ mới'}</DialogTitle>
+            <p className="text-sm text-gray-500 mt-1 font-medium ml-1">
+              {isEditing ? 'Cập nhật thông tin chi tiết địa chỉ nhận hàng của bạn.' : 'Thêm địa chỉ mới để nhận hàng từ cửa hàng.'}
+            </p>
           </DialogHeader>
-          <div className="space-y-4 py-4">
+
+          <div className="p-8 space-y-5 max-h-[60vh] overflow-y-auto bg-gray-50/30">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label className="text-xs font-bold uppercase tracking-wider text-gray-400">Tên người nhận</Label>
+                <Label className="text-xs font-bold uppercase tracking-wider text-gray-400 ml-1">Tên người nhận (*)</Label>
                 <Input 
                   value={formData.recipientName}
                   onChange={(e) => {
                     setFormData({...formData, recipientName: e.target.value});
                     if (errors.recipientName) setErrors({...errors, recipientName: null});
                   }}
-                  className={`rounded-2xl border-gray-100 h-12 ${errors.recipientName ? 'border-red-500 focus:ring-red-500/20' : ''}`}
+                  className={`rounded-2xl border-gray-100 h-9 bg-white font-bold text-[13px] ${errors.recipientName ? 'border-red-500 focus:ring-red-500/20' : ''}`}
                   placeholder="VD: Nguyễn Văn A"
                 />
-                {errors.recipientName && <p className="text-[10px] text-red-500 font-bold ml-1">{errors.recipientName}</p>}
+                {errors.recipientName && <p className="text-[10px] text-red-500 font-bold ml-1 uppercase">{errors.recipientName}</p>}
               </div>
               <div className="space-y-2">
-                <Label className="text-xs font-bold uppercase tracking-wider text-gray-400">Số điện thoại</Label>
+                <Label className="text-xs font-bold uppercase tracking-wider text-gray-400 ml-1">Số điện thoại (*)</Label>
                 <Input 
                   value={formData.phone}
                   onChange={(e) => {
                     setFormData({...formData, phone: e.target.value});
                     if (errors.phone) setErrors({...errors, phone: null});
                   }}
-                  className={`rounded-2xl border-gray-100 h-12 ${errors.phone ? 'border-red-500 focus:ring-red-500/20' : ''}`}
+                  className={`rounded-2xl border-gray-100 h-9 bg-white font-bold text-[13px] ${errors.phone ? 'border-red-500 focus:ring-red-500/20' : ''}`}
                   placeholder="VD: 0987654321"
                 />
-                {errors.phone && <p className="text-[10px] text-red-500 font-bold ml-1">{errors.phone}</p>}
+                {errors.phone && <p className="text-[10px] text-red-500 font-bold ml-1 uppercase">{errors.phone}</p>}
               </div>
             </div>
             
             <div className="space-y-2">
-              <Label className="text-xs font-bold uppercase tracking-wider text-gray-400">Địa chỉ chi tiết</Label>
+              <Label className="text-xs font-bold uppercase tracking-wider text-gray-400 ml-1">Địa chỉ chi tiết (*)</Label>
               <Input 
                 value={formData.fullAddress}
                 onChange={(e) => {
                   setFormData({...formData, fullAddress: e.target.value});
                   if (errors.fullAddress) setErrors({...errors, fullAddress: null});
                 }}
-                className={`rounded-2xl border-gray-100 h-12 ${errors.fullAddress ? 'border-red-500 focus:ring-red-500/20' : ''}`}
+                className={`rounded-2xl border-gray-100 h-9 bg-white font-bold text-[13px] ${errors.fullAddress ? 'border-red-500 focus:ring-red-500/20' : ''}`}
                 placeholder="Số nhà, tên đường, phường/xã..."
               />
-              {errors.fullAddress && <p className="text-[10px] text-red-500 font-bold ml-1">{errors.fullAddress}</p>}
+              {errors.fullAddress && <p className="text-[10px] text-red-500 font-bold ml-1 uppercase">{errors.fullAddress}</p>}
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex items-end pb-2">
-                 <label className="flex items-center gap-2 cursor-pointer group">
-                    <input 
-                      type="checkbox" 
-                      checked={formData.isDefault}
-                      onChange={(e) => setFormData({...formData, isDefault: e.target.checked})}
-                      className="w-5 h-5 rounded-lg border-gray-200 text-green-600 focus:ring-green-500"
-                    />
-                    <span className="text-sm font-medium text-gray-600 group-hover:text-gray-900">Đặt làm mặc định</span>
-                 </label>
-              </div>
+            <div className="flex items-center gap-2 cursor-pointer group pt-2 ml-1">
+              <input 
+                type="checkbox" 
+                id="isDefaultAddress"
+                checked={formData.isDefault}
+                onChange={(e) => setFormData({...formData, isDefault: e.target.checked})}
+                className="w-4 h-4 rounded border-gray-200 text-green-600 focus:ring-green-500"
+              />
+              <label htmlFor="isDefaultAddress" className="text-xs font-bold text-gray-500 group-hover:text-gray-900 cursor-pointer">Đặt làm địa chỉ mặc định</label>
             </div>
           </div>
-          <DialogFooter>
+
+          <div className="p-8 border-t border-gray-100 flex justify-end gap-3 bg-white">
+            <Button 
+              variant="ghost" 
+              onClick={() => setIsModalOpen(false)} 
+              className="rounded-full px-6 cursor-pointer font-bold h-8 text-xs"
+            >
+              Hủy
+            </Button>
             <Button 
               onClick={handleSubmit} 
               disabled={submitting}
-              className="w-full bg-green-600 hover:bg-green-700 rounded-2xl h-12 font-black uppercase tracking-widest shadow-lg shadow-green-100"
+              className="rounded-full bg-primary text-white px-6 shadow-lg shadow-primary/20 hover:scale-[1.02] transition-all cursor-pointer h-8 font-black uppercase tracking-widest text-[9px]"
             >
-              {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : (isEditing ? 'Cập nhật' : 'Lưu địa chỉ')}
+              {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Xác nhận'}
             </Button>
-          </DialogFooter>
+          </div>
         </DialogContent>
       </Dialog>
 

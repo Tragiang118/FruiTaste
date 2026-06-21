@@ -311,81 +311,85 @@ export default function AddressSection({ onAddressChange, selectedId }: AddressS
       </Dialog>
 
       <Dialog open={isAdding} onOpenChange={setIsAdding}>
-        <DialogContent className="rounded-[2rem] border-none p-8 max-w-md bg-white">
-          <DialogHeader className="mb-6">
-            <DialogTitle className="text-2xl font-black text-gray-900">{isEditing ? 'Sửa địa chỉ' : 'Thêm địa chỉ mới'}</DialogTitle>
+        <DialogContent className="rounded-[2.5rem] border-none p-0 overflow-hidden max-w-md bg-white shadow-2xl animate-in zoom-in-95 duration-200">
+          <DialogHeader className="p-8 border-b border-gray-100 bg-white space-y-1">
+            <DialogTitle className="text-sm font-bold text-gray-700 ml-1">{isEditing ? 'Sửa địa chỉ' : 'Thêm địa chỉ mới'}</DialogTitle>
+            <p className="text-sm text-gray-500 mt-1 font-medium ml-1">
+              {isEditing ? 'Cập nhật thông tin chi tiết địa chỉ nhận hàng của bạn.' : 'Thêm địa chỉ mới để nhận hàng từ cửa hàng.'}
+            </p>
           </DialogHeader>
-          <div className="space-y-5">
+
+          <div className="p-8 space-y-5 max-h-[60vh] overflow-y-auto bg-gray-50/30">
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Tên người nhận</Label>
+              <div className="space-y-2">
+                <Label className="text-xs font-bold uppercase tracking-wider text-gray-400 ml-1">Tên người nhận (*)</Label>
                 <Input 
                   value={formData.recipientName}
                   onChange={(e) => {
                     setFormData({...formData, recipientName: e.target.value});
                     if (errors.recipientName) setErrors({...errors, recipientName: null});
                   }}
-                  className={`rounded-xl border-gray-100 h-12 font-bold text-sm focus:border-primary focus:ring-primary/20 ${errors.recipientName ? 'border-red-500 focus:ring-red-500/20' : ''}`}
-                  placeholder="Nguyễn Văn A"
+                  className={`rounded-2xl border-gray-100 h-9 bg-white font-bold text-[13px] focus:border-primary focus:ring-primary/20 ${errors.recipientName ? 'border-red-500 focus:ring-red-500/20' : ''}`}
+                  placeholder="VD: Nguyễn Văn A"
                 />
-                {errors.recipientName && <p className="text-[10px] text-red-500 font-bold ml-1">{errors.recipientName}</p>}
+                {errors.recipientName && <p className="text-[10px] text-red-500 font-bold ml-1 uppercase">{errors.recipientName}</p>}
               </div>
-              <div className="space-y-1.5">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Số điện thoại</Label>
+              <div className="space-y-2">
+                <Label className="text-xs font-bold uppercase tracking-wider text-gray-400 ml-1">Số điện thoại (*)</Label>
                 <Input 
                   value={formData.phone}
                   onChange={(e) => {
                     setFormData({...formData, phone: e.target.value});
                     if (errors.phone) setErrors({...errors, phone: null});
                   }}
-                  className={`rounded-xl border-gray-100 h-12 font-bold text-sm focus:border-primary focus:ring-primary/20 ${errors.phone ? 'border-red-500 focus:ring-red-500/20' : ''}`}
-                  placeholder="0987654321"
+                  className={`rounded-2xl border-gray-100 h-9 bg-white font-bold text-[13px] focus:border-primary focus:ring-primary/20 ${errors.phone ? 'border-red-500 focus:ring-red-500/20' : ''}`}
+                  placeholder="VD: 0987654321"
                 />
-                {errors.phone && <p className="text-[10px] text-red-500 font-bold ml-1">{errors.phone}</p>}
+                {errors.phone && <p className="text-[10px] text-red-500 font-bold ml-1 uppercase">{errors.phone}</p>}
               </div>
             </div>
             
-            <div className="space-y-1.5">
-              <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Địa chỉ chi tiết</Label>
+            <div className="space-y-2">
+              <Label className="text-xs font-bold uppercase tracking-wider text-gray-400 ml-1">Địa chỉ chi tiết (*)</Label>
               <Input 
                 value={formData.fullAddress}
                 onChange={(e) => {
                   setFormData({...formData, fullAddress: e.target.value});
                   if (errors.fullAddress) setErrors({...errors, fullAddress: null});
                 }}
-                className={`rounded-xl border-gray-100 h-12 font-bold text-sm focus:border-primary focus:ring-primary/20 ${errors.fullAddress ? 'border-red-500 focus:ring-red-500/20' : ''}`}
+                className={`rounded-2xl border-gray-100 h-9 bg-white font-bold text-[13px] focus:border-primary focus:ring-primary/20 ${errors.fullAddress ? 'border-red-500 focus:ring-red-500/20' : ''}`}
                 placeholder="Số nhà, tên đường, phường/xã..."
               />
-              {errors.fullAddress && <p className="text-[10px] text-red-500 font-bold ml-1">{errors.fullAddress}</p>}
+              {errors.fullAddress && <p className="text-[10px] text-red-500 font-bold ml-1 uppercase">{errors.fullAddress}</p>}
             </div>
  
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Loại địa chỉ</Label>
+              <div className="space-y-2">
+                <Label className="text-xs font-bold uppercase tracking-wider text-gray-400 ml-1">Loại địa chỉ</Label>
                 <Select 
                   value={formData.label} 
                   onValueChange={(val) => setFormData({...formData, label: val})}
                 >
-                  <SelectTrigger className="rounded-xl border-gray-100 h-12 font-bold text-sm">
+                  <SelectTrigger className="rounded-2xl border-gray-100 h-9 bg-white font-bold text-[13px] text-gray-700 transition-all cursor-pointer shadow-none">
                     <SelectValue placeholder="Chọn loại" />
                   </SelectTrigger>
-                  <SelectContent className="rounded-xl border-none shadow-xl">
-                    <SelectItem value="Nhà riêng" className="font-bold py-2 text-sm">Nhà riêng</SelectItem>
-                    <SelectItem value="Văn phòng" className="font-bold py-2 text-sm">Văn phòng</SelectItem>
+                  <SelectContent className="rounded-2xl border-gray-100 shadow-2xl p-2 bg-white min-w-[150px]">
+                    <SelectItem value="Nhà riêng" className="cursor-pointer rounded-xl font-bold p-2 text-xs focus:bg-primary/5 focus:text-primary">Nhà riêng</SelectItem>
+                    <SelectItem value="Văn phòng" className="cursor-pointer rounded-xl font-bold p-2 text-xs focus:bg-primary/5 focus:text-primary">Văn phòng</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-              <div className="flex items-end pb-2">
+              <div className="flex items-end pb-2 ml-1">
                  <label className="flex items-center gap-2 cursor-pointer group select-none">
                     <div className="relative flex items-center">
                       <input 
                         type="checkbox" 
                         checked={formData.isDefault}
                         onChange={(e) => setFormData({...formData, isDefault: e.target.checked})}
-                        className="peer w-5 h-5 opacity-0 absolute cursor-pointer"
+                        className="peer w-4 h-4 opacity-0 absolute cursor-pointer"
                       />
-                      <div className="w-5 h-5 rounded-md border-2 border-gray-200 peer-checked:bg-primary peer-checked:border-primary transition-all flex items-center justify-center">
-                        <Check size={12} className="text-white scale-0 peer-checked:scale-100 transition-transform" />
+                      <div className="w-4 h-4 rounded border-2 border-gray-200 peer-checked:bg-primary peer-checked:border-primary transition-all flex items-center justify-center">
+                        <Check size={10} className="text-white scale-0 peer-checked:scale-100 transition-transform" />
                       </div>
                     </div>
                     <span className="text-xs font-bold text-gray-500 group-hover:text-gray-900 transition-colors">Mặc định</span>
@@ -393,15 +397,22 @@ export default function AddressSection({ onAddressChange, selectedId }: AddressS
               </div>
             </div>
           </div>
-          <DialogFooter className="mt-8">
+          <div className="p-8 border-t border-gray-100 flex justify-end gap-3 bg-white">
+            <Button 
+              variant="ghost" 
+              onClick={() => setIsAdding(false)} 
+              className="rounded-full px-6 cursor-pointer font-bold h-8 text-xs"
+            >
+              Hủy
+            </Button>
             <Button 
               onClick={handleSubmit} 
               disabled={submitting}
-              className="w-full bg-primary hover:bg-green-600 text-white rounded-xl h-12 text-sm font-black uppercase tracking-widest shadow-lg shadow-gray-200 transition-all hover:scale-[1.02]"
+              className="rounded-full bg-primary text-white px-6 shadow-lg shadow-primary/20 hover:scale-[1.02] transition-all cursor-pointer h-8 font-black uppercase tracking-widest text-[9px]"
             >
-              {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : (isEditing ? 'Cập nhật' : 'Lưu & Sử dụng')}
+              {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Xác nhận'}
             </Button>
-          </DialogFooter>
+          </div>
         </DialogContent>
       </Dialog>
 
