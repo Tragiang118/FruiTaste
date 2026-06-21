@@ -263,7 +263,7 @@ export default function ChatbotWidget() {
         id: "chatbot-welcome",
         role: "assistant" as const,
         type: "text",
-        text: "Xin chào! 🍎 Tôi là trợ lý AI của FruiTaste.\nHãy hỏi tôi về món ăn từ trái cây, gợi ý combo, hoặc bất cứ thứ gì về hoa quả nhé!",
+        text: "Xin chào! Tôi là trợ lý AI của FruiTaste.\nHãy hỏi tôi về món ăn từ trái cây, gợi ý combo, hoặc bất cứ thứ gì về hoa quả nhé!",
         products: []
       },
     ];

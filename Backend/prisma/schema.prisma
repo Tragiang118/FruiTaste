@@ -78,6 +78,7 @@ model Address {
   recipientName   String
   phone           String
   fullAddress     String    // Chuỗi đầy đủ
+  label           String?   @default("Nhà riêng")
   isDefault       Boolean   @default(false)
 
   user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
