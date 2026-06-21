@@ -226,7 +226,10 @@ export class InventoryService {
     if (newStock < 0) {
       const product = await tx.product.findUnique({ where: { id: productId } });
       const productName = product ? `'${product.name}'` : `ID ${productId}`;
-      throw new BadRequestException(`Sản phẩm ${productName} không đủ tồn kho (Còn: ${currentStock})`);
+      throw new BadRequestException({
+        message: `Sản phẩm ${productName} không đủ tồn kho (Còn: ${currentStock})`,
+        productId,
+      });
     }
 
     await tx.inventory.upsert({

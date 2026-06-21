@@ -81,19 +81,22 @@ export class OrdersService {
           where: { id: item.productId },
         });
         if (!product) {
-          throw new BadRequestException(
-            `Sản phẩm (ID: ${item.productId}) không tồn tại.`,
-          );
+          throw new BadRequestException({
+            message: `Sản phẩm (ID: ${item.productId}) không tồn tại.`,
+            productId: item.productId,
+          });
         }
         if (!product.isActive) {
-          throw new BadRequestException(
-            `Sản phẩm '${product.name}' đã tạm dừng bán, vui lòng cập nhật xóa khỏi giỏ hàng để tiếp tục.`,
-          );
+          throw new BadRequestException({
+            message: `Sản phẩm '${product.name}' đã tạm dừng bán, vui lòng cập nhật xóa khỏi giỏ hàng để tiếp tục.`,
+            productId: product.id,
+          });
         }
         if (product.stockQuantity < item.quantity) {
-          throw new BadRequestException(
-            `Sản phẩm '${product.name}' hiện không đủ tồn kho (Còn: ${product.stockQuantity}).`,
-          );
+          throw new BadRequestException({
+            message: `Sản phẩm '${product.name}' hiện không đủ tồn kho (Còn: ${product.stockQuantity}).`,
+            productId: product.id,
+          });
         }
         orderTotalAmount += product.price * item.quantity;
       }

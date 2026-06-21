@@ -166,10 +166,18 @@ export default function CheckoutPage() {
       console.error("Lỗi đặt hàng:", err);
       let msg = "Có lỗi xảy ra khi đặt hàng. Vui lòng thử lại!";
       let productId: number | null = null;
-      if (err.response && err.response.data && err.response.data.message) {
-        msg = err.response.data.message;
-        if (msg.includes('không còn khả dụng') || msg.includes('đã bị ẩn')) {
-          if (items.length > 0) productId = items[0].id;
+      if (err.response && err.response.data) {
+        msg = err.response.data.message || msg;
+        if (err.response.data.productId) {
+          productId = Number(err.response.data.productId);
+        } else {
+          // Fallback: Tìm xem có sản phẩm nào có tên nằm trong tin nhắn lỗi không
+          const matchedItem = items.find(item => msg.includes(item.name));
+          if (matchedItem) {
+            productId = matchedItem.id;
+          } else if (msg.includes('không còn khả dụng') || msg.includes('đã bị ẩn') || msg.includes('không đủ tồn kho')) {
+            if (items.length > 0) productId = items[0].id;
+          }
         }
       }
       setHiddenProductError({ message: msg, productId });
