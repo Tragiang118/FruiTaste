@@ -121,7 +121,7 @@ export default function RegisterPage() {
                 <FormItem>
                   <FormLabel className="text-gray-700 font-medium">Họ và tên</FormLabel>
                   <FormControl>
-                    <Input placeholder="Ví dụ: Nguyễn Văn A" className="rounded-xl px-4 py-6 border-gray-200 focus-visible:ring-[#FF6B4A]" {...field} autoComplete="off" />
+                    <Input placeholder="Ví dụ: Nguyễn Trà Giang" className="rounded-xl px-4 py-6 border-gray-200 focus-visible:ring-[#FF6B4A]" {...field} autoComplete="off" />
                   </FormControl>
                   <FormMessage className="text-red-500" />
                 </FormItem>
