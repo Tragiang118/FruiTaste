@@ -272,7 +272,8 @@ export default function ChatbotWidget() {
   const isHiddenRoute =
     pathname.startsWith("/admin") ||
     pathname === "/login" ||
-    pathname === "/register";
+    pathname === "/register" ||
+    pathname === "/profile";
 
   if (!mounted || isHiddenRoute) {
     return null;
