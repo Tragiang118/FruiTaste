@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    const origin = request.nextUrl.origin;
+    const origin = process.env.NEXT_PUBLIC_APP_URL || request.nextUrl.origin;
 
     const { data, error } = await resend.emails.send({
       from: 'FruiTaste <no-reply@fruitaste.page>',
