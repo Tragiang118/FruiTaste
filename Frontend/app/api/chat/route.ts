@@ -104,6 +104,7 @@ NHIỆM VỤ:
           },
         }),
       },
+      maxSteps: 3,
     });
 
     // Trả về plain text stream - frontend sẽ đọc và xử lý
