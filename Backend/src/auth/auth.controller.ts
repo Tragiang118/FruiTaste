@@ -40,14 +40,19 @@ export class AuthController {
     const result = await this.authService.verifyOtp(email, otp);
     const isSecure = process.env.NODE_ENV === 'production' || process.env.FRONTEND_URL?.startsWith('https');
     
-    // Set cookie đăng nhập tạm thời
-    response.cookie('Authentication', result.access_token, {
+    const cookieOptions: any = {
       httpOnly: true,
       path: '/',
       secure: isSecure,
       sameSite: 'lax',
       maxAge: 24 * 60 * 60 * 1000, // 1 day
-    });
+    };
+    if (process.env.FRONTEND_URL && process.env.FRONTEND_URL.includes('fruitaste.page')) {
+      cookieOptions.domain = '.fruitaste.page';
+    }
+
+    // Set cookie đăng nhập tạm thời
+    response.cookie('Authentication', result.access_token, cookieOptions);
     return { user: result.user, mustChangePassword: result.mustChangePassword };
   }
 
@@ -57,13 +62,18 @@ export class AuthController {
     const { access_token } = await this.authService.login(req.user);
     const isSecure = process.env.NODE_ENV === 'production' || process.env.FRONTEND_URL?.startsWith('https');
     
-    response.cookie('Authentication', access_token, {
+    const cookieOptions: any = {
       httpOnly: true,
       path: '/',
       secure: isSecure,
       sameSite: 'lax', // for localhost
       maxAge: 24 * 60 * 60 * 1000, // 1 day
-    });
+    };
+    if (process.env.FRONTEND_URL && process.env.FRONTEND_URL.includes('fruitaste.page')) {
+      cookieOptions.domain = '.fruitaste.page';
+    }
+
+    response.cookie('Authentication', access_token, cookieOptions);
     return { ...req.user, mustChangePassword: req.user.mustChangePassword || false };
   }
 
@@ -71,13 +81,18 @@ export class AuthController {
   async logout(@Res({ passthrough: true }) response: Response) {
     const isSecure = process.env.NODE_ENV === 'production' || process.env.FRONTEND_URL?.startsWith('https');
     
-    // Clear cookies consistently
-    response.clearCookie('Authentication', {
+    const cookieOptions: any = {
       httpOnly: true,
       path: '/',
       secure: isSecure,
       sameSite: 'lax',
-    });
+    };
+    if (process.env.FRONTEND_URL && process.env.FRONTEND_URL.includes('fruitaste.page')) {
+      cookieOptions.domain = '.fruitaste.page';
+    }
+
+    // Clear cookies consistently
+    response.clearCookie('Authentication', cookieOptions);
     return { message: 'Logged out successfully' };
   }
 
