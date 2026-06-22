@@ -274,38 +274,35 @@ export default function AdminDashboard() {
           </Card>
 
           {/* System Status Card */}
-          <Card className="rounded-[2.5rem] border-none shadow-sm bg-gradient-to-br from-primary to-green-700 text-white overflow-hidden p-8 relative">
-             <div className="absolute -right-8 -bottom-8 opacity-10 rotate-12">
-               <Leaf size={160} />
-             </div>
+          <Card className="rounded-[2.5rem] border border-gray-100 shadow-sm bg-white overflow-hidden p-8">
              <div className="relative z-10">
-               <h4 className="text-lg font-black mb-2">Lời nhắc quản trị</h4>
-               <p className="text-white/80 text-sm font-medium leading-relaxed mb-6">
-                 Đừng quên kiểm tra các đơn hàng đang chờ xử lý để đảm bảo giao hàng đúng hạn cho khách nhé!
-               </p>
+               <h4 className="text-lg font-black text-gray-900 mb-4 flex items-center gap-2">
+                 <Clock className="w-5 h-5 text-[#FF6B4A]" /> Lời nhắc công việc
+               </h4>
+               <div className="space-y-4">
+                 <div className="flex items-start gap-3 p-3 rounded-2xl bg-amber-50/50 border border-amber-100/50">
+                   <div className="w-2 h-2 rounded-full bg-amber-500 mt-2 shrink-0" />
+                   <div className="flex-1">
+                     <p className="text-xs font-bold text-gray-700">Đơn hàng chờ xác nhận</p>
+                     <p className="text-[11px] text-gray-500 mt-0.5 leading-relaxed">
+                       Có <span className="text-amber-600 font-bold">{stats?.overview?.pendingOrders || 0} đơn hàng</span> đang chờ bạn phê duyệt và chuẩn bị.
+                     </p>
+                   </div>
+                 </div>
+                 <div className="flex items-start gap-3 p-3 rounded-2xl bg-blue-50/50 border border-blue-100/50">
+                   <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 shrink-0" />
+                   <div className="flex-1">
+                     <p className="text-xs font-bold text-gray-700">Đơn hàng đang chuẩn bị</p>
+                     <p className="text-[11px] text-gray-500 mt-0.5 leading-relaxed">
+                       Có <span className="text-blue-600 font-bold">{stats?.overview?.processingOrders || 0} đơn hàng</span> đang trong quá trình chuẩn bị để giao đi.
+                     </p>
+                   </div>
+                 </div>
+               </div>
              </div>
           </Card>
         </div>
       </div>
     </div>
-  );
-}
-
-// Helper component for Leaf icon in system status
-function Leaf({ size }: { size: number }) {
-  return (
-    <svg 
-      width={size} 
-      height={size} 
-      viewBox="0 0 24 24" 
-      fill="none" 
-      stroke="currentColor" 
-      strokeWidth="2" 
-      strokeLinecap="round" 
-      strokeLinejoin="round"
-    >
-      <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" />
-      <path d="M2 21c0-3 1.85-5.36 5.08-6C10.9 14.36 12 13.48 14 11" />
-    </svg>
   );
 }
