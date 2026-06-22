@@ -1,7 +1,5 @@
 "use client";
 
-import { useChat } from "@ai-sdk/react";
-import { DefaultChatTransport } from "ai";
 import {
   Bot,
   Loader2,
@@ -13,7 +11,7 @@ import {
   Plus,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
-import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { Streamdown } from "streamdown";
 import { useCartStore } from "@/lib/store";
 import { toast } from "sonner";
@@ -95,32 +93,30 @@ const QUICK_PROMPTS = [
   "Dâu tây kết hợp với gì ngon? 🍓",
 ];
 
+// Kiểu tin nhắn nội bộ - đơn giản, không dùng useChat
+type ChatMsg = {
+  id: string;
+  role: "user" | "assistant";
+  text: string;
+  products?: any[];
+};
+
 export default function ChatbotWidget() {
   const pathname = usePathname();
-  const { messages, sendMessage, status, stop, error, regenerate } = useChat({
-    transport: new DefaultChatTransport({
-      api: "/api/chat",
-    }),
-  });
+  const [messages, setMessages] = useState<ChatMsg[]>([]);
   const [input, setInput] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [isBusy, setIsBusy] = useState(false);
+  const [hasError, setHasError] = useState(false);
+  const abortRef = useRef<AbortController | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const sessionIdRef = useRef<number | null>(null);
   const savedCountRef = useRef(0);
-  const isBusy = status === "submitted" || status === "streaming";
   const canSubmit = input.trim().length > 0 && !isBusy;
 
-  // Kiểm tra có nội dung bán phần không (stream bị cắt nhưng đã có text)
-  const lastAssistantMsg = messages.filter((m) => m.role === "assistant").pop();
-  const hasPartialResponse = lastAssistantMsg?.parts?.some(
-    (p) => p.type === "text" && (p as { type: "text"; text: string }).text?.trim().length > 0
-  );
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -132,142 +128,115 @@ export default function ChatbotWidget() {
     return () => clearTimeout(timeout);
   }, [isOpen]);
 
-  // Lưu tin nhắn vào DB khi AI trả lời xong
-  useEffect(() => {
-    if (status !== "ready" || messages.length < 2) return;
+  // Hàm gửi tin nhắn và đọc stream thủ công
+  const sendMessage = async (text: string) => {
+    if (!text.trim() || isBusy) return;
+    setHasError(false);
 
-    const userMsgs = messages.filter((m) => m.role === "user");
-    const botMsgs = messages.filter((m) => m.role === "assistant");
+    const userMsg: ChatMsg = { id: Date.now().toString(), role: "user", text: text.trim() };
+    const assistantId = (Date.now() + 1).toString();
+    const assistantMsg: ChatMsg = { id: assistantId, role: "assistant", text: "", products: [] };
 
-    if (userMsgs.length === 0 || botMsgs.length === 0) return;
-    if (userMsgs.length <= savedCountRef.current) return;
+    setMessages((prev) => [...prev, userMsg, assistantMsg]);
+    setIsBusy(true);
 
-    const lastUser = userMsgs[userMsgs.length - 1];
-    const lastBot = botMsgs[botMsgs.length - 1];
+    const controller = new AbortController();
+    abortRef.current = controller;
 
-    const userText = lastUser.parts
-      .filter((p) => p.type === "text")
-      .map((p) => p.text)
-      .join("")
-      .trim();
-    const botText = lastBot.parts
-      .filter((p) => p.type === "text")
-      .map((p) => p.text)
-      .join("")
-      .trim();
-
-    if (!userText || !botText) return;
-
-    savedCountRef.current = userMsgs.length;
-
-    const BACKEND = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
-    fetch(`${BACKEND}/chat/save`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        sessionId: sessionIdRef.current,
-        userMessage: userText,
-        botMessage: botText,
-      }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.sessionId) sessionIdRef.current = data.sessionId;
-      })
-      .catch(() => {});
-  }, [status, messages]);
-
-  const renderedMessages = useMemo(() => {
-    const mapped = messages.flatMap((message) => {
-      const text = message.parts
-        ? message.parts
-            .filter((part: any) => part.type === "text")
-            .map((part: any) => part.text)
-            .join("")
-            .trim()
-        : ((message as any).content || "").trim();
-
-      const products: any[] = [];
-      
-      // 1) Lấy toolInvocations từ mọi nguồn
-      const toolInvocations = (message as any).toolInvocations || [];
-      const partsToolInvocations = message.parts
-        ?.filter((p: any) => p.type === "tool-invocation")
-        .map((p: any) => p.toolInvocation) || [];
-      const combinedInvocations = [...toolInvocations, ...partsToolInvocations];
-      const hasToolResults = combinedInvocations.some((ti: any) => ti?.state === "result");
-
-      if (!text && !hasToolResults) return [];
-
-      // 2) Parse sản phẩm từ tool results
-      combinedInvocations.forEach((ti: any) => {
-        if (ti?.toolName === "list_products" && ti?.state === "result") {
-          const result = ti.result;
-          if (Array.isArray(result)) {
-            result.forEach((p: any) => {
-              if (!products.some(prev => String(prev.id) === String(p.id))) {
-                products.push({
-                  id: String(p.id),
-                  name: p.name,
-                  price: String(p.price),
-                  unit: p.unit || "kg",
-                  stock: String(p.stockQuantity ?? 0),
-                  image: ""
-                });
-              }
-            });
-          }
-        }
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: text.trim() }),
+        signal: controller.signal,
       });
 
-      // 3) Fallback: Parse sản phẩm từ tag [PRODUCT:id:name:price:unit:stock]
-      const productRegex = /\[PRODUCT:\s*([^:]+)\s*:\s*([^:]+)\s*:\s*([^:]+)\s*:\s*([^:]+)\s*:\s*([^\]]+)\]/gi;
-      let match;
-      while ((match = productRegex.exec(text)) !== null) {
-        const [_, id, name, price, unit, stock] = match;
-        const pId = id.trim();
-        if (!products.some(p => String(p.id) === pId)) {
-          products.push({
-            id: pId,
-            name: name.trim(),
-            price: price.trim(),
-            unit: unit.trim(),
-            stock: stock.trim(),
-            image: ""
-          });
+      if (!res.ok || !res.body) throw new Error("API error");
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let fullText = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value, { stream: true });
+        fullText += chunk;
+
+        // Parse sản phẩm từ tag [PRODUCT:id:name:price:unit:stock]
+        const products: any[] = [];
+        const productRegex = /\[PRODUCT:\s*([^:]+)\s*:\s*([^:]+)\s*:\s*([^:]+)\s*:\s*([^:]+)\s*:\s*([^\]]+)\]/gi;
+        let match;
+        while ((match = productRegex.exec(fullText)) !== null) {
+          const [_, id, name, price, unit, stock] = match;
+          const pId = id.trim();
+          if (!products.some((p) => String(p.id) === pId)) {
+            products.push({ id: pId, name: name.trim(), price: price.trim(), unit: unit.trim(), stock: stock.trim() });
+          }
         }
+
+        // Dọn text hiển thị
+        let cleanText = fullText
+          .replace(/\[PRODUCT:[^\]]*\]/gi, "")
+          .replace(/<[^>]*>.*?<\/[^>]*>/gs, "")
+          .trim();
+
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === assistantId ? { ...m, text: cleanText, products } : m
+          )
+        );
       }
 
-      if (message.role === "assistant") {
-        // Dọn dẹp text hiển thị
-        let cleanText = text;
-        cleanText = cleanText.replace(/<[^>]*>.*?<\/[^>]*>/gs, ""); // Xóa thẻ <tag>...</tag>
-        cleanText = cleanText.replace(/\[PRODUCT:.*?\]/gi, "");
-        cleanText = cleanText.replace(/\(function=.*?>.*?<\/function\)\s*/gs, "");
-        cleanText = cleanText.replace(/\(function=.*?\)\{.*?\}\s*<\/function>/gs, "");
-        cleanText = cleanText.replace(/<function>.*?<\/function>/gs, "");
-        cleanText = cleanText.replace(/\(function=.*?\)\{.*?\}/gs, "");
-        cleanText = cleanText.replace(/function=.*?>.*?}/gs, "");
-        cleanText = cleanText.replace(/\[PRODUCT:[^\]]*$/, "").trim();
-
-        return [{ id: message.id, role: message.role as any, type: "text", text: cleanText, products }];
+      // Lưu vào DB sau khi stream xong
+      const BACKEND = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+      const userMsgsCount = messages.filter((m) => m.role === "user").length + 1;
+      if (userMsgsCount > savedCountRef.current) {
+        savedCountRef.current = userMsgsCount;
+        const botText = fullText.replace(/\[PRODUCT:[^\]]*\]/gi, "").trim();
+        fetch(`${BACKEND}/chat/save`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            sessionId: sessionIdRef.current,
+            userMessage: text.trim(),
+            botMessage: botText,
+          }),
+        })
+          .then((res) => res.json())
+          .then((data) => { if (data.sessionId) sessionIdRef.current = data.sessionId; })
+          .catch(() => {});
       }
+    } catch (e: any) {
+      if (e?.name !== "AbortError") {
+        setHasError(true);
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === assistantId
+              ? { ...m, text: "Xin lỗi, đã có lỗi xảy ra. Vui lòng thử lại." }
+              : m
+          )
+        );
+      }
+    } finally {
+      setIsBusy(false);
+      abortRef.current = null;
+    }
+  };
 
-      return [{ id: message.id, role: message.role as any, type: "text", text, products }];
-    }) as Array<{ id: string, role: "user" | "assistant" | "system" | "data", type: string, text: string, products?: any[] }>;
+  const stopStream = () => {
+    abortRef.current?.abort();
+  };
 
-    if (mapped.length > 0) return mapped;
-
-    return [
-      {
-        id: "chatbot-welcome",
-        role: "assistant" as const,
-        type: "text",
-        text: "Xin chào! Tôi là trợ lý AI của FruiTaste.\nHãy hỏi tôi về món ăn từ trái cây, gợi ý combo, hoặc bất cứ thứ gì về hoa quả nhé!",
-        products: []
-      },
-    ];
-  }, [messages]);
+  // Tin nhắn chào mừng nếu chưa có gì
+  const renderedMessages = messages.length > 0 ? messages : [
+    {
+      id: "chatbot-welcome",
+      role: "assistant" as const,
+      text: "Xin chào! Tôi là trợ lý AI của FruiTaste.\nHãy hỏi tôi về món ăn từ trái cây, gợi ý combo, hoặc bất cứ thứ gì về hoa quả nhé!",
+      products: []
+    },
+  ];
 
   const isHiddenRoute =
     pathname.startsWith("/admin") ||
@@ -282,8 +251,9 @@ export default function ChatbotWidget() {
   const onSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!canSubmit) return;
-    sendMessage({ text: input.trim() });
+    const text = input.trim();
     setInput("");
+    sendMessage(text);
   };
 
   return (
@@ -561,7 +531,7 @@ export default function ChatbotWidget() {
           </div>
 
           {/* Error */}
-          {error && !hasPartialResponse && (
+          {hasError && (
             <div
               style={{
                 margin: "0 12px 4px",
@@ -576,7 +546,10 @@ export default function ChatbotWidget() {
               Đã xảy ra lỗi.{" "}
               <button
                 type="button"
-                onClick={() => regenerate()}
+                onClick={() => {
+                  const last = messages.filter((m) => m.role === "user").pop();
+                  if (last) sendMessage(last.text);
+                }}
                 style={{
                   fontWeight: 500,
                   textDecoration: "underline",
@@ -587,38 +560,6 @@ export default function ChatbotWidget() {
                 }}
               >
                 Thử lại
-              </button>
-            </div>
-          )}
-          {error && hasPartialResponse && (
-            <div
-              style={{
-                margin: "0 12px 4px",
-                borderRadius: "12px",
-                border: "1px solid #fed7aa",
-                backgroundColor: "#fff7ed",
-                padding: "6px 12px",
-                fontSize: "12px",
-                color: "#92400e",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <span>⚠️ Phản hồi bị gián đoạn</span>
-              <button
-                type="button"
-                onClick={() => regenerate()}
-                style={{
-                  fontWeight: 600,
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  color: "#c2410c",
-                  fontSize: "12px",
-                }}
-              >
-                Hỏi lại
               </button>
             </div>
           )}
@@ -640,7 +581,7 @@ export default function ChatbotWidget() {
                 <button
                   key={prompt}
                   type="button"
-                  onClick={() => sendMessage({ text: prompt })}
+                  onClick={() => sendMessage(prompt)}
                   style={{
                     borderRadius: "999px",
                     border: "1px solid #bbf7d0",
@@ -684,7 +625,7 @@ export default function ChatbotWidget() {
                   if (e.key === "Enter" && !e.shiftKey) {
                     e.preventDefault();
                     if (canSubmit) {
-                      sendMessage({ text: input.trim() });
+                      sendMessage(input.trim());
                       setInput("");
                     }
                   }
@@ -734,7 +675,7 @@ export default function ChatbotWidget() {
               <div style={{ marginTop: "8px", display: "flex", justifyContent: "flex-end" }}>
                 <button
                   type="button"
-                  onClick={() => stop()}
+                  onClick={() => stopStream()}
                   style={{
                     fontSize: "12px",
                     fontWeight: 500,
