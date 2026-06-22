@@ -171,7 +171,7 @@ export const OrderInvoiceEmail: React.FC<Readonly<OrderInvoiceEmailProps>> = ({
           {/* CTA */}
           <Section style={{ textAlign: 'center' as const, margin: '24px 0' }}>
             <Link
-              href={`http://localhost:3000/orders/${orderId}`}
+              href={`${process.env.NEXT_PUBLIC_APP_URL || 'https://fruitaste.page'}/orders/${orderId}`}
               style={ctaButton}
             >
               Xem đơn hàng của tôi
