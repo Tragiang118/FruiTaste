@@ -78,31 +78,29 @@ export default function AdminDashboard() {
   return (
     <div className="flex flex-col gap-8 w-full animate-in fade-in duration-700">
       {/* Welcome Banner */}
-      <div className="relative w-full rounded-[2.5rem] overflow-hidden bg-gradient-to-br from-gray-900 via-green-900 to-primary p-8 md:p-12 shadow-2xl group">
-        <div className="absolute right-0 top-0 bottom-0 w-1/3 opacity-10 group-hover:scale-110 transition-transform duration-700">
-          <svg viewBox="0 0 400 400" className="w-full h-full text-white" fill="currentColor">
-            <rect x="50" y="100" width="100" height="40" rx="20" />
-            <rect x="250" y="150" width="80" height="40" rx="20" />
-            <circle cx="150" cy="250" r="30" />
-          </svg>
-        </div>
-        
-        <div className="relative z-10 max-w-2xl">
-          <h1 className="text-4xl md:text-6xl font-black text-white mb-4 leading-tight tracking-tighter flex items-center gap-4">
-            <LayoutDashboard className="w-10 h-10 md:w-14 md:h-14 text-green-400 opacity-80" />
-            <span>Chào mừng trở lại, <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-200">{user?.fullName?.split(' ')[0] || 'Admin'}</span>!</span>
+      <div className="relative w-full rounded-[2rem] bg-white border border-gray-100 p-6 md:p-8 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 tracking-tight mb-2">
+            Chào mừng trở lại, {user?.fullName || 'Admin'}
           </h1>
-          <p className="text-white/70 text-lg font-medium mb-8 max-w-lg leading-relaxed">
-            Hôm nay FruiTaste đã có <span className="text-white font-black underline">{stats?.overview?.totalOrders || 0} đơn hàng mới</span>. Hãy cùng kiểm tra hiệu quả kinh doanh của ngày hôm nay nhé.
+          <p className="text-gray-500 text-sm md:text-base font-medium">
+            Hôm nay hệ thống ghi nhận có <span className="text-[#FF6B4A] font-bold">{stats?.overview?.totalOrders || 0} đơn hàng mới</span>. Hãy cùng theo dõi và cập nhật nhé!
           </p>
-          <div className="flex flex-wrap gap-4">
-            <Button onClick={() => router.push('/admin/orders')} className="bg-white text-gray-900 hover:bg-gray-100 rounded-full px-8 h-12 font-black text-sm shadow-xl shadow-white/10 transition-all cursor-pointer">
-              Xử lý đơn hàng
-            </Button>
-            <Button onClick={() => router.push('/admin/statistics')} variant="outline" className="bg-transparent border-white/20 text-white hover:bg-white/10 rounded-full px-8 h-12 font-black text-sm backdrop-blur-sm transition-all cursor-pointer">
-              Xem báo cáo chi tiết
-            </Button>
-          </div>
+        </div>
+        <div className="flex flex-wrap gap-3 shrink-0">
+          <Button 
+            onClick={() => router.push('/admin/orders')} 
+            className="bg-[#FF6B4A] text-white hover:bg-[#E55A39] rounded-full px-6 h-11 font-bold text-xs shadow-none border-none transition-all cursor-pointer"
+          >
+            Xử lý đơn hàng
+          </Button>
+          <Button 
+            onClick={() => router.push('/admin/statistics')} 
+            variant="outline" 
+            className="bg-transparent border-gray-200 text-gray-700 hover:bg-gray-50 rounded-full px-6 h-11 font-bold text-xs transition-all cursor-pointer"
+          >
+            Xem báo cáo chi tiết
+          </Button>
         </div>
       </div>
 
