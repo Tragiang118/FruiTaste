@@ -88,6 +88,16 @@ const ChatProductCard = ({ id, name, price, unit = "kg", stock = 0 }: { id: numb
   );
 };
 
+// Hàm xóa dấu tiếng Việt để nội dung chuyển khoản hợp lệ và hiển thị tốt trên mọi app ngân hàng
+function removeAccents(str: string): string {
+  if (!str) return "";
+  return str
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/đ/g, "d")
+    .replace(/Đ/g, "D");
+}
+
 // Component xác nhận đặt hàng trực tiếp trong chat (hỗ trợ nhiều sản phẩm)
 const ChatOrderForm = ({ items }: { items: Array<{ productId: number, quantity: number }> }) => {
   const { user } = useAuthStore();
@@ -327,7 +337,9 @@ const ChatOrderForm = ({ items }: { items: Array<{ productId: number, quantity: 
           <p className="text-[9px] text-orange-700 font-bold m-0 text-center">Quét QR chuyển khoản {(total).toLocaleString("vi-VN")} đ</p>
           <div className="w-28 h-28 bg-white p-1 rounded-lg border border-orange-100 flex items-center justify-center">
             <img
-              src={`https://img.vietqr.io/image/970436-1014375356-qr_only.png?amount=${total}&addInfo=THANH%20TOAN%20FRUIT%20CHATBOT`}
+              src={`https://img.vietqr.io/image/970436-1014375356-qr_only.png?amount=${total}&addInfo=${encodeURIComponent(
+                removeAccents(`${shippingName} ${shippingPhone} Thanh toan Fruit Chatbot`)
+              )}`}
               alt="QR Code"
               className="w-full h-full object-contain"
             />
