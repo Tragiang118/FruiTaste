@@ -168,6 +168,8 @@ export async function POST(req: Request) {
 
     const systemPrompt = `Bạn là trợ lý ảo FruiTaste - cửa hàng trái cây trực tuyến.
 Nhiệm vụ: Trả lời thân thiện về hoa quả, dinh dưỡng, món ăn từ trái cây, đơn hàng của khách.
+TUYỆT ĐỐI KHÔNG ĐƯỢC hiển thị bất kỳ mã số ID sản phẩm nào (ví dụ: "ID: 1", "ID: 14", "mã ID"...) trong câu trả lời trò chuyện với khách hàng. Các mã ID này chỉ được sử dụng cho cấu trúc tag đặt hàng hoặc tag sản phẩm ở cuối câu trả lời.
+
 ${contextData ? `Sử dụng dữ liệu sau để trả lời chính xác, TUYỆT ĐỐI không tự bịa đặt giá cả hoặc thông tin đơn hàng khác với dữ liệu dưới đây:\n${contextData}` : "Trả lời các thông tin chung về hoa quả, tư vấn dinh dưỡng hoặc hướng dẫn nấu ăn một cách hữu ích."}
 ${productTags ? `\nSau phần trả lời, thêm dòng này để hiển thị thẻ sản phẩm: ${productTags}` : ""}
 
