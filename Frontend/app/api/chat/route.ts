@@ -34,10 +34,7 @@ NHIỆM VỤ:
   + COMPLETED: Đã hoàn thành
   + CANCELLED: Đã hủy đơn
 - Nếu kết quả từ tool 'list_orders' báo lỗi hoặc chưa đăng nhập, hãy lịch sự phản hồi là không tìm thấy thông tin đơn hàng và khuyên khách hàng hãy đăng nhập tài khoản của mình trên hệ thống để xem đơn hàng.`,
-      messages: recentMessages.map((m: any) => ({
-        role: m.role,
-        content: m.content || (m.parts && m.parts.filter((p: any) => p.type === 'text').map((p: any) => p.text).join('')) || ""
-      })),
+      messages: convertToModelMessages(recentMessages),
       tools: {
         list_products: (tool as any)({
           description: "Tìm sản phẩm trong database",
