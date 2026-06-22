@@ -18,8 +18,12 @@ function cleanHtmlText(html: string): string {
 function searchProductsLocally(products: any[], queryText: string): any[] {
   const cleanQuery = queryText.toLowerCase();
   
-  // Các từ dừng không có giá trị phân biệt sản phẩm
-  const stopWords = ["giá", "bao", "nhiêu", "tiền", "bán", "không", "mua", "còn", "hàng", "có", "nhiu", "ko", "quả", "trái", "kg", "hộp", "thế", "nào", "sao", "ở", "fruitaste", "đơn", "hỏi", "với", "cho", "xin", "chào"];
+  // Các từ dừng không có giá trị phân biệt sản phẩm, bổ sung thêm các liên từ và từ hành động
+  const stopWords = [
+    "giá", "bao", "nhiêu", "tiền", "bán", "không", "mua", "còn", "hàng", "có", "nhiu", "ko", "quả", "trái", 
+    "kg", "hộp", "thế", "nào", "sao", "ở", "fruitaste", "đơn", "hỏi", "với", "cho", "xin", "chào",
+    "và", "đặt", "muốn", "thêm", "cả", "nhé", "nha", "tôi", "em", "khách", "mình", "lấy", "order"
+  ];
   
   const words = cleanQuery
     .split(/[\s,.\-\/]+/)
@@ -37,12 +41,14 @@ function searchProductsLocally(products: any[], queryText: string): any[] {
   const scored = products
     .map((p: any) => {
       const nameLower = p.name.toLowerCase();
+      // Tách các từ trong tên sản phẩm để so khớp chính xác (tránh lỗi \b regex với unicode Tiếng Việt)
+      const nameWords = nameLower.split(/[\s,.\-\/]+/);
       let score = 0;
       for (const word of words) {
         if (nameLower.includes(word)) {
           score += 1;
-          // Điểm cộng nếu khớp chính xác biên từ (tránh việc "đào" khớp nhầm "dâu")
-          if (new RegExp(`\\b${word}\\b`, "i").test(nameLower)) {
+          // Điểm cộng nếu khớp nguyên từ đầy đủ
+          if (nameWords.includes(word)) {
             score += 1;
           }
         }
@@ -91,7 +97,6 @@ export async function POST(req: Request) {
     // Fetch dữ liệu trước khi gọi AI
     let contextData = "";
     let productTags = "";
-    let orderFormTag = "";
 
     // 1. Tải danh sách tất cả sản phẩm
     let productsList: any[] = [];
@@ -113,27 +118,16 @@ export async function POST(req: Request) {
 
     // Nếu có intent hỏi sản phẩm, hoặc người dùng hỏi chung nhưng khớp mạnh tên sản phẩm cụ thể, hoặc muốn mua luôn
     if (intent === "product" || (intent === "general" && matchedProducts.length > 0) || isBuyIntent) {
-      const topProducts = matchedProducts.slice(0, 3);
+      const topProducts = matchedProducts.slice(0, 4); // Lấy tối đa 4 sản phẩm khớp nhất để hỗ trợ giỏ hàng nhiều quả
       if (topProducts.length > 0) {
         contextData = `\n\nDỮ LIỆU SẢN PHẨM TỪ HỆ THỐNG:\n` +
           topProducts.map((p: any) =>
-            `- ${p.name}: giá ${p.price?.toLocaleString("vi-VN")} VND/${p.unit || "kg"}, còn lại ${p.stockQuantity ?? 0} ${p.unit || "kg"}. Mô tả: ${cleanHtmlText(p.description)}. Thông tin dinh dưỡng/sức khỏe: ${cleanHtmlText(p.healthInfo)}`
+            `- ${p.name} (ID: ${p.id}): giá ${p.price?.toLocaleString("vi-VN")} VND/${p.unit || "kg"}, còn lại ${p.stockQuantity ?? 0} ${p.unit || "kg"}. Mô tả: ${cleanHtmlText(p.description)}. Thông tin dinh dưỡng/sức khỏe: ${cleanHtmlText(p.healthInfo)}`
           ).join("\n");
 
         productTags = topProducts.map((p: any) =>
           `[PRODUCT:${p.id}:${p.name}:${p.price}:${p.unit || "kg"}:${p.stockQuantity ?? 0}]`
         ).join(" ");
-
-        if (isBuyIntent) {
-          // Trích xuất số lượng mua (tìm số đầu tiên xuất hiện trong câu)
-          const quantityMatch = userText.match(/\b\d+\b/);
-          let quantity = 1;
-          if (quantityMatch) {
-            const q = parseInt(quantityMatch[0], 10);
-            if (q > 0) quantity = q;
-          }
-          orderFormTag = `[ORDER_FORM:${topProducts[0].id}:${quantity}]`;
-        }
       }
     }
 
@@ -176,7 +170,18 @@ export async function POST(req: Request) {
 Nhiệm vụ: Trả lời thân thiện về hoa quả, dinh dưỡng, món ăn từ trái cây, đơn hàng của khách.
 ${contextData ? `Sử dụng dữ liệu sau để trả lời chính xác, TUYỆT ĐỐI không tự bịa đặt giá cả hoặc thông tin đơn hàng khác với dữ liệu dưới đây:\n${contextData}` : "Trả lời các thông tin chung về hoa quả, tư vấn dinh dưỡng hoặc hướng dẫn nấu ăn một cách hữu ích."}
 ${productTags ? `\nSau phần trả lời, thêm dòng này để hiển thị thẻ sản phẩm: ${productTags}` : ""}
-${orderFormTag ? `\nSau phần trả lời (và sau cả thẻ sản phẩm nếu có), BẮT BUỘC thêm thẻ đặt hàng này vào cuối câu trả lời để khách hàng điền thông tin: ${orderFormTag}\nHãy hướng dẫn khách hàng điền các thông tin trong form bên dưới để hoàn tất đặt hàng.` : ""}
+
+Nếu khách hàng biểu lộ ý định muốn đặt mua/mua hàng đối với các sản phẩm có trong "DỮ LIỆU SẢN PHẨM TỪ HỆ THỐNG" ở trên, bạn BẮT BUỘC phải tạo tag đặt hàng ở cuối câu trả lời (sau phần text trả lời và sau thẻ sản phẩm) theo định dạng chính xác sau:
+[ORDER_FORM:productId1:quantity1,productId2:quantity2,...]
+
+LƯU Ý QUAN TRỌNG VỀ THẺ ĐẶT HÀNG (ORDER_FORM):
+1. Nếu khách hàng muốn đặt mua NHIỀU HƠN 1 LOẠI QUẢ (ví dụ: "5 kg táo và 10 kg chôm chôm"), bạn BẮT BUỘC phải liệt kê TẤT CẢ sản phẩm trong cùng MỘT thẻ đặt hàng duy nhất, phân tách các sản phẩm bằng dấu phẩy.
+   Ví dụ đúng: [ORDER_FORM:1:5,14:10] (táo ID 1 số lượng 5 và chôm chôm ID 14 số lượng 10)
+   TUYỆT ĐỐI KHÔNG bỏ sót sản phẩm nào khách yêu cầu, và KHÔNG được tạo nhiều thẻ [ORDER_FORM] riêng biệt.
+2. productId là ID của sản phẩm lấy chính xác từ dữ liệu hệ thống ở trên.
+3. quantity là số lượng khách hàng muốn mua (tự phân tích từ tin nhắn của khách, mặc định là 1 nếu khách không chỉ rõ số lượng).
+
+Hãy hướng dẫn khách hàng điền các thông tin trong form bên dưới để hoàn tất đặt hàng.
 Trả lời bằng tiếng Việt, ngắn gọn, thân thiện, xưng hô tôn trọng khách hàng.`;
 
     const result = (streamText as any)({

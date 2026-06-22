@@ -88,10 +88,10 @@ const ChatProductCard = ({ id, name, price, unit = "kg", stock = 0 }: { id: numb
   );
 };
 
-// Component xác nhận đặt hàng trực tiếp trong chat
-const ChatOrderForm = ({ productId, quantity }: { productId: number, quantity: number }) => {
+// Component xác nhận đặt hàng trực tiếp trong chat (hỗ trợ nhiều sản phẩm)
+const ChatOrderForm = ({ items }: { items: Array<{ productId: number, quantity: number }> }) => {
   const { user } = useAuthStore();
-  const [product, setProduct] = useState<any>(null);
+  const [productsMap, setProductsMap] = useState<Record<number, any>>({});
   const [loading, setLoading] = useState(true);
   const [shippingName, setShippingName] = useState("");
   const [shippingPhone, setShippingPhone] = useState("");
@@ -101,16 +101,25 @@ const ChatOrderForm = ({ productId, quantity }: { productId: number, quantity: n
   const [orderSuccess, setOrderSuccess] = useState<any>(null);
   const [errorMsg, setErrorMsg] = useState("");
 
-  // Tự fetch thông tin sản phẩm và thông tin giao hàng mặc định của user
+  // Tự fetch thông tin các sản phẩm và thông tin giao hàng mặc định của user
   useEffect(() => {
     let active = true;
     const fetchData = async () => {
       try {
-        const prodRes = await fetch(`${BACKEND_API}/products/${productId}`);
-        const prodData = await prodRes.json();
-        
+        const prodDataList = await Promise.all(
+          items.map(async (item) => {
+            const res = await fetch(`${BACKEND_API}/products/${item.productId}`);
+            const data = await res.json();
+            return { productId: item.productId, data };
+          })
+        );
+
         if (active) {
-          setProduct(prodData);
+          const map: Record<number, any> = {};
+          prodDataList.forEach((item) => {
+            map[item.productId] = item.data;
+          });
+          setProductsMap(map);
         }
 
         const profileRes = await api.get('/auth/profile');
@@ -135,7 +144,7 @@ const ChatOrderForm = ({ productId, quantity }: { productId: number, quantity: n
 
     fetchData();
     return () => { active = false; };
-  }, [productId]);
+  }, [items]);
 
   if (loading) {
     return (
@@ -146,7 +155,9 @@ const ChatOrderForm = ({ productId, quantity }: { productId: number, quantity: n
     );
   }
 
-  if (!product) {
+  const validItems = items.filter(item => productsMap[item.productId]);
+
+  if (validItems.length === 0) {
     return (
       <div className="bg-red-50 p-3 rounded-xl border border-red-100 text-[11px] text-red-600 font-medium" style={{ fontFamily: 'sans-serif', maxWidth: '280px' }}>
         Sản phẩm không khả dụng hoặc đã ngừng kinh doanh.
@@ -165,7 +176,10 @@ const ChatOrderForm = ({ productId, quantity }: { productId: number, quantity: n
     );
   }
 
-  const subtotal = product.price * quantity;
+  const subtotal = validItems.reduce((sum, item) => {
+    const prod = productsMap[item.productId];
+    return sum + (prod?.price || 0) * item.quantity;
+  }, 0);
   const shippingFee = subtotal > 300000 ? 0 : 30000;
   const total = subtotal + shippingFee;
 
@@ -192,7 +206,11 @@ const ChatOrderForm = ({ productId, quantity }: { productId: number, quantity: n
         shippingPhone: shippingPhone.trim(),
         shippingAddress: shippingAddress.trim(),
         paymentMethod,
-        items: [{ productId: product.id, quantity, priceAtPurchase: product.price }],
+        items: validItems.map(item => ({
+          productId: item.productId,
+          quantity: item.quantity,
+          priceAtPurchase: productsMap[item.productId].price
+        })),
         totalAmount: subtotal,
         shippingFee: shippingFee,
         finalAmount: total
@@ -232,15 +250,22 @@ const ChatOrderForm = ({ productId, quantity }: { productId: number, quantity: n
         <h4 className="font-extrabold text-[12px] text-gray-900 m-0">📦 XÁC NHẬN ĐƠN HÀNG</h4>
       </div>
 
-      {/* Thông tin sản phẩm */}
-      <div className="flex gap-2 items-center bg-gray-50 p-2 rounded-xl">
-        <div className="flex-1 min-w-0">
-          <p className="font-bold text-xs text-gray-900 truncate m-0">{product.name}</p>
-          <p className="text-[10px] text-gray-500 m-0">Số lượng: {quantity} {product.unit || "kg"}</p>
-        </div>
-        <div className="text-right flex-shrink-0">
-          <p className="font-bold text-xs text-[#FF6B4A] m-0">{(product.price * quantity).toLocaleString("vi-VN")} đ</p>
-        </div>
+      {/* Danh sách sản phẩm */}
+      <div className="space-y-1.5 max-h-[140px] overflow-y-auto pr-1">
+        {validItems.map((item, index) => {
+          const prod = productsMap[item.productId];
+          return (
+            <div key={`${item.productId}-${index}`} className="flex gap-2 items-center bg-gray-50 p-2 rounded-xl">
+              <div className="flex-1 min-w-0">
+                <p className="font-bold text-xs text-gray-900 truncate m-0">{prod.name}</p>
+                <p className="text-[10px] text-gray-500 m-0">Số lượng: {item.quantity} {prod.unit || "kg"}</p>
+              </div>
+              <div className="text-right flex-shrink-0">
+                <p className="font-bold text-xs text-[#FF6B4A] m-0">{(prod.price * item.quantity).toLocaleString("vi-VN")} đ</p>
+              </div>
+            </div>
+          );
+        })}
       </div>
 
       {/* Thông tin giao hàng */}
@@ -356,8 +381,7 @@ type ChatMsg = {
   text: string;
   products?: any[];
   orderForm?: {
-    productId: number;
-    quantity: number;
+    items: Array<{ productId: number; quantity: number }>;
   };
 };
 
@@ -426,8 +450,8 @@ export default function ChatbotWidget() {
         // Parse sản phẩm từ tag [PRODUCT:id:name:price:unit:stock]
         const products: any[] = [];
         const productRegex = /\[PRODUCT:\s*([^:]+)\s*:\s*([^:]+)\s*:\s*([^:]+)\s*:\s*([^:]+)\s*:\s*([^\]]+)\]/gi;
-        let match;
-        while ((match = productRegex.exec(fullText)) !== null) {
+        const matches = Array.from(fullText.matchAll(productRegex));
+        for (const match of matches) {
           const [_, id, name, price, unit, stock] = match;
           const pId = id.trim();
           if (!products.some((p) => String(p.id) === pId)) {
@@ -435,12 +459,25 @@ export default function ChatbotWidget() {
           }
         }
 
-        // Parse order form từ tag [ORDER_FORM:productId:quantity]
+        // Parse order form từ tag [ORDER_FORM:id1:qty1,id2:qty2,...]
         let orderForm: any = undefined;
-        const orderFormMatch = /\[ORDER_FORM:\s*([^:]+)\s*:\s*([^\]]+)\]/gi.exec(fullText);
+        // Dùng regex không có flag g để tránh lỗi stateful lastIndex khi stream
+        const orderFormRegex = /\[ORDER_FORM:\s*([^\]]+)\]/i;
+        const orderFormMatch = orderFormRegex.exec(fullText);
         if (orderFormMatch) {
-          const [_, pId, qty] = orderFormMatch;
-          orderForm = { productId: parseInt(pId.trim(), 10), quantity: parseInt(qty.trim(), 10) };
+          const content = orderFormMatch[1].trim(); // "1:5,14:10"
+          const items = content.split(",").map(item => {
+            const parts = item.split(":");
+            if (parts.length === 2) {
+              const [pId, qty] = parts;
+              return { productId: parseInt(pId.trim(), 10), quantity: parseInt(qty.trim(), 10) };
+            }
+            return null;
+          }).filter(item => item !== null && !isNaN(item.productId) && !isNaN(item.quantity));
+          
+          if (items.length > 0) {
+            orderForm = { items: items as Array<{ productId: number, quantity: number }> };
+          }
         }
 
         // Dọn text hiển thị
@@ -761,8 +798,7 @@ export default function ChatbotWidget() {
                   {message.orderForm && (
                     <div style={{ marginTop: '8px', width: '100%' }}>
                       <ChatOrderForm
-                        productId={message.orderForm.productId}
-                        quantity={message.orderForm.quantity}
+                        items={message.orderForm.items}
                       />
                     </div>
                   )}
