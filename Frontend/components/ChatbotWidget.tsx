@@ -192,6 +192,11 @@ const ChatOrderForm = ({ items }: { items: Array<{ productId: number, quantity: 
       setErrorMsg("Vui lòng nhập số điện thoại");
       return;
     }
+    const phoneVal = shippingPhone.trim();
+    if (!phoneVal.startsWith("0") || phoneVal.length < 10 || phoneVal.length > 11 || !/^\d+$/.test(phoneVal)) {
+      setErrorMsg("Số điện thoại không hợp lệ (phải gồm 10-11 số và bắt đầu bằng số 0)");
+      return;
+    }
     if (!shippingAddress.trim()) {
       setErrorMsg("Vui lòng nhập địa chỉ giao hàng");
       return;
