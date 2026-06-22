@@ -12,6 +12,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
+    const origin = request.nextUrl.origin;
+
     const { data, error } = await resend.emails.send({
       from: 'FruiTaste <no-reply@fruitaste.page>',
       to: [email],
@@ -28,6 +30,7 @@ export async function POST(request: NextRequest) {
         totalAmount: order.totalAmount,
         shippingFee: order.shippingFee,
         finalAmount: order.finalAmount,
+        origin: origin,
       }),
     });
 

@@ -537,6 +537,7 @@ export default function ChatbotWidget() {
     >
       {isOpen && (
         <div
+          className="chatbot-widget-container"
           style={{
             marginBottom: "12px",
             width: "360px",
@@ -555,6 +556,10 @@ export default function ChatbotWidget() {
             @keyframes chatbotSlideIn {
               from { opacity: 0; transform: translateY(16px) scale(0.97); }
               to   { opacity: 1; transform: translateY(0)   scale(1); }
+            }
+            .chatbot-widget-container,
+            .chatbot-widget-container * {
+              font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
             }
           `}</style>
 

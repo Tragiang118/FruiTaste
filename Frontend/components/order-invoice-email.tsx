@@ -36,6 +36,7 @@ interface OrderInvoiceEmailProps {
   totalAmount: number;
   shippingFee: number;
   finalAmount: number;
+  origin?: string;
 }
 
 const formatVND = (amount: number) =>
@@ -58,6 +59,7 @@ export const OrderInvoiceEmail: React.FC<Readonly<OrderInvoiceEmailProps>> = ({
   totalAmount,
   shippingFee,
   finalAmount,
+  origin,
 }) => {
   return (
     <Html>
@@ -171,7 +173,7 @@ export const OrderInvoiceEmail: React.FC<Readonly<OrderInvoiceEmailProps>> = ({
           {/* CTA */}
           <Section style={{ textAlign: 'center' as const, margin: '24px 0' }}>
             <Link
-              href={`${process.env.NEXT_PUBLIC_APP_URL || 'https://fruitaste.page'}/orders/${orderId}`}
+              href={`${origin || 'https://fruitaste.page'}/orders/${orderId}`}
               style={ctaButton}
             >
               Xem đơn hàng của tôi
