@@ -118,14 +118,14 @@ export default function RecipeDetailPage() {
                   <ul className="space-y-4 bg-orange-50/50 p-6 rounded-3xl border border-orange-100 mb-12 shadow-sm">
                     {recipe.ingredients.map((ing: any, i: number) => (
                       <li key={i} className="flex flex-col gap-2 p-3 bg-white/60 rounded-2xl border border-orange-50">
-                        <div className="flex justify-between items-start gap-3">
-                          <div className="flex gap-2 items-center">
-                            <span className="text-[#FF6B4A] font-bold">•</span>
-                            <span className="font-semibold text-gray-800">
+                        <div className="flex justify-between items-center gap-3 w-full">
+                          <div className="flex gap-2 items-center flex-1 min-w-0">
+                            <span className="text-[#FF6B4A] font-bold shrink-0">•</span>
+                            <span className="font-semibold text-gray-800 break-words">
                               {ing.product ? ing.product.name : (ing.ingredientName || 'Nguyên liệu')}
                             </span>
                           </div>
-                          <span className="text-gray-500 font-medium text-sm whitespace-nowrap">{ing.quantityStr}</span>
+                          <span className="text-gray-500 font-medium text-sm whitespace-nowrap shrink-0 ml-2">{ing.quantityStr}</span>
                         </div>
                       </li>
                     ))}
