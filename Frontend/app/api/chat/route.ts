@@ -1,5 +1,5 @@
 import { groq } from "@ai-sdk/groq";
-import { streamText, tool, convertToModelMessages } from "ai"; 
+import { streamText, tool } from "ai"; 
 import { z } from "zod";
 
 export const maxDuration = 30;
@@ -34,7 +34,14 @@ NHIỆM VỤ:
   + COMPLETED: Đã hoàn thành
   + CANCELLED: Đã hủy đơn
 - Nếu kết quả từ tool 'list_orders' báo lỗi hoặc chưa đăng nhập, hãy lịch sự phản hồi là không tìm thấy thông tin đơn hàng và khuyên khách hàng hãy đăng nhập tài khoản của mình trên hệ thống để xem đơn hàng.`,
-      messages: await convertToModelMessages(recentMessages),
+      messages: (() => {
+        // Chỉ lấy tin nhắn user cuối cùng để tránh lỗi format tool history
+        const lastUserMsg = [...recentMessages].reverse().find((m: any) => m.role === "user");
+        const lastUserText = lastUserMsg?.parts
+          ? lastUserMsg.parts.filter((p: any) => p.type === "text").map((p: any) => p.text).join("")
+          : lastUserMsg?.content || "";
+        return [{ role: "user", content: lastUserText }];
+      })(),
       tools: {
         list_products: (tool as any)({
           description: "Tìm sản phẩm trong database",
