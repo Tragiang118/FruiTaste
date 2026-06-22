@@ -272,7 +272,7 @@ export default function ProductDetailPage() {
 
              <div className="min-h-[300px]">
                 {activeTab === 'description' ? (
-                   <div className="prose max-w-none text-gray-600 leading-loose text-lg">
+                   <div className="prose max-w-none text-gray-600 leading-loose text-lg w-full max-w-full break-words" style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}>
                       {product.description ? (
                          <div dangerouslySetInnerHTML={{ __html: product.description }} />
                       ) : (
@@ -292,7 +292,8 @@ export default function ProductDetailPage() {
                 ) : (
                    <div className="flex flex-col h-full">
                       <div 
-                         className="text-gray-600 leading-loose text-lg"
+                         className="prose max-w-none text-gray-600 leading-loose text-lg w-full max-w-full break-words"
+                         style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}
                          dangerouslySetInnerHTML={{ 
                             __html: product.healthInfo || ''
                          }} 
