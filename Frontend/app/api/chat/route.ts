@@ -56,12 +56,12 @@ NHIỆM VỤ:
 - Nếu tool 'list_orders' báo lỗi hoặc chưa đăng nhập, hãy nhẹ nhàng thông báo không tìm thấy thông tin và khuyên khách đăng nhập.`,
       messages: [{ role: "user", content: userText }],
       tools: {
-        list_products: tool({
+        list_products: (tool as any)({
           description: "Tìm sản phẩm trong database theo từ khóa",
           parameters: z.object({
             search: z.string().optional().describe("Từ khóa tìm kiếm sản phẩm"),
           }),
-          execute: async ({ search }) => {
+          execute: async ({ search }: { search?: string }) => {
             try {
               console.log("list_products executing, search:", search);
               const url = `${BACKEND_URL}/products?search=${encodeURIComponent(search || "")}`;
@@ -81,7 +81,7 @@ NHIỆM VỤ:
             }
           },
         }),
-        list_orders: tool({
+        list_orders: (tool as any)({
           description: "Lấy danh sách đơn hàng của khách hàng hiện tại",
           parameters: z.object({}),
           execute: async () => {
