@@ -38,7 +38,7 @@ export async function POST(req: Request) {
     console.log("User text:", userText);
     console.log("Cookie:", cookieHeader ? "YES" : "NO");
 
-    const result = streamText({
+    const result = (streamText as any)({
       model: groq("llama-3.3-70b-versatile"),
       system: `Bạn là trợ lý ảo FruiTaste - cửa hàng trái cây trực tuyến.
 NHIỆM VỤ:
@@ -104,7 +104,6 @@ NHIỆM VỤ:
           },
         }),
       },
-      maxSteps: 3,
     });
 
     // Trả về plain text stream - frontend sẽ đọc và xử lý
