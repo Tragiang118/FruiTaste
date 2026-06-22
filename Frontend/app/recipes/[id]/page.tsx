@@ -143,7 +143,7 @@ export default function RecipeDetailPage() {
                   <BookOpen className="text-[#FF6B4A]" /> Thực hiện
                 </h3>
                 {instructionSteps.length > 0 ? (
-                  <div className="space-y-16">
+                  <div className="space-y-6">
                     {instructionSteps.map((step: string, index: number) => {
                       if (!step) return null;
                       return (
