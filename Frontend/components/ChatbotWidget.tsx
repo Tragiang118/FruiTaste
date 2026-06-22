@@ -434,8 +434,7 @@ export default function ChatbotWidget() {
                       message.role === "user" ? "flex-end" : "flex-start",
                   }}
                 >
-                  {message.type === "text" && (
-                    <div
+                  <div
                       style={{
                         borderRadius:
                           message.role === "user"
@@ -466,7 +465,6 @@ export default function ChatbotWidget() {
                         </Streamdown>
                       )}
                     </div>
-                  )}
 
                   {(message.products && message.products.length > 0) && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px' }}>
