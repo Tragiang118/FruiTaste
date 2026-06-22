@@ -17,15 +17,15 @@ export default function AboutPage() {
     { 
       icon: <ShieldCheck className="text-green-500" size={26} />, 
       title: "An toàn tuyệt đối", 
-      desc: "Nói không với chất bảo quan độc hại, quy trình kiểm duyệt vệ sinh thực phẩm nghiêm ngặt." 
+      desc: "Nói không với chất bảo quản độc hại, quy trình kiểm duyệt vệ sinh thực phẩm nghiêm ngặt." 
     }
   ];
 
   return (
-    <div className="min-h-screen bg-[#FFFDFB] text-gray-900 font-sans pb-20">
+    <div className="min-h-screen bg-[#FFFDFB] text-gray-900 font-sans pb-16">
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between w-full mb-8 mt-4">
+        <div className="flex items-center justify-between w-full mb-6 mt-4">
             <BackButton className="px-0 h-auto mb-0" />
             <div className="flex items-center gap-2 text-sm text-gray-500">
                 <Link href="/" className="hover:text-[#FF6B4A] flex items-center gap-1 font-medium">
@@ -38,12 +38,12 @@ export default function AboutPage() {
       </div>
 
       {/* Hero Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12">
-        <div className="bg-[#FFF4E6]/50 rounded-[2.5rem] py-12 px-6 text-center border border-orange-100/50">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
+        <div className="bg-[#FFF4E6]/50 rounded-[2.5rem] py-10 px-6 text-center border border-orange-100/50">
           <span className="text-[#FF6B4A] font-bold tracking-wider uppercase text-[11px] mb-2 block">
             Câu chuyện của FruiTaste
           </span>
-          <h1 className="text-2xl md:text-4xl font-black text-gray-900 mb-3 tracking-tight">
+          <h1 className="text-2xl md:text-3xl font-black text-gray-900 mb-2 tracking-tight">
             Mang Trái Cây Sạch Đến Mọi Nhà
           </h1>
           <p className="text-gray-500 text-xs md:text-sm max-w-lg mx-auto leading-relaxed">
@@ -53,7 +53,7 @@ export default function AboutPage() {
       </section>
 
       {/* Journey & Info */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
           <div className="relative h-[250px] md:h-[350px] rounded-[2rem] overflow-hidden shadow-sm border border-gray-100">
              <img 
@@ -91,12 +91,12 @@ export default function AboutPage() {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
            {features.map((f, idx) => (
-             <div key={idx} className="border border-gray-100 shadow-sm rounded-3xl bg-white text-center p-6 flex flex-col items-center justify-center hover:shadow-md transition-shadow">
-                <div className="w-12 h-12 bg-gray-50 rounded-2xl flex items-center justify-center mb-3.5">
+             <div key={idx} className="border border-gray-100 shadow-sm rounded-3xl bg-white text-center p-5 pt-6 pb-6 flex flex-col items-center justify-start hover:shadow-md transition-shadow h-full">
+                <div className="w-12 h-12 bg-gray-50 rounded-2xl flex items-center justify-center mb-3">
                   {f.icon}
                 </div>
-                <h3 className="text-sm font-bold text-gray-900 mb-1.5">{f.title}</h3>
-                <p className="text-gray-500 text-xs leading-relaxed max-w-[240px]">{f.desc}</p>
+                <h3 className="text-sm font-bold text-gray-900 mb-1">{f.title}</h3>
+                <p className="text-gray-500 text-xs leading-relaxed max-w-[280px]">{f.desc}</p>
              </div>
            ))}
         </div>
