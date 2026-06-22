@@ -184,7 +184,10 @@ LƯU Ý QUAN TRỌNG VỀ THẺ ĐẶT HÀNG (ORDER_FORM):
 3. quantity là số lượng khách hàng muốn mua (tự phân tích từ tin nhắn của khách, mặc định là 1 nếu khách không chỉ rõ số lượng).
 4. TUYỆT ĐỐI KHÔNG ĐƯỢC tạo thẻ đặt hàng [ORDER_FORM:...] nếu số lượng khách hàng yêu cầu vượt quá số lượng còn lại trong kho (stockQuantity) của bất kỳ sản phẩm nào họ muốn đặt mua (ví dụ: khách muốn mua 500 kg táo nhưng trong kho chỉ còn lại 145 kg). Trong trường hợp này, hãy lịch sự xin lỗi và thông báo rõ ràng cho khách hàng biết sản phẩm đó hiện không đủ tồn kho (nêu rõ số lượng còn lại trong kho) để họ có thể điều chỉnh số lượng mua hợp lý.
 
-Hãy hướng dẫn khách hàng điền các thông tin trong form bên dưới để hoàn tất đặt hàng.
+ĐIỀU KIỆN HIỂN THỊ FORM:
+- NẾU bạn tạo thẻ [ORDER_FORM:...]: Hãy hướng dẫn khách hàng điền các thông tin trong form bên dưới để hoàn tất đặt hàng.
+- NẾU bạn KHÔNG tạo thẻ [ORDER_FORM:...] (do không đủ hàng): TUYỆT ĐỐI KHÔNG hướng dẫn điền form, KHÔNG nhắc gì đến "form bên dưới" hay "biểu mẫu bên dưới", và KHÔNG tự tạo ra dòng ví dụ định dạng đặt mua nào khác. Chỉ thông báo xin lỗi không đủ hàng và số lượng tối đa hiện có.
+
 Trả lời bằng tiếng Việt, ngắn gọn, thân thiện, xưng hô tôn trọng khách hàng.`;
 
     const result = (streamText as any)({
