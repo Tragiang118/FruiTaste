@@ -48,6 +48,7 @@ export class OrdersService {
             data: { 
               status: 'CANCELLED',
               cancelledBy: 'ADMIN', // Hệ thống tự hủy coi như Admin
+              cancelledReason: 'SYSTEM',
               cancelledAt: new Date(),
             },
           });
@@ -220,6 +221,7 @@ export class OrdersService {
           data: { 
             status,
             cancelledBy: actorRole === 'ADMIN' ? 'ADMIN' : 'USER',
+            cancelledReason: actorRole === 'ADMIN' ? 'ADMIN' : 'USER',
             cancelledAt: new Date(),
           },
         });

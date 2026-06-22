@@ -27,6 +27,7 @@ interface OrderDetail {
   id: number;
   status: 'PENDING' | 'CONFIRMED' | 'PREPARING' | 'SHIPPING' | 'COMPLETED' | 'CANCELLED';
   cancelledBy?: 'USER' | 'ADMIN';
+  cancelledReason?: 'USER' | 'ADMIN' | 'SYSTEM';
   shippingName: string;
   shippingPhone: string;
   shippingAddress: string;
@@ -189,18 +190,30 @@ export default function OrderDetailPage() {
                 </div>
                 <div>
                   <h3 className="font-bold text-red-600 text-[13px]">
-                    {order.cancelledBy === 'USER'
-                      ? 'Bạn đã chủ động hủy đơn hàng này'
-                      : order.cancelledBy === 'ADMIN'
+                    {order.cancelledReason === 'SYSTEM'
+                      ? 'Đơn hàng tự động hủy do hệ thống'
+                      : order.cancelledReason === 'ADMIN'
                         ? 'Đơn hàng này đã bị cửa hàng hủy'
-                        : 'Đơn hàng đã được hủy'}
+                        : order.cancelledReason === 'USER'
+                          ? 'Bạn đã chủ động hủy đơn hàng này'
+                          : order.cancelledBy === 'USER'
+                            ? 'Bạn đã chủ động hủy đơn hàng này'
+                            : order.cancelledBy === 'ADMIN'
+                              ? 'Đơn hàng này đã bị cửa hàng hủy'
+                              : 'Đơn hàng đã được hủy'}
                   </h3>
                   <p className="text-[11px] text-red-400 font-medium mt-0.5">
-                    {order.cancelledBy === 'USER'
-                      ? 'Cảm ơn bạn đã quan tâm. Hy vọng sẽ được phục vụ bạn ở đơn hàng sau nhé!'
-                      : order.cancelledBy === 'ADMIN'
+                    {order.cancelledReason === 'SYSTEM'
+                      ? 'Đơn hàng đã bị hệ thống tự động hủy do quá thời gian thanh toán.'
+                      : order.cancelledReason === 'ADMIN'
                         ? 'Vui lòng quay lại cửa hàng nếu cần mua lại sản phẩm hoặc liên hệ hỗ trợ nhé.'
-                        : 'Đơn hàng đã được hủy thành công. Vui lòng quay lại cửa hàng nếu cần mua lại sản phẩm.'}
+                        : order.cancelledReason === 'USER'
+                          ? 'Cảm ơn bạn đã quan tâm. Hy vọng sẽ được phục vụ bạn ở đơn hàng sau nhé!'
+                          : order.cancelledBy === 'USER'
+                            ? 'Cảm ơn bạn đã quan tâm. Hy vọng sẽ được phục vụ bạn ở đơn hàng sau nhé!'
+                            : order.cancelledBy === 'ADMIN'
+                              ? 'Vui lòng quay lại cửa hàng nếu cần mua lại sản phẩm hoặc liên hệ hỗ trợ nhé.'
+                              : 'Đơn hàng đã được hủy thành công. Vui lòng quay lại cửa hàng nếu cần mua lại sản phẩm.'}
                   </p>
                 </div>
               </div>

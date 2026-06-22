@@ -243,11 +243,17 @@ export default function OrderDetailsDialog({ orderId, onUpdate }: OrderDetailsDi
                   </div>
                   <div>
                     <p className="font-black text-lg">
-                      {order.cancelledBy === 'USER'
-                        ? 'Đơn hàng bị khách hàng hủy'
-                        : order.cancelledBy === 'ADMIN'
-                          ? 'Đơn hàng bị hệ thống/admin hủy'
-                          : 'Đơn hàng đã bị hủy'}
+                      {order.cancelledReason === 'SYSTEM'
+                        ? 'Đơn hàng bị hệ thống tự động hủy'
+                        : order.cancelledReason === 'ADMIN'
+                          ? 'Đơn hàng bị admin hủy'
+                          : order.cancelledReason === 'USER'
+                            ? 'Đơn hàng bị khách hàng tự hủy'
+                            : order.cancelledBy === 'USER'
+                              ? 'Đơn hàng bị khách hàng hủy'
+                              : order.cancelledBy === 'ADMIN'
+                                ? 'Đơn hàng bị hệ thống/admin hủy'
+                                : 'Đơn hàng đã bị hủy'}
                     </p>
                     {order.cancelledAt && (
                       <p className="text-sm font-medium opacity-80 italic">Thời gian hủy: {format(new Date(order.cancelledAt), "HH:mm:ss dd/MM/yyyy", { locale: vi })}</p>

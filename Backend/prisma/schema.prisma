@@ -249,6 +249,7 @@ model Order {
   finalAmount     Float
   status          OrderStatus   @default(PENDING)
   cancelledBy     Role?
+  cancelledReason String?
 
   confirmedAt     DateTime?
   preparingAt     DateTime?
