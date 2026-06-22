@@ -91,6 +91,7 @@ export async function POST(req: Request) {
     // Fetch dữ liệu trước khi gọi AI
     let contextData = "";
     let productTags = "";
+    let orderFormTag = "";
 
     // 1. Tải danh sách tất cả sản phẩm
     let productsList: any[] = [];
@@ -106,8 +107,12 @@ export async function POST(req: Request) {
     // 2. Xử lý logic tìm sản phẩm (cho cả intent product và general nếu có từ khóa khớp mạnh)
     const matchedProducts = searchProductsLocally(productsList, userText);
     
-    // Nếu có intent hỏi sản phẩm, hoặc người dùng hỏi chung nhưng khớp mạnh tên sản phẩm cụ thể
-    if (intent === "product" || (intent === "general" && matchedProducts.length > 0)) {
+    // Nhận diện ý định đặt hàng (mua, đặt, order...)
+    const buyKeywords = ["đặt", "mua", "order", "lấy", "bán cho", "chốt", "thanh toán", "cọc", "muốn mua", "muốn đặt"];
+    const isBuyIntent = buyKeywords.some(k => userText.toLowerCase().includes(k)) && matchedProducts.length > 0;
+
+    // Nếu có intent hỏi sản phẩm, hoặc người dùng hỏi chung nhưng khớp mạnh tên sản phẩm cụ thể, hoặc muốn mua luôn
+    if (intent === "product" || (intent === "general" && matchedProducts.length > 0) || isBuyIntent) {
       const topProducts = matchedProducts.slice(0, 3);
       if (topProducts.length > 0) {
         contextData = `\n\nDỮ LIỆU SẢN PHẨM TỪ HỆ THỐNG:\n` +
@@ -118,6 +123,17 @@ export async function POST(req: Request) {
         productTags = topProducts.map((p: any) =>
           `[PRODUCT:${p.id}:${p.name}:${p.price}:${p.unit || "kg"}:${p.stockQuantity ?? 0}]`
         ).join(" ");
+
+        if (isBuyIntent) {
+          // Trích xuất số lượng mua (tìm số đầu tiên xuất hiện trong câu)
+          const quantityMatch = userText.match(/\b\d+\b/);
+          let quantity = 1;
+          if (quantityMatch) {
+            const q = parseInt(quantityMatch[0], 10);
+            if (q > 0) quantity = q;
+          }
+          orderFormTag = `[ORDER_FORM:${topProducts[0].id}:${quantity}]`;
+        }
       }
     }
 
@@ -160,6 +176,7 @@ export async function POST(req: Request) {
 Nhiệm vụ: Trả lời thân thiện về hoa quả, dinh dưỡng, món ăn từ trái cây, đơn hàng của khách.
 ${contextData ? `Sử dụng dữ liệu sau để trả lời chính xác, TUYỆT ĐỐI không tự bịa đặt giá cả hoặc thông tin đơn hàng khác với dữ liệu dưới đây:\n${contextData}` : "Trả lời các thông tin chung về hoa quả, tư vấn dinh dưỡng hoặc hướng dẫn nấu ăn một cách hữu ích."}
 ${productTags ? `\nSau phần trả lời, thêm dòng này để hiển thị thẻ sản phẩm: ${productTags}` : ""}
+${orderFormTag ? `\nSau phần trả lời (và sau cả thẻ sản phẩm nếu có), BẮT BUỘC thêm thẻ đặt hàng này vào cuối câu trả lời để khách hàng điền thông tin: ${orderFormTag}\nHãy hướng dẫn khách hàng điền các thông tin trong form bên dưới để hoàn tất đặt hàng.` : ""}
 Trả lời bằng tiếng Việt, ngắn gọn, thân thiện, xưng hô tôn trọng khách hàng.`;
 
     const result = (streamText as any)({

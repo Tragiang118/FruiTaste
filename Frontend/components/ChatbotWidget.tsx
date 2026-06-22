@@ -13,9 +13,10 @@ import {
 import { usePathname } from "next/navigation";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { Streamdown } from "streamdown";
-import { useCartStore } from "@/lib/store";
+import { useCartStore, useAuthStore } from "@/lib/store";
 import { toast } from "sonner";
 import { getImageUrl } from "@/lib/utils";
+import api from "@/lib/axios";
 
 const BACKEND_API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
@@ -86,6 +87,256 @@ const ChatProductCard = ({ id, name, price, unit = "kg", stock = 0 }: { id: numb
   );
 };
 
+// Component xác nhận đặt hàng trực tiếp trong chat
+const ChatOrderForm = ({ productId, quantity }: { productId: number, quantity: number }) => {
+  const { user } = useAuthStore();
+  const [product, setProduct] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [shippingName, setShippingName] = useState("");
+  const [shippingPhone, setShippingPhone] = useState("");
+  const [shippingAddress, setShippingAddress] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("COD");
+  const [submitting, setSubmitting] = useState(false);
+  const [orderSuccess, setOrderSuccess] = useState<any>(null);
+  const [errorMsg, setErrorMsg] = useState("");
+
+  // Tự fetch thông tin sản phẩm và thông tin giao hàng mặc định của user
+  useEffect(() => {
+    let active = true;
+    const fetchData = async () => {
+      try {
+        const prodRes = await fetch(`${BACKEND_API}/products/${productId}`);
+        const prodData = await prodRes.json();
+        
+        if (active) {
+          setProduct(prodData);
+        }
+
+        const profileRes = await api.get('/auth/profile');
+        const profile = profileRes.data;
+        if (active && profile) {
+          setShippingName(profile.fullName || "");
+          setShippingPhone(profile.phone || "");
+          
+          const defaultAddr = profile.addresses?.find((a: any) => a.isDefault) || profile.addresses?.[0];
+          if (defaultAddr) {
+            setShippingName(defaultAddr.recipientName || profile.fullName || "");
+            setShippingPhone(defaultAddr.phone || profile.phone || "");
+            setShippingAddress(defaultAddr.fullAddress || "");
+          }
+        }
+      } catch (err) {
+        console.error("Fetch data for chatbot order form failed", err);
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+
+    fetchData();
+    return () => { active = false; };
+  }, [productId]);
+
+  if (loading) {
+    return (
+      <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-center gap-2" style={{ fontFamily: 'sans-serif', maxWidth: '280px', width: '100%' }}>
+        <Loader2 size={16} className="animate-spin text-green-500" />
+        <span className="text-[11px] text-gray-500">Đang tải thông tin đặt hàng...</span>
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div className="bg-red-50 p-3 rounded-xl border border-red-100 text-[11px] text-red-600 font-medium" style={{ fontFamily: 'sans-serif', maxWidth: '280px' }}>
+        Sản phẩm không khả dụng hoặc đã ngừng kinh doanh.
+      </div>
+    );
+  }
+
+  if (orderSuccess) {
+    return (
+      <div className="bg-green-50 p-3.5 rounded-2xl border border-green-200 text-[11px] text-green-800 space-y-2" style={{ fontFamily: 'sans-serif', maxWidth: '280px', width: '100%', marginBottom: '10px' }}>
+        <div className="font-bold text-xs flex items-center gap-1">🎉 Đặt hàng thành công!</div>
+        <p className="m-0 leading-relaxed">Đơn hàng <strong>#{orderSuccess.id}</strong> của bạn đã được tạo.</p>
+        <p className="m-0 leading-relaxed">Hệ thống đang chuẩn bị giao hàng đến: <strong>{orderSuccess.shippingAddress}</strong>.</p>
+        <p className="m-0 text-[10px] text-gray-500 italic leading-relaxed">Hóa đơn chi tiết đã được gửi tới email của bạn.</p>
+      </div>
+    );
+  }
+
+  const subtotal = product.price * quantity;
+  const shippingFee = subtotal > 300000 ? 0 : 30000;
+  const total = subtotal + shippingFee;
+
+  const handleOrder = async () => {
+    if (!shippingName.trim()) {
+      setErrorMsg("Vui lòng nhập họ tên người nhận");
+      return;
+    }
+    if (!shippingPhone.trim()) {
+      setErrorMsg("Vui lòng nhập số điện thoại");
+      return;
+    }
+    if (!shippingAddress.trim()) {
+      setErrorMsg("Vui lòng nhập địa chỉ giao hàng");
+      return;
+    }
+
+    setSubmitting(true);
+    setErrorMsg("");
+
+    try {
+      const res = await api.post('/orders', {
+        shippingName: shippingName.trim(),
+        shippingPhone: shippingPhone.trim(),
+        shippingAddress: shippingAddress.trim(),
+        paymentMethod,
+        items: [{ productId: product.id, quantity, priceAtPurchase: product.price }],
+        totalAmount: subtotal,
+        shippingFee: shippingFee,
+        finalAmount: total
+      });
+
+      const order = res.data;
+
+      // Gửi email hóa đơn
+      try {
+        await fetch('/api/orders/send-invoice', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: user?.email,
+            firstName: user?.fullName?.split(' ').pop() || user?.fullName || 'Khách hàng',
+            order,
+          }),
+        });
+      } catch (e) {
+        console.error("Failed to send chatbot invoice email", e);
+      }
+
+      setOrderSuccess(order);
+      toast.success("Đặt hàng thành công!");
+    } catch (err: any) {
+      console.error("Chatbot checkout failed", err);
+      const msg = err.response?.data?.message || "Có lỗi xảy ra khi tạo đơn hàng. Vui lòng thử lại!";
+      setErrorMsg(msg);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="bg-white p-3.5 rounded-2xl border border-gray-100 shadow-md space-y-3 cursor-default" style={{ maxWidth: '280px', fontFamily: 'sans-serif', width: '100%', marginBottom: '10px' }}>
+      <div className="border-b border-gray-100 pb-1.5">
+        <h4 className="font-extrabold text-[12px] text-gray-900 m-0">📦 XÁC NHẬN ĐƠN HÀNG</h4>
+      </div>
+
+      {/* Thông tin sản phẩm */}
+      <div className="flex gap-2 items-center bg-gray-50 p-2 rounded-xl">
+        <div className="flex-1 min-w-0">
+          <p className="font-bold text-xs text-gray-900 truncate m-0">{product.name}</p>
+          <p className="text-[10px] text-gray-500 m-0">Số lượng: {quantity} {product.unit || "kg"}</p>
+        </div>
+        <div className="text-right flex-shrink-0">
+          <p className="font-bold text-xs text-[#FF6B4A] m-0">{(product.price * quantity).toLocaleString("vi-VN")} đ</p>
+        </div>
+      </div>
+
+      {/* Thông tin giao hàng */}
+      <div className="space-y-2 pt-0.5 text-[10px]">
+        <div>
+          <label className="block text-gray-500 font-semibold mb-0.5">Người nhận</label>
+          <input
+            type="text"
+            value={shippingName}
+            onChange={(e) => setShippingName(e.target.value)}
+            placeholder="Nhập tên người nhận"
+            className="w-full px-2 py-1.5 border border-gray-200 rounded-lg text-xs outline-none focus:border-green-500 font-medium"
+          />
+        </div>
+        <div>
+          <label className="block text-gray-500 font-semibold mb-0.5">Số điện thoại</label>
+          <input
+            type="text"
+            value={shippingPhone}
+            onChange={(e) => setShippingPhone(e.target.value)}
+            placeholder="Nhập số điện thoại"
+            className="w-full px-2 py-1.5 border border-gray-200 rounded-lg text-xs outline-none focus:border-green-500 font-medium"
+          />
+        </div>
+        <div>
+          <label className="block text-gray-500 font-semibold mb-0.5">Địa chỉ giao hàng</label>
+          <textarea
+            value={shippingAddress}
+            onChange={(e) => setShippingAddress(e.target.value)}
+            placeholder="Nhập địa chỉ giao hàng đầy đủ"
+            rows={2}
+            className="w-full px-2 py-1.5 border border-gray-200 rounded-lg text-xs outline-none resize-none focus:border-green-500 font-medium"
+          />
+        </div>
+        <div>
+          <label className="block text-gray-500 font-semibold mb-0.5">Thanh toán</label>
+          <select
+            value={paymentMethod}
+            onChange={(e) => setPaymentMethod(e.target.value)}
+            className="w-full px-2 py-1.5 border border-gray-200 rounded-lg text-xs outline-none focus:border-green-500 font-medium bg-white"
+          >
+            <option value="COD">Thanh toán khi nhận hàng (COD)</option>
+            <option value="BANK_TRANSFER">Chuyển khoản QR Ngân hàng</option>
+          </select>
+        </div>
+      </div>
+
+      {paymentMethod === "BANK_TRANSFER" && (
+        <div className="bg-orange-50 border border-orange-100 rounded-xl p-2 flex flex-col items-center gap-1.5">
+          <p className="text-[9px] text-orange-700 font-bold m-0 text-center">Quét QR chuyển khoản {(total).toLocaleString("vi-VN")} đ</p>
+          <div className="w-28 h-28 bg-white p-1 rounded-lg border border-orange-100 flex items-center justify-center">
+            <img
+              src={`https://img.vietqr.io/image/970436-1014375356-qr_only.png?amount=${total}&addInfo=THANH%20TOAN%20FRUIT%20CHATBOT`}
+              alt="QR Code"
+              className="w-full h-full object-contain"
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Chi phí & Nút */}
+      <div className="pt-2 border-t border-gray-100 space-y-1 text-[11px]">
+        <div className="flex justify-between text-gray-500">
+          <span>Tiền hàng</span>
+          <span>{subtotal.toLocaleString("vi-VN")} đ</span>
+        </div>
+        <div className="flex justify-between text-gray-500">
+          <span>Phí ship</span>
+          <span>{shippingFee === 0 ? "Miễn phí" : `${shippingFee.toLocaleString("vi-VN")} đ`}</span>
+        </div>
+        <div className="flex justify-between font-extrabold text-gray-900 border-t border-gray-50 pt-1">
+          <span>Tổng cộng</span>
+          <span className="text-[#FF6B4A]">{total.toLocaleString("vi-VN")} đ</span>
+        </div>
+
+        {errorMsg && (
+          <p className="text-[9px] text-red-600 font-bold m-0 pt-1 text-center">{errorMsg}</p>
+        )}
+
+        <button
+          onClick={handleOrder}
+          disabled={submitting}
+          className="w-full mt-2.5 py-2 bg-green-500 hover:bg-green-600 disabled:bg-gray-300 text-white font-extrabold text-[11px] rounded-xl shadow-sm cursor-pointer transition-colors border-none flex items-center justify-center gap-1"
+        >
+          {submitting ? (
+            <>
+              <Loader2 size={10} className="animate-spin" />
+              ĐANG ĐẶT HÀNG...
+            </>
+          ) : (
+            "XÁC NHẬN ĐẶT HÀNG"
+          )}
+        </button>
+      </div>
+    </div>
+  );
+};
 
 const QUICK_PROMPTS = [
   "Táo làm được món gì? 🍎",
@@ -99,6 +350,10 @@ type ChatMsg = {
   role: "user" | "assistant";
   text: string;
   products?: any[];
+  orderForm?: {
+    productId: number;
+    quantity: number;
+  };
 };
 
 export default function ChatbotWidget() {
@@ -175,15 +430,24 @@ export default function ChatbotWidget() {
           }
         }
 
+        // Parse order form từ tag [ORDER_FORM:productId:quantity]
+        let orderForm: any = undefined;
+        const orderFormMatch = /\[ORDER_FORM:\s*([^:]+)\s*:\s*([^\]]+)\]/gi.exec(fullText);
+        if (orderFormMatch) {
+          const [_, pId, qty] = orderFormMatch;
+          orderForm = { productId: parseInt(pId.trim(), 10), quantity: parseInt(qty.trim(), 10) };
+        }
+
         // Dọn text hiển thị
         let cleanText = fullText
           .replace(/\[PRODUCT:[^\]]*\]/gi, "")
+          .replace(/\[ORDER_FORM:[^\]]*\]/gi, "")
           .replace(/<[^>]*>.*?<\/[^>]*>/gs, "")
           .trim();
 
         setMessages((prev) =>
           prev.map((m) =>
-            m.id === assistantId ? { ...m, text: cleanText, products } : m
+            m.id === assistantId ? { ...m, text: cleanText, products, orderForm } : m
           )
         );
       }
@@ -193,7 +457,10 @@ export default function ChatbotWidget() {
       const userMsgsCount = messages.filter((m) => m.role === "user").length + 1;
       if (userMsgsCount > savedCountRef.current) {
         savedCountRef.current = userMsgsCount;
-        const botText = fullText.replace(/\[PRODUCT:[^\]]*\]/gi, "").trim();
+        const botText = fullText
+          .replace(/\[PRODUCT:[^\]]*\]/gi, "")
+          .replace(/\[ORDER_FORM:[^\]]*\]/gi, "")
+          .trim();
         fetch(`${BACKEND}/chat/save`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -435,36 +702,36 @@ export default function ChatbotWidget() {
                   }}
                 >
                   <div
-                      style={{
-                        borderRadius:
-                          message.role === "user"
-                            ? "16px 4px 16px 16px"
-                            : "4px 16px 16px 16px",
-                        padding: "10px 14px",
-                        fontSize: "14px",
-                        lineHeight: 1.6,
-                        boxShadow: "0 1px 3px rgba(0,0,0,0.07)",
-                        backgroundColor:
-                          message.role === "user" ? "#22c55e" : "#ffffff",
-                        color: message.role === "user" ? "#fff" : "#374151",
-                        border:
-                          message.role === "user"
-                            ? "none"
-                            : "1px solid #f3f4f6",
-                        wordBreak: "break-word",
-                        overflowWrap: "anywhere",
-                      }}
-                    >
-                      {message.role === "user" ? (
-                        <div style={{ whiteSpace: "pre-wrap" }}>
-                          {message.text}
-                        </div>
-                      ) : (
-                        <Streamdown mode="static" linkSafety={{ enabled: false }}>
-                          {message.text}
-                        </Streamdown>
-                      )}
-                    </div>
+                    style={{
+                      borderRadius:
+                        message.role === "user"
+                          ? "16px 4px 16px 16px"
+                          : "4px 16px 16px 16px",
+                      padding: "10px 14px",
+                      fontSize: "14px",
+                      lineHeight: 1.6,
+                      boxShadow: "0 1px 3px rgba(0,0,0,0.07)",
+                      backgroundColor:
+                        message.role === "user" ? "#22c55e" : "#ffffff",
+                      color: message.role === "user" ? "#fff" : "#374151",
+                      border:
+                        message.role === "user"
+                          ? "none"
+                          : "1px solid #f3f4f6",
+                      wordBreak: "break-word",
+                      overflowWrap: "anywhere",
+                    }}
+                  >
+                    {message.role === "user" ? (
+                      <div style={{ whiteSpace: "pre-wrap" }}>
+                        {message.text}
+                      </div>
+                    ) : (
+                      <Streamdown mode="static" linkSafety={{ enabled: false }}>
+                        {message.text}
+                      </Streamdown>
+                    )}
+                  </div>
 
                   {(message.products && message.products.length > 0) && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px' }}>
@@ -478,6 +745,15 @@ export default function ChatbotWidget() {
                           stock={Number(p.stock) || 0}
                         />
                       ))}
+                    </div>
+                  )}
+
+                  {message.orderForm && (
+                    <div style={{ marginTop: '8px', width: '100%' }}>
+                      <ChatOrderForm
+                        productId={message.orderForm.productId}
+                        quantity={message.orderForm.quantity}
+                      />
                     </div>
                   )}
                 </div>
