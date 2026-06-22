@@ -167,6 +167,11 @@ const ChatOrderForm = ({ items }: { items: Array<{ productId: number, quantity: 
 
   const validItems = items.filter(item => productsMap[item.productId]);
 
+  const hasOutOfStockItem = validItems.some(item => {
+    const prod = productsMap[item.productId];
+    return prod && item.quantity > prod.stockQuantity;
+  });
+
   if (validItems.length === 0) {
     return (
       <div className="bg-red-50 p-3 rounded-xl border border-red-100 text-[11px] text-red-600 font-medium" style={{ fontFamily: 'sans-serif', maxWidth: '280px' }}>
@@ -269,11 +274,15 @@ const ChatOrderForm = ({ items }: { items: Array<{ productId: number, quantity: 
       <div className="space-y-1.5 max-h-[140px] overflow-y-auto pr-1">
         {validItems.map((item, index) => {
           const prod = productsMap[item.productId];
+          const isOutOfStock = prod && item.quantity > prod.stockQuantity;
           return (
-            <div key={`${item.productId}-${index}`} className="flex gap-2 items-center bg-gray-50 p-2 rounded-xl">
+            <div key={`${item.productId}-${index}`} className={`flex gap-2 items-center bg-gray-50 p-2 rounded-xl border ${isOutOfStock ? 'border-red-200 bg-red-50/50' : 'border-transparent'}`}>
               <div className="flex-1 min-w-0">
                 <p className="font-bold text-xs text-gray-900 truncate m-0">{prod.name}</p>
-                <p className="text-[10px] text-gray-500 m-0">Số lượng: {item.quantity} {prod.unit || "kg"}</p>
+                <p className={`text-[10px] m-0 ${isOutOfStock ? 'text-red-500 font-bold' : 'text-gray-500'}`}>
+                  Số lượng: {item.quantity} {prod.unit || "kg"}
+                  {isOutOfStock && ` (Còn lại: ${prod.stockQuantity} ${prod.unit || "kg"})`}
+                </p>
               </div>
               <div className="text-right flex-shrink-0">
                 <p className="font-bold text-xs text-[#FF6B4A] m-0">{(prod.price * item.quantity).toLocaleString("vi-VN")} đ</p>
@@ -368,7 +377,7 @@ const ChatOrderForm = ({ items }: { items: Array<{ productId: number, quantity: 
 
         <button
           onClick={handleOrder}
-          disabled={submitting}
+          disabled={submitting || hasOutOfStockItem}
           className="w-full mt-2.5 py-2 bg-green-500 hover:bg-green-600 disabled:bg-gray-300 text-white font-extrabold text-[11px] rounded-xl shadow-sm cursor-pointer transition-colors border-none flex items-center justify-center gap-1"
         >
           {submitting ? (
@@ -376,6 +385,8 @@ const ChatOrderForm = ({ items }: { items: Array<{ productId: number, quantity: 
               <Loader2 size={10} className="animate-spin" />
               ĐANG ĐẶT HÀNG...
             </>
+          ) : hasOutOfStockItem ? (
+            "HÀNG TRONG KHO KHÔNG ĐỦ"
           ) : (
             "XÁC NHẬN ĐẶT HÀNG"
           )}
