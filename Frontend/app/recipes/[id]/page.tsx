@@ -52,15 +52,15 @@ export default function RecipeDetailPage() {
     ?.map((ing: any) => ing.product) || [];
 
   // Tách linh hoạt: Cắt theo "Bước X:" hoặc "Bước X." hoặc dấu xuống dòng.
-  const instructionSteps = recipe.instructions 
+  const instructionSteps = recipe.instructions
     ? recipe.instructions
-        // Cắt theo cụm "Bước X:" hoặc "Bước X." (không phân biệt hoa thường)
-        .split(/(?=Bước\s*\d+\s*[.:])/i)
-        .flatMap((s: string) => s.split('\n'))
-        .map((s: string) => s.trim())
-        // Bỏ chữ "Bước X..." ở đầu câu để tránh bị lặp lại
-        .map((s: string) => s.replace(/^Bước\s*\d+\s*[.:]\s*/i, ''))
-        .filter((s: string) => s.length > 0)
+      // Cắt theo cụm "Bước X:" hoặc "Bước X." (không phân biệt hoa thường)
+      .split(/(?=Bước\s*\d+\s*[.:])/i)
+      .flatMap((s: string) => s.split('\n'))
+      .map((s: string) => s.trim())
+      // Bỏ chữ "Bước X..." ở đầu câu để tránh bị lặp lại
+      .map((s: string) => s.replace(/^Bước\s*\d+\s*[.:]\s*/i, ''))
+      .filter((s: string) => s.length > 0)
     : [];
 
   return (
@@ -71,7 +71,7 @@ export default function RecipeDetailPage() {
           <div className="flex items-center gap-2 text-sm text-gray-500 leading-tight">
             <Link href="/" className="hover:text-[#FF6B4A] flex items-center gap-1"><Home size={14} /> Trang chủ</Link>
             <ChevronRight size={14} />
-            <Link href="/recipes" className="hover:text-[#FF6B4A]">Góc Công Thức</Link>
+            <Link href="/recipes" className="hover:text-[#FF6B4A]">Góc Món ăn</Link>
             <ChevronRight size={14} />
             <span className="text-[#FF6B4A] font-medium truncate max-w-[150px]">{recipe?.name || id}</span>
           </div>
@@ -80,9 +80,9 @@ export default function RecipeDetailPage() {
         <div className="bg-white rounded-[2rem] shadow-sm overflow-hidden border border-gray-100">
           {/* Banner Ảnh chính */}
           <div className="relative h-[400px] w-full bg-orange-50">
-            <img 
-              src={getImageUrl(recipe.imageUrl || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=1200&q=80")} 
-              alt={recipe.name} 
+            <img
+              src={getImageUrl(recipe.imageUrl || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=1200&q=80")}
+              alt={recipe.name}
               className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-gray-900/80 via-gray-900/30 to-transparent flex items-end">
@@ -113,7 +113,7 @@ export default function RecipeDetailPage() {
                 <h3 className="text-2xl font-bold text-gray-900 flex items-center gap-2 mb-6 pb-2 border-b-2 border-gray-100">
                   <Utensils className="text-[#FF6B4A]" /> Nguyên liệu
                 </h3>
-                
+
                 {recipe.ingredients && recipe.ingredients.length > 0 ? (
                   <ul className="space-y-4 bg-orange-50/50 p-6 rounded-3xl border border-orange-100 mb-12 shadow-sm">
                     {recipe.ingredients.map((ing: any, i: number) => (
@@ -176,46 +176,47 @@ export default function RecipeDetailPage() {
                   {linkedProducts.map((product: any) => {
                     const outStock = product.stockQuantity <= 0;
                     return (
-                    <div key={product.id} className="bg-white rounded-3xl border border-gray-100 shadow-sm hover:shadow-xl hover:border-green-100 transition-all flex flex-col group overflow-hidden">
-                      <Link href={`/products/${product.id}`} className="relative overflow-hidden flex aspect-[4/3] bg-white w-full flex-shrink-0 items-center justify-center p-0">
-                        <img 
-                          src={getImageUrl(product.mediaUrls?.[0] || "https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=400&q=80")} 
-                          alt={product.name} 
-                          className="w-full h-full object-cover filter mix-blend-multiply group-hover:scale-110 transition-transform duration-500"
-                        />
-                        {outStock && (
+                      <div key={product.id} className="bg-white rounded-3xl border border-gray-100 shadow-sm hover:shadow-xl hover:border-green-100 transition-all flex flex-col group overflow-hidden">
+                        <Link href={`/products/${product.id}`} className="relative overflow-hidden flex aspect-[4/3] bg-white w-full flex-shrink-0 items-center justify-center p-0">
+                          <img
+                            src={getImageUrl(product.mediaUrls?.[0] || "https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=400&q=80")}
+                            alt={product.name}
+                            className="w-full h-full object-cover filter mix-blend-multiply group-hover:scale-110 transition-transform duration-500"
+                          />
+                          {outStock && (
                             <div className="absolute inset-0 bg-white/70 backdrop-blur-[1px] flex items-center justify-center z-10">
-                                <span className="bg-gray-800 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">Hết hàng</span>
+                              <span className="bg-gray-800 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">Hết hàng</span>
                             </div>
-                        )}
-                        {!outStock && product.stockQuantity <= 20 && product.stockQuantity > 0 && (
+                          )}
+                          {!outStock && product.stockQuantity <= 20 && product.stockQuantity > 0 && (
                             <span className="absolute top-3 left-3 bg-orange-500 text-white text-[10px] font-black px-2 py-1 rounded-full shadow-md z-10">
-                                SẮP HẾT
+                              SẮP HẾT
                             </span>
-                        )}
-                      </Link>
-                      
-                      <div className="p-4 flex flex-col flex-1">
-                        <Link href={`/products/${product.id}`}>
-                          <h4 className="text-[14px] leading-[20px] font-[600] text-gray-900 line-clamp-2 group-hover:text-green-500 transition-colors mb-2">{product.name}</h4>
+                          )}
                         </Link>
-                        
-                        <p className="text-green-500 font-bold text-[20px] mt-auto mb-4">
-                          {new Intl.NumberFormat('vi-VN').format(product.price)}
-                          <span className="underline ml-0.5">đ</span>
-                          <span className="text-gray-400 text-[14px] font-medium ml-1">/ {product.unit || 'kg'}</span>
-                        </p>
-                        
-                        <button 
+
+                        <div className="p-4 flex flex-col flex-1">
+                          <Link href={`/products/${product.id}`}>
+                            <h4 className="text-[14px] leading-[20px] font-[600] text-gray-900 line-clamp-2 group-hover:text-green-500 transition-colors mb-2">{product.name}</h4>
+                          </Link>
+
+                          <p className="text-green-500 font-bold text-[20px] mt-auto mb-4">
+                            {new Intl.NumberFormat('vi-VN').format(product.price)}
+                            <span className="underline ml-0.5">đ</span>
+                            <span className="text-gray-400 text-[14px] font-medium ml-1">/ {product.unit || 'kg'}</span>
+                          </p>
+
+                          <button
                             disabled={outStock}
                             onClick={() => handleAddToCart(product)}
                             className="cursor-pointer w-full flex items-center justify-center gap-1.5 text-sm font-bold py-2.5 rounded-full transition-all bg-gradient-to-br from-green-50 to-green-100 text-green-500 hover:bg-green-500 hover:text-white hover:shadow-md disabled:opacity-40 disabled:cursor-not-allowed border border-green-200 hover:border-green-500"
-                        >
+                          >
                             <Plus className="w-4 h-4" /> Thêm vào giỏ
-                        </button>
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  )})}
+                    )
+                  })}
                 </div>
               </div>
             )}
