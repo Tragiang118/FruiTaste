@@ -17,6 +17,7 @@ import { useCartStore, useAuthStore } from "@/lib/store";
 import { toast } from "sonner";
 import { getImageUrl } from "@/lib/utils";
 import api from "@/lib/axios";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const BACKEND_API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
@@ -276,14 +277,18 @@ const ChatOrderForm = ({ productId, quantity }: { productId: number, quantity: n
         </div>
         <div>
           <label className="block text-gray-500 font-semibold mb-0.5">Thanh toán</label>
-          <select
-            value={paymentMethod}
-            onChange={(e) => setPaymentMethod(e.target.value)}
-            className="w-full px-2 py-1.5 border border-gray-200 rounded-lg text-xs outline-none focus:border-green-500 font-medium bg-white"
+          <Select 
+            value={paymentMethod} 
+            onValueChange={(val) => setPaymentMethod(val)}
           >
-            <option value="COD">Thanh toán khi nhận hàng (COD)</option>
-            <option value="BANK_TRANSFER">Chuyển khoản QR Ngân hàng</option>
-          </select>
+            <SelectTrigger className="w-full px-2 py-1.5 border border-gray-200 rounded-lg text-xs outline-none focus:border-green-500 font-medium bg-white h-auto shadow-none flex items-center justify-between">
+              <SelectValue placeholder="Chọn phương thức thanh toán" />
+            </SelectTrigger>
+            <SelectContent position="popper" className="rounded-xl border border-gray-100 shadow-xl p-1 bg-white min-w-[200px] z-[100000]">
+              <SelectItem value="COD" className="cursor-pointer rounded-lg font-medium p-2 text-xs focus:bg-green-50 focus:text-green-600">Thanh toán khi nhận hàng (COD)</SelectItem>
+              <SelectItem value="BANK_TRANSFER" className="cursor-pointer rounded-lg font-medium p-2 text-xs focus:bg-green-50 focus:text-green-600">Chuyển khoản QR Ngân hàng</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
