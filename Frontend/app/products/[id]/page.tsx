@@ -118,7 +118,7 @@ export default function ProductDetailPage() {
              </div>
           </div>
 
-          <div className="flex flex-col md:flex-row gap-12 lg:gap-16 mb-16">
+          <div className="flex flex-col md:flex-row gap-12 lg:gap-16 mb-8">
 
              {/* Gallery */}
              <div className="w-full md:w-1/2 flex-shrink-0 space-y-4">
