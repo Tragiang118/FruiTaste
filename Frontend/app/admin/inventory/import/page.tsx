@@ -342,7 +342,7 @@ function ImportContent() {
         {/* Left Section */}
         <div className="lg:col-span-2 space-y-8">
           <Card className="rounded-[2.5rem] border-none shadow-sm bg-white overflow-hidden">
-            <CardHeader className="border-b border-gray-50 px-6 py-5">
+            <CardHeader className="border-b border-gray-50 px-6 pt-5 pb-4">
               <CardTitle className="text-xl font-black text-gray-900 flex items-center gap-3">
                  Danh sách sản phẩm {type === 'import' ? 'nhập' : 'xuất'}
               </CardTitle>
@@ -353,7 +353,7 @@ function ImportContent() {
                 </p>
               )}
             </CardHeader>
-            <CardContent className="p-6">
+            <CardContent className="p-6 pt-5">
                {/* Search & Quick Add */}
                <div className="relative mb-4">
                   <div className="flex items-center gap-3">
