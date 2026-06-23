@@ -6,8 +6,8 @@ import api from '@/lib/axios';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale/vi';
-import { 
-  Package, Calendar, FileText, ArrowLeft, RefreshCw, 
+import {
+  Package, Calendar, FileText, ArrowLeft, RefreshCw,
   Layers, ArrowUpRight, Hash, ShieldCheck
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,6 +16,7 @@ import BackButton from '@/components/BackButton';
 export default function AdminImportDetailPage() {
   const params = useParams();
   const importId = params?.id ? String(params.id) : '';
+  const [receiver, setReceiver] = useState('');
 
   const [transactions, setTransactions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -73,7 +74,6 @@ export default function AdminImportDetailPage() {
   return (
     <div className="p-6 md:p-8 space-y-6 w-full h-full overflow-y-auto bg-gray-50/30">
       <div className="flex items-center gap-3">
-        <BackButton />
         <div>
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight flex items-center gap-2">
             Chi tiết phiếu nhập kho #{importId}
@@ -140,7 +140,7 @@ export default function AdminImportDetailPage() {
             <h4 className="text-sm font-bold text-gray-700 ml-1 flex items-center gap-2 border-b pb-3">
               <FileText size={14} className="text-primary" /> Thông tin phiếu nhập
             </h4>
-            
+
             <div className="space-y-4">
               <div>
                 <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-1">Ghi chú phiếu</span>
@@ -168,13 +168,7 @@ export default function AdminImportDetailPage() {
                 <div className="flex justify-between items-center text-xs">
                   <span className="text-gray-400 font-bold">Người lập phiếu</span>
                   <span className="text-gray-800 font-bold flex items-center gap-1">
-                    <ShieldCheck size={13} className="text-green-500" /> Hệ thống / Quản trị viên
-                  </span>
-                </div>
-                <div className="flex justify-between items-center text-xs">
-                  <span className="text-gray-400 font-bold">Hình thức</span>
-                  <span className="text-gray-800 font-bold bg-blue-50 text-blue-600 px-2.5 py-0.5 rounded-full text-[10px] uppercase tracking-wider font-black">
-                    Nhập trực tiếp
+                    <ShieldCheck size={13} className="text-green-500" /> {receiver}
                   </span>
                 </div>
               </div>
