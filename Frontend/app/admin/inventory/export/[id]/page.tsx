@@ -18,6 +18,8 @@ export default function AdminExportDetailPage() {
   const exportId = params?.id ? String(params.id) : '';
   const [receiver, setReceiver] = useState('');
   const [reason, setReason] = useState('');
+  const [note, setNote] = useState('');
+  const [exportDate, setExportDate] = useState<Date | null>(null);
   const [transactions, setTransactions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -36,9 +38,16 @@ export default function AdminExportDetailPage() {
       const filtered = txRes.data.filter((t: any) => t.referenceId === exportId && t.type === 'EXPORT');
       setTransactions(filtered);
 
+      const sampleTx = filtered[0];
       if (receiptRes.data) {
         setReceiver(receiptRes.data.receiver || 'Không xác định');
         setReason(receiptRes.data.reason || '');
+        setNote(receiptRes.data.note || 'Xuất kho hàng hóa');
+        setExportDate(receiptRes.data.createdAt ? new Date(receiptRes.data.createdAt) : (sampleTx ? new Date(sampleTx.createdAt) : null));
+      } else {
+        setReceiver('Không xác định');
+        setNote(sampleTx?.reason || 'Xuất kho hàng hóa');
+        setExportDate(sampleTx ? new Date(sampleTx.createdAt) : null);
       }
     } catch (error) {
       console.error(error);
@@ -74,11 +83,6 @@ export default function AdminExportDetailPage() {
     );
   }
 
-  // Extract shared metadata from the first transaction in the group
-  const sampleTx = transactions[0];
-  const exportDate = new Date(sampleTx.createdAt);
-  const note = sampleTx.reason || 'Xuất kho hàng hóa';
-
   // Calculate stats
   const totalItems = transactions.length;
   const totalQuantity = transactions.reduce((acc, curr) => acc + Math.abs(curr.quantity), 0);
@@ -100,7 +104,7 @@ export default function AdminExportDetailPage() {
           </h1>
           <p className="text-sm text-gray-500 mt-1 font-medium flex items-center gap-1.5">
             <Calendar size={13} className="text-gray-400" />
-            Thời gian: {format(exportDate, "HH:mm:ss dd/MM/yyyy", { locale: vi })}
+            Thời gian: {exportDate ? format(exportDate, "HH:mm:ss dd/MM/yyyy", { locale: vi }) : '--'}
           </p>
         </div>
       </div>

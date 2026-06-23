@@ -17,6 +17,8 @@ export default function AdminImportDetailPage() {
   const params = useParams();
   const importId = params?.id ? String(params.id) : '';
   const [receiver, setReceiver] = useState('');
+  const [note, setNote] = useState('');
+  const [importDate, setImportDate] = useState<Date | null>(null);
 
   const [transactions, setTransactions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -37,8 +39,15 @@ export default function AdminImportDetailPage() {
       const filtered = txRes.data.filter((t: any) => t.referenceId === importId && t.type === 'IMPORT');
       setTransactions(filtered);
       
+      const sampleTx = filtered[0];
       if (receiptRes.data) {
         setReceiver(receiptRes.data.supplier || 'Không xác định');
+        setNote(receiptRes.data.note || 'Nhập kho hàng hóa');
+        setImportDate(receiptRes.data.createdAt ? new Date(receiptRes.data.createdAt) : (sampleTx ? new Date(sampleTx.createdAt) : null));
+      } else {
+        setReceiver('Không xác định');
+        setNote(sampleTx?.reason || 'Nhập kho hàng hóa');
+        setImportDate(sampleTx ? new Date(sampleTx.createdAt) : null);
       }
     } catch (error) {
       console.error(error);
@@ -75,14 +84,10 @@ export default function AdminImportDetailPage() {
     );
   }
 
-  // Extract shared metadata from the first transaction in the group
-  const sampleTx = transactions[0];
-  const importDate = new Date(sampleTx.createdAt);
-  const note = sampleTx.reason || 'Nhập kho hàng hóa';
-
   // Calculate stats
   const totalItems = transactions.length;
   const totalQuantity = transactions.reduce((acc, curr) => acc + curr.quantity, 0);
+
 
   return (
     <div className="p-6 md:p-8 space-y-6 w-full h-full overflow-y-auto bg-gray-50/30">
@@ -93,7 +98,7 @@ export default function AdminImportDetailPage() {
           </h1>
           <p className="text-sm text-gray-500 mt-1 font-medium flex items-center gap-1.5">
             <Calendar size={13} className="text-gray-400" />
-            Thời gian: {format(importDate, "HH:mm:ss dd/MM/yyyy", { locale: vi })}
+            Thời gian: {importDate ? format(importDate, "HH:mm:ss dd/MM/yyyy", { locale: vi }) : '--'}
           </p>
         </div>
       </div>
