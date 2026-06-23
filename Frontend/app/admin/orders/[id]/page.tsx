@@ -6,9 +6,9 @@ import api from '@/lib/axios';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale/vi';
-import { 
-  Package, User, Phone, MapPin, CreditCard, ChevronDown, 
-  CheckCircle2, Clock, Truck, Box, XCircle, RefreshCw 
+import {
+  Package, User, Phone, MapPin, CreditCard, ChevronDown,
+  CheckCircle2, Clock, Truck, Box, XCircle, RefreshCw
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -32,6 +32,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import BackButton from '@/components/BackButton';
 
 export default function AdminOrderDetailPage() {
   const params = useParams();
