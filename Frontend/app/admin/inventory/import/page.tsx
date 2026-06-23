@@ -341,7 +341,7 @@ function ImportContent() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left Section */}
         <div className="lg:col-span-2 space-y-8">
-          <Card className="rounded-[2.5rem] border-none shadow-sm bg-white">
+          <Card className="rounded-[2.5rem] border-none shadow-sm bg-white overflow-hidden">
             <CardHeader className="border-b border-gray-50 px-6 py-5">
               <CardTitle className="text-xl font-black text-gray-900 flex items-center gap-3">
                  Danh sách sản phẩm {type === 'import' ? 'nhập' : 'xuất'}
@@ -370,7 +370,7 @@ function ImportContent() {
                   </div>
                   
                   {search && filteredProducts.length > 0 && (
-                    <div className="absolute top-full left-0 right-0 z-20 mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 p-2 max-h-[300px] overflow-y-auto animate-in fade-in zoom-in-95 duration-150">
+                    <div className="w-full mt-2 bg-white rounded-2xl border border-gray-100 p-2 max-h-[250px] overflow-y-auto animate-in fade-in slide-in-from-top-2 duration-200">
                        {filteredProducts.map(p => (
                          <div 
                            key={p.id} 
