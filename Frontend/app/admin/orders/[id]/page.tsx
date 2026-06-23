@@ -32,7 +32,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import BackButton from '@/components/BackButton';
 
 export default function AdminOrderDetailPage() {
   const params = useParams();
@@ -146,16 +145,13 @@ export default function AdminOrderDetailPage() {
   return (
     <div className="p-6 md:p-8 space-y-6 w-full h-full overflow-y-auto bg-gray-50/30">
       <div className="flex flex-col md:flex-row justify-between gap-4 items-start md:items-center">
-        <div className="flex items-center gap-3">
-          <BackButton />
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 tracking-tight flex items-center gap-2">
-              Chi tiết đơn hàng #{orderId}
-            </h1>
-            <p className="text-sm text-gray-500 mt-1 font-medium">
-              Ngày đặt: {new Date(order.createdAt).toLocaleString('vi-VN')}
-            </p>
-          </div>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 tracking-tight flex items-center gap-2">
+            Chi tiết đơn hàng #{orderId}
+          </h1>
+          <p className="text-sm text-gray-500 mt-1 font-medium">
+            Ngày đặt: {new Date(order.createdAt).toLocaleString('vi-VN')}
+          </p>
         </div>
 
         <div className="w-full md:w-auto shrink-0 flex gap-2">
