@@ -299,7 +299,7 @@ function ImportContent() {
 
   const filteredProducts = products.filter(p => 
     p.name.toLowerCase().includes(search.toLowerCase()) || p.id.toString() === search
-  ).slice(0, 5);
+  );
 
   return (
     <div className="max-w-[1200px] mx-auto space-y-8 p-6 md:p-8 animate-in slide-in-from-bottom-4 duration-500">
@@ -370,7 +370,7 @@ function ImportContent() {
                   </div>
                   
                   {search && filteredProducts.length > 0 && (
-                    <div className="absolute top-full left-0 right-0 z-20 mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 p-2 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+                    <div className="absolute top-full left-0 right-0 z-20 mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 p-2 max-h-[300px] overflow-y-auto animate-in fade-in zoom-in-95 duration-150">
                        {filteredProducts.map(p => (
                          <div 
                            key={p.id} 
