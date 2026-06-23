@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
-import { Camera, Edit2, Loader2, ChevronRight, User, Phone, Mail, Lock, CheckCircle2 } from 'lucide-react';
+import { Camera, Edit2, Loader2, ChevronRight, User, Phone, Mail, Lock, CheckCircle2, X } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -358,13 +358,18 @@ export default function ProfileInfo({ user, activeTab }: ProfileInfoProps) {
           }
         }}
       >
-        <DialogContent className="rounded-[2.5rem] max-w-md border-none p-0 overflow-hidden bg-white shadow-2xl animate-in zoom-in-95 duration-200">
+        <DialogContent className="rounded-[2.5rem] max-w-md border-none p-0 overflow-hidden bg-white shadow-2xl animate-in zoom-in-95 duration-200" showCloseButton={false}>
           {isWaitingVerification ? (
             <div className="flex flex-col h-full bg-white">
-              <DialogHeader className="p-8 border-b border-gray-100 bg-white space-y-1">
-                <DialogTitle className="text-sm font-bold text-gray-700 ml-1">Xác thực Email</DialogTitle>
-                <p className="text-sm text-gray-500 mt-1 font-medium ml-1">Yêu cầu thay đổi địa chỉ email của bạn.</p>
-              </DialogHeader>
+              <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-white">
+                <DialogHeader className="space-y-1">
+                  <DialogTitle className="text-sm font-bold text-gray-700 ml-1">Xác thực Email</DialogTitle>
+                  <p className="text-[11px] text-gray-400 font-medium ml-1">Yêu cầu thay đổi địa chỉ email của bạn.</p>
+                </DialogHeader>
+                <Button variant="ghost" size="icon" onClick={() => { setEditingField(null); setIsWaitingVerification(false); }} className="rounded-full h-8 w-8 text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all">
+                  <X size={18} />
+                </Button>
+              </div>
               
               <div className="p-8 flex flex-col items-center text-center space-y-6 max-h-[60vh] overflow-y-auto bg-gray-50/30">
                 <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center">
@@ -400,22 +405,27 @@ export default function ProfileInfo({ user, activeTab }: ProfileInfoProps) {
             </div>
           ) : (
             <div className="flex flex-col h-full bg-white">
-              <DialogHeader className="p-8 border-b border-gray-100 bg-white space-y-1">
-                <DialogTitle className="text-sm font-bold text-gray-700 ml-1">
-                  {editingField === 'fullName' ? 'Cập nhật Họ và tên' : 
-                   editingField === 'phone' ? 'Cập nhật Số điện thoại' : 
-                   editingField === 'password' ? 'Thay đổi mật khẩu' :
-                   'Cập nhật Email'}
-                </DialogTitle>
-                <p className="text-sm text-gray-500 mt-1 font-medium ml-1">
-                  {editingField === 'fullName' ? 'Thay đổi họ tên hiển thị của tài khoản.' : 
-                   editingField === 'phone' ? 'Thay đổi số điện thoại dùng để nhận hàng.' : 
-                   editingField === 'password' ? 'Thiết lập mật khẩu mới để bảo mật tài khoản.' :
-                   'Yêu cầu thay đổi địa chỉ email của bạn.'}
-                </p>
-              </DialogHeader>
+              <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-white">
+                <DialogHeader className="space-y-1">
+                  <DialogTitle className="text-sm font-bold text-gray-700 ml-1">
+                    {editingField === 'fullName' ? 'Cập nhật Họ và tên' : 
+                     editingField === 'phone' ? 'Cập nhật Số điện thoại' : 
+                     editingField === 'password' ? 'Thay đổi mật khẩu' :
+                     'Cập nhật Email'}
+                  </DialogTitle>
+                  <p className="text-[11px] text-gray-400 font-medium ml-1">
+                    {editingField === 'fullName' ? 'Thay đổi họ tên hiển thị của tài khoản.' : 
+                     editingField === 'phone' ? 'Thay đổi số điện thoại dùng để nhận hàng.' : 
+                     editingField === 'password' ? 'Thiết lập mật khẩu mới để bảo mật tài khoản.' :
+                     'Yêu cầu thay đổi địa chỉ email của bạn.'}
+                  </p>
+                </DialogHeader>
+                <Button variant="ghost" size="icon" onClick={() => setEditingField(null)} className="rounded-full h-8 w-8 text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all">
+                  <X size={18} />
+                </Button>
+              </div>
 
-              <div className="p-8 space-y-5 max-h-[60vh] overflow-y-auto bg-gray-50/30">
+              <div className="px-6 py-5 space-y-4 max-h-[60vh] overflow-y-auto bg-gray-50/30">
                 {editingField === 'password' ? (
                   <div className="space-y-5">
                     <div className="space-y-2">
@@ -479,7 +489,7 @@ export default function ProfileInfo({ user, activeTab }: ProfileInfoProps) {
                 )}
               </div>
               
-              <div className="p-8 border-t border-gray-100 flex justify-end gap-3 bg-white">
+              <div className="px-6 py-4 border-t border-gray-100 flex justify-end gap-3 bg-white">
                 <Button 
                   variant="ghost" 
                   onClick={() => {
@@ -503,15 +513,19 @@ export default function ProfileInfo({ user, activeTab }: ProfileInfoProps) {
         </DialogContent>
       </Dialog>
 
-      {/* Avatar Crop Dialog */}
       <Dialog open={isCropDialogOpen} onOpenChange={setIsCropDialogOpen}>
-        <DialogContent className="rounded-[2.5rem] max-w-md border-none p-0 overflow-hidden bg-white shadow-2xl animate-in zoom-in-95 duration-200">
-          <DialogHeader className="p-8 border-b border-gray-100 bg-white space-y-1">
-            <DialogTitle className="text-sm font-bold text-gray-700 ml-1">Cập nhật ảnh đại diện</DialogTitle>
-            <p className="text-sm text-gray-500 mt-1 font-medium ml-1">Căn chỉnh ảnh đại diện tài khoản của bạn.</p>
-          </DialogHeader>
+        <DialogContent className="rounded-[2.5rem] max-w-md border-none p-0 overflow-hidden bg-white shadow-2xl animate-in zoom-in-95 duration-200" showCloseButton={false}>
+          <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-white">
+            <DialogHeader className="space-y-1">
+              <DialogTitle className="text-sm font-bold text-gray-700 ml-1">Cập nhật ảnh đại diện</DialogTitle>
+              <p className="text-[11px] text-gray-400 font-medium ml-1">Căn chỉnh ảnh đại diện tài khoản của bạn.</p>
+            </DialogHeader>
+            <Button variant="ghost" size="icon" onClick={() => setIsCropDialogOpen(false)} className="rounded-full h-8 w-8 text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all">
+              <X size={18} />
+            </Button>
+          </div>
           
-          <div className="p-8 flex flex-col items-center gap-6 max-h-[60vh] overflow-y-auto bg-gray-50/30">
+          <div className="px-6 py-5 flex flex-col items-center gap-4 max-h-[60vh] overflow-y-auto bg-gray-50/30">
             {avatarFile && (
               <ImageCrop file={avatarFile} aspect={1} onCrop={setCroppedAvatar}>
                 <ImageCropContent className="max-w-full rounded-2xl overflow-hidden shadow-inner border border-gray-100" />
@@ -531,7 +545,7 @@ export default function ProfileInfo({ user, activeTab }: ProfileInfoProps) {
             )}
           </div>
           
-          <div className="p-8 border-t border-gray-100 flex justify-end gap-3 bg-white">
+          <div className="px-6 py-4 border-t border-gray-100 flex justify-end gap-3 bg-white">
             <Button 
               variant="ghost" 
               onClick={() => setIsCropDialogOpen(false)} 
