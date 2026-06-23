@@ -60,7 +60,6 @@ function ProfileContent() {
           <div className="bg-white rounded-[2.5rem] p-4 shadow-sm border border-gray-50">
             <div className="p-4 mb-2">
               <h2 className="text-xl font-black text-gray-900 leading-tight">Cài đặt tài khoản</h2>
-              <p className="text-xs text-gray-400 font-medium mt-1 uppercase tracking-widest">FruiTaste Profile</p>
             </div>
             <nav className="space-y-1">
               {menuItems.map((item) => (
