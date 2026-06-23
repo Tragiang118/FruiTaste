@@ -412,9 +412,9 @@ function ImportContent() {
                              <X size={14} strokeWidth={3} />
                            </button>
 
-                           <CardContent className="p-4 sm:p-5 flex flex-col gap-5">
+                           <CardContent className="p-3 sm:p-4 flex flex-col gap-3">
                             {/* Top Section: Product Name & Unit */}
-                            <div className="flex items-start gap-4">
+                            <div className="flex items-start gap-3">
                                <div className="w-12 h-12 rounded-xl bg-gray-50 border border-gray-100 flex-shrink-0 overflow-hidden flex items-center justify-center">
                                   {item.productImage ? <img src={getImageUrl(item.productImage)} className="w-full h-full object-cover" /> : <Package size={20} className="text-gray-300" />}
                                </div>
@@ -423,11 +423,11 @@ function ImportContent() {
                                     {item.productName}
                                   </h3>
                                   <span className="inline-block text-[10px] font-black bg-blue-50 text-blue-500 px-2 py-0.5 rounded-md uppercase tracking-wider">{item.unit}</span>
-                               </div>
+                                </div>
                             </div>
                             
-                            <div className="grid grid-cols-3 gap-3 sm:gap-6 pt-2 border-t border-gray-50">
-                               <div className="space-y-1.5 col-span-1">
+                            <div className="grid grid-cols-3 gap-3 sm:gap-4 pt-2 border-t border-gray-50">
+                               <div className="space-y-1 col-span-1">
                                   <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 block">Số lượng</label>
                                   <Input 
                                     type="number" 
@@ -451,7 +451,7 @@ function ImportContent() {
                                
                                {type === 'import' ? (
                                  <>
-                                   <div className="space-y-1.5">
+                                   <div className="space-y-1">
                                       <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 block">Giá nhập (đ)</label>
                                       <Input 
                                         type="text" 
@@ -470,8 +470,8 @@ function ImportContent() {
                                       )}
                                    </div>
 
-                                   <div className="space-y-1.5">
-                                      <label className="text-[10px] font-black text-amber-500 uppercase tracking-widest ml-1 flex items-center gap-1.5">
+                                   <div className="space-y-1">
+                                      <label className="text-[10px] font-black text-amber-500 uppercase tracking-widest ml-1 flex items-center gap-1">
                                         <Calculator size={10} /> <span>Gợi ý</span>
                                         <Popover>
                                           <PopoverTrigger asChild>
