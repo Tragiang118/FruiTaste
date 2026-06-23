@@ -45,7 +45,7 @@ export class InventoryService {
   }
 
   async importProducts(dto: any) {
-    const { note, items, supplier } = dto;
+    const { note, items, supplier, createdAt } = dto;
     
     return this.prisma.$transaction(async (tx) => {
       const receipt = await tx.importReceipt.create({
@@ -53,6 +53,7 @@ export class InventoryService {
           note,
           supplier,
           totalItems: items.length,
+          createdAt: createdAt ? new Date(createdAt) : undefined,
           items: {
             create: items.map((item: any) => ({
               productId: item.productId,
@@ -107,7 +108,7 @@ export class InventoryService {
   }
 
   async exportProducts(dto: any) {
-    const { note, items, receiver } = dto;
+    const { note, items, receiver, createdAt } = dto;
 
     return this.prisma.$transaction(async (tx) => {
       const receipt = await tx.exportReceipt.create({
@@ -115,6 +116,7 @@ export class InventoryService {
           note,
           receiver,
           totalItems: items.length,
+          createdAt: createdAt ? new Date(createdAt) : undefined,
           items: {
             create: items.map((item: any) => ({
               productId: item.productId,

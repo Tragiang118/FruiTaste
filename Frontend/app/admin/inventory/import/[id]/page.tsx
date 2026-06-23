@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale/vi';
 import {
-  Package, Calendar, FileText, ArrowLeft, RefreshCw,
+  Package, Calendar, Clock, FileText, ArrowLeft, RefreshCw,
   Layers, ArrowUpRight, Hash, ShieldCheck
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,6 +19,7 @@ export default function AdminImportDetailPage() {
   const [receiver, setReceiver] = useState('');
   const [note, setNote] = useState('');
   const [importDate, setImportDate] = useState<Date | null>(null);
+  const [createdTime, setCreatedTime] = useState<Date | null>(null);
 
   const [transactions, setTransactions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -44,10 +45,12 @@ export default function AdminImportDetailPage() {
         setReceiver(receiptRes.data.supplier || 'Không xác định');
         setNote(receiptRes.data.note || 'Nhập kho hàng hóa');
         setImportDate(receiptRes.data.createdAt ? new Date(receiptRes.data.createdAt) : (sampleTx ? new Date(sampleTx.createdAt) : null));
+        setCreatedTime(sampleTx ? new Date(sampleTx.createdAt) : (receiptRes.data.createdAt ? new Date(receiptRes.data.createdAt) : null));
       } else {
         setReceiver('Không xác định');
         setNote(sampleTx?.reason || 'Nhập kho hàng hóa');
         setImportDate(sampleTx ? new Date(sampleTx.createdAt) : null);
+        setCreatedTime(sampleTx ? new Date(sampleTx.createdAt) : null);
       }
     } catch (error) {
       console.error(error);
@@ -96,10 +99,16 @@ export default function AdminImportDetailPage() {
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight flex items-center gap-2">
             Chi tiết phiếu nhập kho #{importId}
           </h1>
-          <p className="text-sm text-gray-500 mt-1 font-medium flex items-center gap-1.5">
-            <Calendar size={13} className="text-gray-400" />
-            Thời gian: {importDate ? format(importDate, "HH:mm:ss dd/MM/yyyy", { locale: vi }) : '--'}
-          </p>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6 mt-1.5">
+            <p className="text-sm text-gray-500 font-medium flex items-center gap-1.5">
+              <Calendar size={13} className="text-gray-400" />
+              Ngày nhập hàng: {importDate ? format(importDate, "dd/MM/yyyy", { locale: vi }) : '--'}
+            </p>
+            <p className="text-xs text-gray-400 font-medium flex items-center gap-1.5">
+              <Clock size={12} className="text-gray-300" />
+              Thời điểm tạo phiếu: {createdTime ? format(createdTime, "HH:mm:ss dd/MM/yyyy", { locale: vi }) : '--'}
+            </p>
+          </div>
         </div>
       </div>
 
