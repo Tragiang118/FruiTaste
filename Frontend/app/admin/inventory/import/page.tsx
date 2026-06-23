@@ -243,7 +243,7 @@ function ImportContent() {
       }
     }
 
-    if (!note.trim()) {
+    if (type === 'import' && !note.trim()) {
       newErrors.note = 'Vui lòng nhập ghi chú cho phiếu này';
     }
 
@@ -600,7 +600,9 @@ function ImportContent() {
                        </Popover>
                     </div>
                     <div className="space-y-1.5">
-                      <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Ghi chú (*)</Label>
+                      <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">
+                        Ghi chú {type === 'import' ? '(*)' : ''}
+                      </Label>
                       <Textarea 
                         placeholder="Ghi chú nhanh..." 
                         value={note}
