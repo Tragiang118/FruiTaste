@@ -39,7 +39,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-[#FFFDFB] text-gray-900 font-sans">
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-0">
 
         <section className="flex flex-col md:flex-row items-center justify-between rounded-3xl shadow-lg">
           <div className="md:w-1/2 bg-white m-10 p-6 rounded-3xl">
@@ -76,7 +76,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="py-12">
+        <section className="mt-16">
           {!loading && categories.length > 0 && (
             <div className="flex gap-6 overflow-x-auto pb-8 hide-scrollbar snap-x">
               {categories.map((cat, idx) => (
@@ -103,7 +103,7 @@ export default function HomePage() {
           )}
         </section>
 
-        <section className="py-0">
+        <section className="mt-16">
           <h2 className="text-3xl font-bold mb-10 text-[#1A1A1A]">Sản Phẩm Nổi Bật</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 relative pb-8">
             {!loading && products.map((p, idx) => {
