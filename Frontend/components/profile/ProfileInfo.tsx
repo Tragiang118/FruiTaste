@@ -225,7 +225,7 @@ export default function ProfileInfo({ user, activeTab }: ProfileInfoProps) {
   const ProfileRow = ({ label, value, onClick, icon: Icon, valueClassName = "" }: any) => (
     <button 
       onClick={onClick}
-      className="w-full flex items-center justify-between py-5 px-4 hover:bg-gray-50/80 transition-all rounded-2xl group active:scale-[0.99]"
+      className="w-full flex items-center justify-between py-3 px-4 hover:bg-gray-50/80 transition-all rounded-2xl group active:scale-[0.99]"
     >
       <div className="flex items-center gap-4">
         <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center text-gray-400 group-hover:bg-white group-hover:text-green-600 transition-colors shadow-sm">
