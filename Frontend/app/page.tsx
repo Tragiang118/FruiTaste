@@ -103,7 +103,7 @@ export default function HomePage() {
           )}
         </section>
 
-        <section className="mt-16">
+        <section className="mt-8">
           <h2 className="text-3xl font-bold mb-10 text-[#1A1A1A]">Sản Phẩm Nổi Bật</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 relative pb-8">
             {!loading && products.map((p, idx) => {

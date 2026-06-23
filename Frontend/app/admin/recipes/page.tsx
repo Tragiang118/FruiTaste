@@ -398,8 +398,8 @@ export default function AdminRecipesPage() {
                 <h2 className="text-sm font-bold text-gray-700 ml-1">{editingRecipe.id ? 'Sửa món ăn' : 'Thêm món ăn mới'}</h2>
                 <p className="text-sm text-gray-500 mt-1">Điền thông tin chi tiết cho món ăn.</p>
               </div>
-              <Button variant="ghost" size="icon" onClick={() => setIsModalOpen(false)} className="rounded-full">
-                <X size={20} />
+              <Button variant="ghost" size="icon" onClick={() => setIsModalOpen(false)} className="rounded-full h-8 w-8 text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all">
+                <X size={18} />
               </Button>
             </div>
             

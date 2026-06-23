@@ -5,7 +5,7 @@ import api from '@/lib/axios';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { PlusCircle, Search, Edit2, Trash2, Tag, BookOpen, MoreHorizontal, RefreshCw, Edit, ArrowUpDown, Layers, Image as ImageIcon, Loader2 } from 'lucide-react';
+import { PlusCircle, Search, Edit2, Trash2, Tag, BookOpen, MoreHorizontal, RefreshCw, Edit, ArrowUpDown, Layers, Image as ImageIcon, Loader2, X } from 'lucide-react';
 import { 
   Table, 
   TableBody, 
@@ -280,9 +280,14 @@ export default function AdminCategoriesPage() {
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
           <div className="bg-white rounded-3xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            <div className="p-6 border-b border-gray-100">
-              <h2 className="text-sm font-bold text-gray-700 ml-1">{editingCat.id ? 'Sửa thông tin' : 'Tạo mới danh mục'}</h2>
-              <p className="text-sm text-gray-500 mt-1">Cập nhật thông tin nhận diện hệ thống danh mục.</p>
+            <div className="p-6 border-b border-gray-100 flex justify-between items-center">
+              <div>
+                <h2 className="text-sm font-bold text-gray-700 ml-1">{editingCat.id ? 'Sửa thông tin' : 'Tạo mới danh mục'}</h2>
+                <p className="text-sm text-gray-500 mt-1">Cập nhật thông tin nhận diện hệ thống danh mục.</p>
+              </div>
+              <Button variant="ghost" size="icon" onClick={() => setIsModalOpen(false)} className="rounded-full h-8 w-8 text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all">
+                <X size={18} />
+              </Button>
             </div>
             <div className="p-6 space-y-4">
               <div className="space-y-2">

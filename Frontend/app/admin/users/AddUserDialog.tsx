@@ -81,7 +81,7 @@ export default function AddUserDialog({ onSuccess }: { onSuccess?: () => void })
         </Button>
       </DialogTrigger>
       <DialogContent onInteractOutside={(e) => e.preventDefault()} className="max-w-md w-full rounded-[2rem] p-0 overflow-hidden border-none shadow-2xl" showCloseButton={false}>
-        <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-white">
+        <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-white">
           <DialogHeader>
             <DialogTitle className="text-sm font-bold text-gray-700 ml-1">Thêm người dùng mới</DialogTitle>
             <DialogDescription className="text-xs text-gray-500 mt-1">Tạo tài khoản mới cho hệ thống FruiTaste.</DialogDescription>
@@ -92,7 +92,7 @@ export default function AddUserDialog({ onSuccess }: { onSuccess?: () => void })
         </div>
 
         <FormProvider {...methods}>
-          <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-4 bg-white">
+          <form onSubmit={handleSubmit(onSubmit)} className="px-6 pt-4 pb-6 space-y-3 bg-white">
             <div className="space-y-4">
               <div className="space-y-1">
                 <label className="text-sm font-bold text-gray-700 ml-1">Thông tin đăng nhập (*)</label>

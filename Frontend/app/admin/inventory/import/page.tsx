@@ -343,15 +343,15 @@ function ImportContent() {
         {/* Left Section */}
         <div className="lg:col-span-2 space-y-8">
           <Card className="rounded-[2.5rem] border-none shadow-sm bg-white overflow-hidden">
-            <CardHeader className="border-b border-gray-50 p-8">
+            <CardHeader className="border-b border-gray-50 px-6 py-5">
               <CardTitle className="text-xl font-black text-gray-900 flex items-center gap-3">
                  <ShoppingCart className="w-6 h-6 text-primary" />
                  Danh sách sản phẩm {type === 'import' ? 'nhập' : 'xuất'}
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-8">
+            <CardContent className="p-6">
                {/* Search & Quick Add */}
-               <div className="relative mb-8">
+               <div className="relative mb-4">
                   <div className="flex items-center gap-3">
                     <div className="relative flex-1">
                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -530,14 +530,14 @@ function ImportContent() {
         {/* Right Section */}
         <div className="space-y-8">
            <Card className="rounded-[2.5rem] border-none shadow-sm bg-white overflow-hidden sticky top-8">
-              <CardHeader className="p-8 pb-4">
+              <CardHeader className="px-6 pt-6 pb-2">
                  <CardTitle className="text-xl font-black text-gray-900 flex items-center gap-3">
                     <FileText className="w-6 h-6 text-primary" />
                     Thông tin phiếu
                  </CardTitle>
               </CardHeader>
-              <CardContent className="p-8 space-y-6">
-                 <div className="space-y-5">
+              <CardContent className="p-6 space-y-4">
+                 <div className="space-y-4">
                     {type === 'export' && (
                       <div className="space-y-1.5">
                         <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Lý do xuất (*)</Label>
@@ -622,7 +622,7 @@ function ImportContent() {
                  </div>
 
                  {type === 'import' && (
-                    <div className="pt-6 border-t border-gray-50 space-y-4">
+                    <div className="pt-4 border-t border-gray-50 space-y-4">
                        <div className="bg-primary/5 p-5 rounded-[2rem] border border-primary/10">
                           <div className="flex justify-between items-center mb-1 text-[10px] font-black text-primary uppercase">
                              <span>Tổng tiền nhập</span>

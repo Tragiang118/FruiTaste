@@ -530,9 +530,14 @@ export default function AdminProductsPage() {
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 overflow-y-auto">
           <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-200 my-8">
-            <div className="p-8 border-b border-gray-100 bg-white">
-              <h2 className="text-sm font-bold text-gray-700 ml-1">{editingProduct.id ? 'Sửa sản phẩm' : 'Thêm sản phẩm mới'}</h2>
-              <p className="text-sm text-gray-500 mt-1 font-medium">Cập nhật thông tin chi tiết cho sản phẩm hoa quả.</p>
+            <div className="p-8 border-b border-gray-100 bg-white flex justify-between items-center">
+              <div>
+                <h2 className="text-sm font-bold text-gray-700 ml-1">{editingProduct.id ? 'Sửa sản phẩm' : 'Thêm sản phẩm mới'}</h2>
+                <p className="text-sm text-gray-500 mt-1 font-medium">Cập nhật thông tin chi tiết cho sản phẩm hoa quả.</p>
+              </div>
+              <Button variant="ghost" size="icon" onClick={() => setIsModalOpen(false)} className="rounded-full h-8 w-8 text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all">
+                <X size={18} />
+              </Button>
             </div>
             <div className="p-8 space-y-6 max-h-[60vh] overflow-y-auto bg-gray-50/30">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
