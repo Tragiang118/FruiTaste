@@ -307,7 +307,6 @@ function ImportContent() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
            <h1 className="text-2xl font-bold text-gray-900 tracking-tight flex items-center gap-2">
-             <ShoppingCart className="w-6 h-6 text-primary" />
              {type === 'import' ? 'Tạo phiếu nhập kho' : 'Tạo phiếu xuất kho'}
            </h1>
            <p className="text-gray-500 text-sm mt-0.5">
@@ -345,7 +344,6 @@ function ImportContent() {
           <Card className="rounded-[2.5rem] border-none shadow-sm bg-white overflow-hidden">
             <CardHeader className="border-b border-gray-50 px-6 py-5">
               <CardTitle className="text-xl font-black text-gray-900 flex items-center gap-3">
-                 <ShoppingCart className="w-6 h-6 text-primary" />
                  Danh sách sản phẩm {type === 'import' ? 'nhập' : 'xuất'}
               </CardTitle>
               {type === 'export' && (
