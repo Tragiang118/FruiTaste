@@ -348,6 +348,12 @@ function ImportContent() {
                  <ShoppingCart className="w-6 h-6 text-primary" />
                  Danh sách sản phẩm {type === 'import' ? 'nhập' : 'xuất'}
               </CardTitle>
+              {type === 'export' && (
+                <p className="text-xs font-bold text-blue-500 mt-2 ml-9 flex items-center gap-1.5 bg-blue-50/50 px-3 py-1.5 rounded-xl border border-blue-100/50 w-fit">
+                   <Info size={14} className="text-blue-500 shrink-0" />
+                   Giá xuất sẽ được tính tự động dựa trên giá niêm yết hiện tại của sản phẩm
+                </p>
+              )}
             </CardHeader>
             <CardContent className="p-6">
                {/* Search & Quick Add */}
@@ -413,46 +419,47 @@ function ImportContent() {
                            </button>
 
                            <CardContent className="p-3 sm:p-4 flex flex-col gap-3">
-                            {/* Top Section: Product Name & Unit */}
-                            <div className="flex items-start gap-3">
-                               <div className="w-12 h-12 rounded-xl bg-gray-50 border border-gray-100 flex-shrink-0 overflow-hidden flex items-center justify-center">
-                                  {item.productImage ? <img src={getImageUrl(item.productImage)} className="w-full h-full object-cover" /> : <Package size={20} className="text-gray-300" />}
-                               </div>
-                               <div className="space-y-1">
-                                  <h3 className="font-black text-gray-900 text-sm sm:text-base leading-snug break-words">
-                                    {item.productName}
-                                  </h3>
-                                </div>
-                            </div>
-                            
-                            <div className="grid grid-cols-3 gap-3 sm:gap-4 pt-2 border-t border-gray-50">
-                               <div className="space-y-1 col-span-1">
-                                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 block">Số lượng</label>
-                                  <div className="flex items-center gap-2">
-                                    <Input 
-                                      type="number" 
-                                      value={item.quantity}
-                                      onChange={(e) => {
-                                        const val = e.target.value === '' ? '' : Number(e.target.value);
-                                        updateItem(item.productId, 'quantity', val);
-                                      }}
-                                      onBlur={(e) => { if (e.target.value === '') updateItem(item.productId, 'quantity', '1'); }}
-                                      className="h-10 w-16 sm:w-20 rounded-xl bg-gray-50 border-gray-100 text-center font-bold text-sm focus:bg-white focus:ring-primary px-1 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                                    />
-                                    <span className="text-[10px] font-black bg-blue-50 text-blue-500 px-2 py-1 rounded-md uppercase tracking-wider select-none">{item.unit}</span>
+                             {/* Top Section: Product Name, Image & Quantity inline */}
+                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                               <div className="flex items-center gap-3 flex-1 min-w-0">
+                                  <div className="w-12 h-12 rounded-xl bg-gray-50 border border-gray-100 flex-shrink-0 overflow-hidden flex items-center justify-center">
+                                     {item.productImage ? <img src={getImageUrl(item.productImage)} className="w-full h-full object-cover" /> : <Package size={20} className="text-gray-300" />}
                                   </div>
-                                  {(item.quantity as any) !== '' && Number(item.quantity) <= 0 && (
-                                    <p className="text-[9px] font-bold text-red-500 uppercase ml-2 mt-1 italic">Tối thiểu 1</p>
-                                  )}
+                                  <div className="min-w-0">
+                                     <h3 className="font-black text-gray-900 text-sm sm:text-base leading-snug break-words">
+                                       {item.productName}
+                                     </h3>
+                                  </div>
+                               </div>
+
+                               <div className="flex flex-col sm:items-end gap-1 flex-shrink-0">
+                                  <div className="flex items-center gap-2">
+                                     <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest mr-1">Số lượng</span>
+                                     <Input 
+                                       type="number" 
+                                       value={item.quantity}
+                                       onChange={(e) => {
+                                         const val = e.target.value === '' ? '' : Number(e.target.value);
+                                         updateItem(item.productId, 'quantity', val);
+                                       }}
+                                       onBlur={(e) => { if (e.target.value === '') updateItem(item.productId, 'quantity', '1'); }}
+                                       className="h-9 w-16 sm:w-20 rounded-xl bg-gray-50 border-gray-100 text-center font-bold text-sm focus:bg-white focus:ring-primary px-1 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                     />
+                                     <span className="text-[10px] font-black bg-blue-50 text-blue-500 px-2 py-1 rounded-md uppercase tracking-wider select-none">{item.unit}</span>
+                                  </div>
                                   {type === 'export' && (
-                                    <p className="text-[10px] font-bold text-gray-400 ml-2 mt-1">
-                                      Hiện có: <span className="text-primary">{item.product?.stockQuantity || 0}</span> {item.product?.unit}
-                                    </p>
+                                     <p className="text-[10px] font-bold text-gray-400 mr-2">
+                                       Hiện có: <span className="text-primary">{item.product?.stockQuantity || 0}</span> {item.product?.unit}
+                                     </p>
+                                  )}
+                                  {(item.quantity as any) !== '' && Number(item.quantity) <= 0 && (
+                                     <p className="text-[9px] font-bold text-red-500 uppercase mr-2 mt-0.5 italic">Tối thiểu 1</p>
                                   )}
                                </div>
-                               
-                               {type === 'import' ? (
-                                 <>
+                             </div>
+                             
+                             {type === 'import' && (
+                               <div className="grid grid-cols-2 gap-3 sm:gap-4 pt-2.5 border-t border-gray-50">
                                    <div className="space-y-1">
                                       <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 block">Giá nhập (đ)</label>
                                       <Input 
@@ -512,14 +519,9 @@ function ImportContent() {
                                          {item.suggestedPrice?.toLocaleString()}đ
                                       </div>
                                    </div>
-                                 </>
-                               ) : (
-                                 <div className="col-span-2 flex items-center pl-4">
-                                    <p className="text-[11px] font-bold text-gray-400 italic">Giá xuất sẽ được tính dựa trên giá niêm yết hiện tại</p>
-                                 </div>
-                               )}
-                            </div>
-                           </CardContent>
+                               </div>
+                             )}
+                            </CardContent>
                         </Card>
                        ))}
                     </div>
