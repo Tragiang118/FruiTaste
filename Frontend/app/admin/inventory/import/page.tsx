@@ -422,23 +422,25 @@ function ImportContent() {
                                   <h3 className="font-black text-gray-900 text-sm sm:text-base leading-snug break-words">
                                     {item.productName}
                                   </h3>
-                                  <span className="inline-block text-[10px] font-black bg-blue-50 text-blue-500 px-2 py-0.5 rounded-md uppercase tracking-wider">{item.unit}</span>
                                 </div>
                             </div>
                             
                             <div className="grid grid-cols-3 gap-3 sm:gap-4 pt-2 border-t border-gray-50">
                                <div className="space-y-1 col-span-1">
                                   <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 block">Số lượng</label>
-                                  <Input 
-                                    type="number" 
-                                    value={item.quantity}
-                                    onChange={(e) => {
-                                      const val = e.target.value === '' ? '' : Number(e.target.value);
-                                      updateItem(item.productId, 'quantity', val);
-                                    }}
-                                    onBlur={(e) => { if (e.target.value === '') updateItem(item.productId, 'quantity', '1'); }}
-                                    className="h-10 w-full rounded-xl bg-gray-50 border-gray-100 text-center font-bold text-sm focus:bg-white focus:ring-primary"
-                                  />
+                                  <div className="flex items-center gap-2">
+                                    <Input 
+                                      type="number" 
+                                      value={item.quantity}
+                                      onChange={(e) => {
+                                        const val = e.target.value === '' ? '' : Number(e.target.value);
+                                        updateItem(item.productId, 'quantity', val);
+                                      }}
+                                      onBlur={(e) => { if (e.target.value === '') updateItem(item.productId, 'quantity', '1'); }}
+                                      className="h-10 w-16 sm:w-20 rounded-xl bg-gray-50 border-gray-100 text-center font-bold text-sm focus:bg-white focus:ring-primary px-1 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                    />
+                                    <span className="text-[10px] font-black bg-blue-50 text-blue-500 px-2 py-1 rounded-md uppercase tracking-wider select-none">{item.unit}</span>
+                                  </div>
                                   {(item.quantity as any) !== '' && Number(item.quantity) <= 0 && (
                                     <p className="text-[9px] font-bold text-red-500 uppercase ml-2 mt-1 italic">Tối thiểu 1</p>
                                   )}
@@ -512,8 +514,8 @@ function ImportContent() {
                                    </div>
                                  </>
                                ) : (
-                                 <div className="col-span-2 flex items-center justify-center bg-blue-50/50 rounded-xl border border-blue-100 border-dashed">
-                                    <p className="text-[11px] font-bold text-blue-400 italic">Giá xuất sẽ được tính dựa trên giá niêm yết hiện tại</p>
+                                 <div className="col-span-2 flex items-center pl-4">
+                                    <p className="text-[11px] font-bold text-gray-400 italic">Giá xuất sẽ được tính dựa trên giá niêm yết hiện tại</p>
                                  </div>
                                )}
                             </div>
