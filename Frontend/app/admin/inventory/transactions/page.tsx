@@ -551,8 +551,15 @@ export default function InventoryTransactionsPage() {
                  <Button 
                    variant="outline" 
                    onClick={() => {
-                     if (selectedTransaction.type === 'IMPORT') router.push(`/admin/inventory/import/${selectedTransaction.referenceId}`);
-                     else if (selectedTransaction.type === 'EXPORT') router.push(`/admin/orders/${selectedTransaction.referenceId}`);
+                     if (selectedTransaction.type === 'IMPORT') {
+                       router.push(`/admin/inventory/import/${selectedTransaction.referenceId}`);
+                     } else if (selectedTransaction.type === 'EXPORT') {
+                       if (selectedTransaction.reason?.includes('Đơn hàng')) {
+                         router.push(`/admin/orders/${selectedTransaction.referenceId}`);
+                       } else {
+                         router.push(`/admin/inventory/export/${selectedTransaction.referenceId}`);
+                       }
+                     }
                    }}
                    className="w-full rounded-xl h-10 border-primary/20 text-primary font-black text-[11px] uppercase tracking-widest hover:bg-primary hover:text-white transition-all gap-2"
                  >

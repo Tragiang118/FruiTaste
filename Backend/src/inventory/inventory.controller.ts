@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, UseGuards, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, Query, Param } from '@nestjs/common';
 import { InventoryService } from './inventory.service';
 import { ImportInventoryDto } from './dto/import-inventory.dto';
 import { ExportInventoryDto } from './dto/export-inventory.dto';
@@ -29,6 +29,16 @@ export class InventoryController {
     return this.inventoryService.getTransactions(limit ? parseInt(limit) : 100);
   }
 
+  @Get('import/:id')
+  async getImportReceipt(@Param('id') id: string) {
+    return this.inventoryService.getImportReceipt(parseInt(id));
+  }
+
+  @Get('export/:id')
+  async getExportReceipt(@Param('id') id: string) {
+    return this.inventoryService.getExportReceipt(parseInt(id));
+  }
+
   @Post('import')
   async import(@Body() dto: ImportInventoryDto) {
     return this.inventoryService.importProducts(dto);
@@ -44,3 +54,4 @@ export class InventoryController {
     return this.inventoryService.adjustStock(dto);
   }
 }
+

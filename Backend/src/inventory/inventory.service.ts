@@ -299,4 +299,39 @@ export class InventoryService {
       }
     });
   }
+
+  async getImportReceipt(id: number) {
+    const receipt = await this.prisma.importReceipt.findUnique({
+      where: { id },
+      include: {
+        items: {
+          include: {
+            product: { select: { name: true, unit: true } }
+          }
+        }
+      }
+    });
+    if (!receipt) {
+      throw new NotFoundException(`Không tìm thấy phiếu nhập kho #${id}`);
+    }
+    return receipt;
+  }
+
+  async getExportReceipt(id: number) {
+    const receipt = await this.prisma.exportReceipt.findUnique({
+      where: { id },
+      include: {
+        items: {
+          include: {
+            product: { select: { name: true, unit: true } }
+          }
+        }
+      }
+    });
+    if (!receipt) {
+      throw new NotFoundException(`Không tìm thấy phiếu xuất kho #${id}`);
+    }
+    return receipt;
+  }
 }
+
