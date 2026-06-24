@@ -190,7 +190,7 @@ export default function InventoryPage() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight flex items-center gap-2">
             <Warehouse className="w-6 h-6 text-primary" />
-            Quản lý tồn kho
+            Quản lý kho
           </h1>
           <p className="text-sm text-gray-500 mt-0.5">Theo dõi số lượng, cảnh báo hàng sắp hết và quản lý nhập xuất.</p>
         </div>
