@@ -67,16 +67,16 @@ export default function HomePage() {
             </div>
           </div>
           <div className="md:w-1/2 relative mt-12 md:mt-0 flex justify-center items-center p-8">
-            <div className="absolute w-[350px] h-[350px] md:w-[450px] md:h-[450px] bg-gradient-to-br from-yellow-300 to-orange-400 rounded-full z-0 opacity-50 blur-[60px]"></div>
+            <div className="absolute w-[280px] h-[280px] md:w-[450px] md:h-[450px] bg-gradient-to-br from-yellow-300 to-orange-400 rounded-full z-0 opacity-50 blur-[60px]"></div>
             <img
               src="https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=800&q=80"
               alt="Fresh Fruit Mix"
-              className="relative z-10 w-[320px] h-[320px] md:w-[400px] md:h-[400px] object-cover drop-shadow-[0_10px_40px_rgba(0,0,0,0.15)] rounded-full border-5 border-white"
+              className="relative z-10 w-[260px] h-[260px] md:w-[400px] md:h-[400px] aspect-square object-cover drop-shadow-[0_10px_40px_rgba(0,0,0,0.15)] rounded-full border-5 border-white"
             />
           </div>
         </section>
 
-        <section className="mt-16">
+        <section className="mt-6">
           {!loading && categories.length > 0 && (
             <div className="flex gap-6 overflow-x-auto pb-8 hide-scrollbar snap-x">
               {categories.map((cat, idx) => (
