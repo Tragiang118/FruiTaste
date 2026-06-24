@@ -105,9 +105,9 @@ export default function AdminDashboard() {
       </div>
 
       {/* Quick Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         <Card className="rounded-[2rem] border-none shadow-sm bg-white overflow-hidden group hover:shadow-xl transition-all duration-500">
-          <CardContent className="p-6">
+          <CardContent className="p-4 md:p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="w-12 h-12 rounded-2xl bg-green-50 flex items-center justify-center text-green-600 group-hover:scale-110 transition-transform">
                 <DollarSign size={24} />
@@ -115,12 +115,12 @@ export default function AdminDashboard() {
               <span className="text-[10px] font-black text-green-600 bg-green-50 px-2 py-1 rounded-full uppercase tracking-wider">Hôm nay</span>
             </div>
             <p className="text-gray-400 text-xs font-black uppercase tracking-widest mb-1">Doanh thu ngày</p>
-            <h3 className="text-2xl font-black text-gray-900">{stats?.overview?.totalRevenue?.toLocaleString('vi-VN') || 0}đ</h3>
+            <h3 className="text-xl md:text-2xl font-black text-gray-900">{stats?.overview?.totalRevenue?.toLocaleString('vi-VN') || 0}đ</h3>
           </CardContent>
         </Card>
 
         <Card className="rounded-[2rem] border-none shadow-sm bg-white overflow-hidden group hover:shadow-xl transition-all duration-500">
-          <CardContent className="p-6">
+          <CardContent className="p-4 md:p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
                 <ShoppingBag size={24} />
@@ -128,12 +128,12 @@ export default function AdminDashboard() {
               <span className="text-[10px] font-black text-blue-600 bg-blue-50 px-2 py-1 rounded-full uppercase tracking-wider">Đơn mới</span>
             </div>
             <p className="text-gray-400 text-xs font-black uppercase tracking-widest mb-1">Số lượng đơn</p>
-            <h3 className="text-2xl font-black text-gray-900">{stats?.overview?.totalOrders || 0} Đơn</h3>
+            <h3 className="text-xl md:text-2xl font-black text-gray-900">{stats?.overview?.totalOrders || 0} Đơn</h3>
           </CardContent>
         </Card>
 
         <Card className="rounded-[2rem] border-none shadow-sm bg-white overflow-hidden group hover:shadow-xl transition-all duration-500">
-          <CardContent className="p-6">
+          <CardContent className="p-4 md:p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-600 group-hover:scale-110 transition-transform">
                 <Users size={24} />
@@ -141,12 +141,12 @@ export default function AdminDashboard() {
               <span className="text-[10px] font-black text-amber-600 bg-amber-50 px-2 py-1 rounded-full uppercase tracking-wider">Thành viên</span>
             </div>
             <p className="text-gray-400 text-xs font-black uppercase tracking-widest mb-1">Tổng khách hàng</p>
-            <h3 className="text-2xl font-black text-gray-900">{stats?.overview?.totalUsers || 0} User</h3>
+            <h3 className="text-xl md:text-2xl font-black text-gray-900">{stats?.overview?.totalUsers || 0} User</h3>
           </CardContent>
         </Card>
 
         <Card className="rounded-[2rem] border-none shadow-sm bg-white overflow-hidden group hover:shadow-xl transition-all duration-500">
-          <CardContent className="p-6">
+          <CardContent className="p-4 md:p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="w-12 h-12 rounded-2xl bg-purple-50 flex items-center justify-center text-purple-600 group-hover:scale-110 transition-transform">
                 <Clock size={24} />
@@ -154,7 +154,7 @@ export default function AdminDashboard() {
               <span className="text-[10px] font-black text-purple-600 bg-purple-50 px-2 py-1 rounded-full uppercase tracking-wider">Cần xử lý</span>
             </div>
             <p className="text-gray-400 text-xs font-black uppercase tracking-widest mb-1">Chờ xác nhận</p>
-            <h3 className="text-2xl font-black text-gray-900">{stats?.overview?.pendingOrders || 0} Đơn</h3>
+            <h3 className="text-xl md:text-2xl font-black text-gray-900">{stats?.overview?.pendingOrders || 0} Đơn</h3>
           </CardContent>
         </Card>
       </div>
