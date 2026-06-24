@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import AuthProvider from "@/components/AuthProvider";
 import HeaderWrapper from "../components/HeaderWrapper"; 
-import Footer from "@/components/Footer";
+import FooterWrapper from "../components/FooterWrapper";
 import ChatbotWidget from "@/components/ChatbotWidget";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
@@ -30,7 +30,7 @@ export default function RootLayout({
         <AuthProvider>
           <HeaderWrapper />
           {children}
-          <Footer />
+          <FooterWrapper />
           <Toaster />
           <ChatbotWidget />
         </AuthProvider>
