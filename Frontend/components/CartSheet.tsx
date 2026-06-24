@@ -37,22 +37,22 @@ function CartItemRow({
   }, [item.quantity, itemToDelete]);
 
   return (
-    <div className="flex gap-4 items-center bg-white p-3 rounded-2xl border border-gray-150 shadow-md relative group">
+    <div className="flex gap-1.5 sm:gap-4 items-center bg-white p-2 sm:p-3 rounded-2xl border border-gray-150 shadow-md relative group">
       <Checkbox
         checked={selectedIds.includes(item.id)}
         onCheckedChange={() => handleSelect(item.id)}
-        className="mr-2"
+        className="mr-0.5 sm:mr-2 shrink-0"
         aria-label={`Chọn ${item.name}`}
       />
-      <div className="w-20 h-20 bg-[#FFF4E6] rounded-xl flex items-center justify-center overflow-hidden flex-shrink-0">
-        <img src={getImageUrl(item.image)} alt={item.name} className="w-full h-full object-contain p-2 mix-blend-multiply" />
+      <div className="w-14 h-14 sm:w-20 sm:h-20 bg-[#FFF4E6] rounded-xl flex items-center justify-center overflow-hidden flex-shrink-0">
+        <img src={getImageUrl(item.image)} alt={item.name} className="w-full h-full object-contain p-1 sm:p-2 mix-blend-multiply" />
       </div>
       <div className="flex-1 min-w-0">
-        <h4 className="font-bold text-gray-900 truncate pr-6">{item.name}</h4>
-        <p className="text-[#FF6B4A] font-medium mt-1">
+        <h4 className="font-bold text-gray-900 text-xs sm:text-sm truncate pr-6">{item.name}</h4>
+        <p className="text-[#FF6B4A] font-medium text-xs sm:text-sm mt-0.5 sm:mt-1">
           {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.price)}
         </p>
-        <div className="flex items-center gap-2 mt-2 border border-gray-100 rounded-full w-fit bg-gray-50 p-0.5">
+        <div className="flex items-center gap-1.5 sm:gap-2 mt-1.5 sm:mt-2 border border-gray-100 rounded-full w-fit bg-gray-50 p-0.5">
           <button
             onClick={() => {
               if (item.quantity <= 1) {
@@ -62,9 +62,9 @@ function CartItemRow({
                 updateQuantity(item.id, item.quantity - 1);
               }
             }}
-            className="w-7 h-7 rounded-full flex items-center justify-center bg-white shadow-sm hover:text-[#FF6B4A] cursor-pointer"
+            className="w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center bg-white shadow-sm hover:text-[#FF6B4A] cursor-pointer"
           >
-            <Minus size={14} />
+            <Minus size={12} />
           </button>
           <input
             type="text"
@@ -99,23 +99,24 @@ function CartItemRow({
                 setItemToDelete(item.id);
               }
             }}
-            className="w-8 text-center font-bold text-sm bg-transparent border-none outline-none focus:ring-0 p-0 text-gray-900"
+            className="w-6 sm:w-8 text-center font-bold text-xs sm:text-sm bg-transparent border-none outline-none focus:ring-0 p-0 text-gray-900"
             placeholder="0"
           />
           <button
             onClick={() => updateQuantity(item.id, item.quantity + 1)}
             disabled={item.quantity >= item.stockQuantity}
-            className="w-7 h-7 rounded-full flex items-center justify-center bg-white shadow-sm disabled:opacity-50 hover:text-[#FF6B4A] cursor-pointer"
+            className="w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center bg-white shadow-sm disabled:opacity-50 hover:text-[#FF6B4A] cursor-pointer"
           >
-            <Plus size={14} />
+            <Plus size={12} />
           </button>
         </div>
       </div>
       <button
         onClick={() => setItemToDelete(item.id)}
-        className="absolute top-3 right-3 text-gray-300 hover:text-red-500 transition-colors p-1 cursor-pointer"
+        className="absolute top-2.5 right-2.5 text-gray-300 hover:text-red-500 transition-colors p-1 cursor-pointer"
       >
-        <Trash2 size={18} />
+        <Trash2 size={16} className="sm:hidden" />
+        <Trash2 size={18} className="hidden sm:flex" />
       </button>
     </div>
   );
@@ -197,8 +198,8 @@ export default function CartSheet() {
           )}
         </Button>
       </SheetTrigger>
-      <SheetContent className="w-full sm:max-w-md bg-[#FFFDFB] flex flex-col p-6 rounded-l-[2.5rem] z-[99999] border-none shadow-2xl">
-        <SheetHeader className="mb-4">
+      <SheetContent className="data-[side=right]:w-[90vw] data-[side=right]:sm:max-w-md bg-[#FFFDFB] flex flex-col p-4 sm:p-6 rounded-l-[2.5rem] z-[99999] border-none shadow-2xl">
+        <SheetHeader className="mb-4 p-0">
           <SheetTitle className="text-2xl font-bold flex items-center gap-2">
             <ShoppingCart size={24} className="text-[#FF6B4A]" /> Giỏ hàng của bạn
           </SheetTitle>
@@ -243,7 +244,7 @@ export default function CartSheet() {
         </div>
 
         {items.length > 0 && (
-          <SheetFooter className="mt-6 pt-6 border-t border-gray-100 flex flex-col gap-4">
+          <SheetFooter className="mt-6 pt-6 border-t border-gray-100 flex flex-col gap-4 p-0">
             <div className="flex justify-between items-center w-full">
               <span className="text-gray-600 font-medium">Tổng cộng (đã chọn):</span>
               <span className="text-2xl font-black text-[#FF6B4A]">
