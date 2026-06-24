@@ -42,7 +42,7 @@ export default function HomePage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-0">
 
         <section className="flex flex-col md:flex-row items-center justify-between rounded-3xl shadow-lg">
-          <div className="md:w-1/2 bg-white m-10 p-6 rounded-3xl">
+          <div className="md:w-1/2 bg-white mx-4 my-6 md:m-10 p-6 rounded-3xl">
             <span className="text-orange-500 font-medium mb-4 block uppercase tracking-wider text-sm">
               Trái cây sạch từ vườn
             </span>
@@ -66,7 +66,7 @@ export default function HomePage() {
               </Link>
             </div>
           </div>
-          <div className="md:w-1/2 relative mt-12 md:mt-0 flex justify-center items-center p-8">
+          <div className="md:w-1/2 relative mt-2 md:mt-0 flex justify-center items-center p-4 md:p-8">
             <div className="absolute w-[280px] h-[280px] md:w-[450px] md:h-[450px] bg-gradient-to-br from-yellow-300 to-orange-400 rounded-full z-0 opacity-50 blur-[60px]"></div>
             <img
               src="https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=800&q=80"
