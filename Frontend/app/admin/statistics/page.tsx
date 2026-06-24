@@ -168,7 +168,7 @@ export default function AdminStatisticsPage() {
           <p className="text-sm text-gray-500 mt-1 font-medium">Phân tích hiệu quả và sản phẩm bán chạy.</p>
         </div>
         
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 w-full md:w-auto mt-2 md:mt-0">
           <div className="flex items-center gap-2 text-sm font-bold text-gray-500 whitespace-nowrap">
             <Filter size={16} /> Lọc theo:
           </div>
@@ -248,53 +248,60 @@ export default function AdminStatisticsPage() {
       ) : (
         <>
           {/* Overview Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card className="rounded-[2rem] border-none shadow-sm bg-white overflow-hidden relative group hover:shadow-xl transition-all duration-500">
-              <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:scale-110 transition-transform">
-                <DollarSign size={80} />
-              </div>
-              <CardHeader className="pb-2">
-                <CardDescription className="font-bold text-gray-400 uppercase text-[10px] tracking-[0.2em]">Tổng doanh thu</CardDescription>
-                <CardTitle className="text-3xl font-black text-gray-900">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+            <Card className="rounded-[2rem] border-none shadow-sm bg-white overflow-hidden group hover:shadow-xl transition-all duration-500">
+              <CardContent className="p-4 md:p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-green-50 flex items-center justify-center text-green-600 group-hover:scale-110 transition-transform">
+                    <DollarSign size={20} className="md:w-6 md:h-6" />
+                  </div>
+                  <span className="text-[9px] md:text-[10px] font-black text-green-600 bg-green-50 px-2 py-1 rounded-full uppercase tracking-wider">Doanh thu</span>
+                </div>
+                <p className="text-gray-400 text-[10px] md:text-xs font-black uppercase tracking-widest mb-1">Tổng doanh thu</p>
+                <h3 className="text-lg md:text-2xl font-black text-gray-900 truncate" title={data?.overview?.totalRevenue?.toLocaleString('vi-VN') + 'đ'}>
                   {data?.overview?.totalRevenue?.toLocaleString('vi-VN') || 0}đ
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-2 mt-2">
-                  <div className="h-1.5 w-12 bg-primary rounded-full" />
-                  <span className="text-xs font-bold text-primary">Tăng trưởng tốt</span>
+                </h3>
+                <div className="flex items-center gap-1.5 mt-3">
+                  <div className="h-1 w-8 bg-green-500 rounded-full" />
+                  <span className="text-[10px] font-bold text-green-500">Tăng trưởng tốt</span>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="rounded-[2rem] border-none shadow-sm bg-white overflow-hidden relative group hover:shadow-xl transition-all duration-500">
-              <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:scale-110 transition-transform">
-                <ShoppingBag size={80} />
-              </div>
-              <CardHeader className="pb-2">
-                <CardDescription className="font-bold text-gray-400 uppercase text-[10px] tracking-[0.2em]">Tổng đơn hàng</CardDescription>
-                <CardTitle className="text-3xl font-black text-gray-900">{data?.overview?.totalOrders || 0}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-2 mt-2">
-                  <div className="h-1.5 w-12 bg-blue-500 rounded-full" />
-                  <span className="text-xs font-bold text-blue-500">Hoàn thành cao</span>
+            <Card className="rounded-[2rem] border-none shadow-sm bg-white overflow-hidden group hover:shadow-xl transition-all duration-500">
+              <CardContent className="p-4 md:p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
+                    <ShoppingBag size={20} className="md:w-6 md:h-6" />
+                  </div>
+                  <span className="text-[9px] md:text-[10px] font-black text-blue-600 bg-blue-50 px-2 py-1 rounded-full uppercase tracking-wider">Đơn hàng</span>
+                </div>
+                <p className="text-gray-400 text-[10px] md:text-xs font-black uppercase tracking-widest mb-1">Tổng đơn hàng</p>
+                <h3 className="text-lg md:text-2xl font-black text-gray-900 truncate">
+                  {data?.overview?.totalOrders || 0} Đơn
+                </h3>
+                <div className="flex items-center gap-1.5 mt-3">
+                  <div className="h-1 w-8 bg-blue-500 rounded-full" />
+                  <span className="text-[10px] font-bold text-blue-500">Hoàn thành cao</span>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="rounded-[2rem] border-none shadow-sm bg-white overflow-hidden relative group hover:shadow-xl transition-all duration-500">
-              <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:scale-110 transition-transform">
-                <Users size={80} />
-              </div>
-              <CardHeader className="pb-2">
-                <CardDescription className="font-bold text-gray-400 uppercase text-[10px] tracking-[0.2em]">Khách hàng mới</CardDescription>
-                <CardTitle className="text-3xl font-black text-gray-900">{data?.overview?.totalUsers || 0}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-2 mt-2">
-                  <div className="h-1.5 w-12 bg-amber-500 rounded-full" />
-                  <span className="text-xs font-bold text-amber-500">Đang mở rộng</span>
+            <Card className="col-span-2 md:col-span-1 rounded-[2rem] border-none shadow-sm bg-white overflow-hidden group hover:shadow-xl transition-all duration-500">
+              <CardContent className="p-4 md:p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-600 group-hover:scale-110 transition-transform">
+                    <Users size={20} className="md:w-6 md:h-6" />
+                  </div>
+                  <span className="text-[9px] md:text-[10px] font-black text-amber-600 bg-amber-50 px-2 py-1 rounded-full uppercase tracking-wider">Thành viên</span>
+                </div>
+                <p className="text-gray-400 text-[10px] md:text-xs font-black uppercase tracking-widest mb-1">Khách hàng mới</p>
+                <h3 className="text-lg md:text-2xl font-black text-gray-900 truncate">
+                  {data?.overview?.totalUsers || 0} User
+                </h3>
+                <div className="flex items-center gap-1.5 mt-3">
+                  <div className="h-1 w-8 bg-amber-500 rounded-full" />
+                  <span className="text-[10px] font-bold text-amber-500">Đang mở rộng</span>
                 </div>
               </CardContent>
             </Card>
