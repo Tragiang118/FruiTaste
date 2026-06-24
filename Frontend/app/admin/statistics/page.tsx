@@ -195,48 +195,51 @@ export default function AdminStatisticsPage() {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {/* Date Picker Popover */}
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="ghost"
-                className={cn(
-                  "rounded-full border border-gray-200 font-bold text-gray-700 bg-gray-50/50 hover:bg-gray-100 h-8 px-3 text-[13px] transition-colors",
-                  !date && "text-muted-foreground"
-                )}
-              >
-                <CalendarIcon className="mr-2 h-3.5 w-3.5 text-primary/70" />
-                {date?.from ? (
-                  date.to ? (
-                    <>
-                      {format(date.from, "dd/MM")} - {format(date.to, "dd/MM")}
-                    </>
+          {/* Date Picker & Refresh Button Group */}
+          <div className="flex items-center gap-2">
+            {/* Date Picker Popover */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className={cn(
+                    "rounded-full border border-gray-200 font-bold text-gray-700 bg-gray-50/50 hover:bg-gray-100 h-8 px-3 text-[13px] transition-colors",
+                    !date && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-3.5 w-3.5 text-primary/70" />
+                  {date?.from ? (
+                    date.to ? (
+                      <>
+                        {format(date.from, "dd/MM")} - {format(date.to, "dd/MM")}
+                      </>
+                    ) : (
+                      format(date.from, "dd/MM/yyyy")
+                    )
                   ) : (
-                    format(date.from, "dd/MM/yyyy")
-                  )
-                ) : (
-                  <span>Lọc ngày</span>
-                )}
-                <ChevronDown className="ml-2 h-3.5 w-3.5 opacity-40" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0 rounded-[2rem] shadow-2xl border-gray-100 bg-white" align="end">
-              <Calendar
-                mode="range"
-                selected={date}
-                onSelect={(range) => {
-                  setDate(range);
-                  if (range?.from && range?.to) setFilterType("custom");
-                }}
-                numberOfMonths={2}
-                locale={vi}
-              />
-            </PopoverContent>
-          </Popover>
+                    <span>Lọc ngày</span>
+                  )}
+                  <ChevronDown className="ml-2 h-3.5 w-3.5 opacity-40" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0 rounded-[2rem] shadow-2xl border-gray-100 bg-white" align="end">
+                <Calendar
+                  mode="range"
+                  selected={date}
+                  onSelect={(range) => {
+                    setDate(range);
+                    if (range?.from && range?.to) setFilterType("custom");
+                  }}
+                  numberOfMonths={2}
+                  locale={vi}
+                />
+              </PopoverContent>
+            </Popover>
 
-          <Button onClick={fetchStats} variant="outline" className="bg-white rounded-full text-gray-700 cursor-pointer border-gray-200 h-8 px-4 text-xs font-bold shadow-none ml-2">
-            <RefreshCw className={cn("mr-2 h-3.5 w-3.5 text-gray-500", loading && "animate-spin")} /> Làm mới
-          </Button>
+            <Button onClick={fetchStats} variant="outline" className="bg-white rounded-full text-gray-700 cursor-pointer border-gray-200 h-8 px-4 text-xs font-bold shadow-none">
+              <RefreshCw className={cn("mr-2 h-3.5 w-3.5 text-gray-500", loading && "animate-spin")} /> Làm mới
+            </Button>
+          </div>
         </div>
       </div>
 
