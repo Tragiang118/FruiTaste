@@ -56,7 +56,7 @@ function ProfileContent() {
 
       <div className="max-w-6xl mx-auto flex flex-col md:flex-row gap-8 items-start">
         {/* Sidebar / Drawer */}
-        <aside className="w-full md:w-72 shrink-0 sticky top-4">
+        <aside className="w-full md:w-72 shrink-0 relative md:sticky md:top-28">
           <div className="bg-white rounded-[2.5rem] p-4 shadow-sm border border-gray-50">
             <div className="p-4 mb-2">
               <h2 className="text-xl font-black text-gray-900 leading-tight">Cài đặt tài khoản</h2>
