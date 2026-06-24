@@ -37,20 +37,36 @@ function searchProductsLocally(products: any[], queryText: string): any[] {
     return products.filter((p: any) => p.name.toLowerCase().includes(rawSearch));
   }
 
-  // Chấm điểm mức độ khớp của tên sản phẩm với danh sách từ khóa
+  // Chấm điểm mức độ khớp của sản phẩm với danh sách từ khóa
   const scored = products
     .map((p: any) => {
       const nameLower = p.name.toLowerCase();
-      // Tách các từ trong tên sản phẩm để so khớp chính xác (tránh lỗi \b regex với unicode Tiếng Việt)
       const nameWords = nameLower.split(/[\s,.\-\/]+/);
+      
+      const healthLower = (p.healthInfo || "").toLowerCase();
+      const healthWords = healthLower.split(/[\s,.\-\/]+/);
+      
+      const tagsLower = (p.tags || []).map((t: string) => t.toLowerCase());
+
       let score = 0;
       for (const word of words) {
-        if (nameLower.includes(word)) {
+        // 1. So khớp với Tên sản phẩm (Trọng số cao nhất)
+        if (nameWords.includes(word)) {
+          score += 5; // Khớp từ nguyên vẹn trong tên
+        } else if (word.length > 2 && nameLower.includes(word)) {
+          score += 2; // Khớp một phần trong tên (chỉ áp dụng cho từ dài hơn 2 ký tự)
+        }
+
+        // 2. So khớp với tags (Trọng số trung bình)
+        if (tagsLower.includes(word)) {
+          score += 3;
+        }
+
+        // 3. So khớp với thông tin sức khỏe/dinh dưỡng (Trọng số trung bình)
+        if (healthWords.includes(word)) {
+          score += 2;
+        } else if (word.length > 2 && healthLower.includes(word)) {
           score += 1;
-          // Điểm cộng nếu khớp nguyên từ đầy đủ
-          if (nameWords.includes(word)) {
-            score += 1;
-          }
         }
       }
       return { product: p, score };
@@ -127,7 +143,7 @@ export async function POST(req: Request) {
 
         productTags = topProducts.map((p: any) =>
           `[PRODUCT:${p.id}:${p.name}:${p.price}:${p.unit || "kg"}:${p.stockQuantity ?? 0}]`
-        ).join(" ");
+        ).join("\n");
       }
     }
 
@@ -170,14 +186,17 @@ export async function POST(req: Request) {
 Nhiệm vụ: Trả lời thân thiện về hoa quả, dinh dưỡng, món ăn từ trái cây, đơn hàng của khách.
 TUYỆT ĐỐI KHÔNG ĐƯỢC hiển thị bất kỳ mã số ID sản phẩm nào (ví dụ: "ID: 1", "ID: 14", "mã ID"...) trong câu trả lời trò chuyện với khách hàng. Các mã ID này chỉ được sử dụng cho cấu trúc tag đặt hàng hoặc tag sản phẩm ở cuối câu trả lời.
 
-QUY TẮC BÁN HÀNG QUAN TRỌNG:
+QUY TẮC BÁN HÀNG VÀ HIỂN THỊ THẺ SẢN PHẨM QUAN TRỌNG:
 1. Bạn CHỈ ĐƯỢC PHÉP tư vấn bán hoặc tạo thẻ đặt hàng cho các sản phẩm xuất hiện trong danh sách "DỮ LIỆU SẢN PHẨM TỪ HỆ THỐNG" được cung cấp ở dưới.
-2. Nếu khách hàng yêu cầu mua một sản phẩm KHÔNG có trong danh sách "DỮ LIỆU SẢN PHẨM TỪ HỆ THỐNG" (hoặc khi danh sách này trống), bạn BẮT BUỘC phải lịch sự thông báo rằng cửa hàng hiện không kinh doanh sản phẩm này.
-3. TUYỆT ĐỐI KHÔNG tự bịa đặt rằng cửa hàng có bán sản phẩm đó, không tự bịa đặt giá cả, không tự bịa đặt số lượng tồn kho (ví dụ: không được bịa ra còn 200kg cherry).
+2. NGUYÊN TẮC HIỂN THỊ THẺ SẢN PHẨM [PRODUCT:...]:
+   - Bạn chỉ được phép chèn thẻ sản phẩm [PRODUCT:id:name:price:unit:stock] ở cuối câu trả lời đối với các sản phẩm bạn KHUYÊN DÙNG, ĐỀ XUẤT khách mua, hoặc các sản phẩm khách chủ động tìm hiểu/hỏi mua.
+   - TUYỆT ĐỐI KHÔNG hiển thị thẻ sản phẩm cho các sản phẩm mà bạn CẢNH BÁO không nên dùng, khuyên tránh xa, hoặc sản phẩm không được đề xuất trong câu trả lời (Ví dụ: Nếu khách bị tiểu đường và bạn khuyên "không nên ăn Na Chi Lăng", thì TUYỆT ĐỐI KHÔNG chèn thẻ [PRODUCT:...] của Na Chi Lăng ở cuối câu trả lời).
+3. Nếu khách hàng yêu cầu mua một sản phẩm KHÔNG có trong danh sách "DỮ LIỆU SẢN PHẨM TỪ HỆ THỐNG" (hoặc khi danh sách này trống), bạn BẮT BUỘC phải lịch sự thông báo rằng cửa hàng hiện không kinh doanh sản phẩm này.
+4. TUYỆT ĐỐI KHÔNG tự bịa đặt rằng cửa hàng có bán sản phẩm đó, không tự bịa đặt giá cả, không tự bịa đặt số lượng tồn kho.
 
 DỮ LIỆU SẢN PHẨM TỪ HỆ THỐNG:
 ${contextData ? contextData : "Không có sản phẩm nào khớp với yêu cầu tìm kiếm của khách hàng trong hệ thống của cửa hàng."}
-${productTags ? `\nSau phần trả lời, thêm dòng này để hiển thị thẻ sản phẩm: ${productTags}` : ""}
+${productTags ? `\n\nHướng dẫn chèn thẻ sản phẩm: Hãy chèn chính xác thẻ sản phẩm của những sản phẩm được khuyên dùng hoặc khách hàng muốn mua/tìm hiểu (lấy từ danh sách dưới đây) ở cuối câu trả lời. Hãy BỎ QUA thẻ của sản phẩm không phù hợp hoặc bị cảnh báo không nên ăn:\n${productTags}` : ""}
 
 Nếu khách hàng biểu lộ ý định muốn đặt mua/mua hàng đối với các sản phẩm có trong "DỮ LIỆU SẢN PHẨM TỪ HỆ THỐNG" ở trên, bạn BẮT BUỘC phải tạo tag đặt hàng ở cuối câu trả lời (sau phần text trả lời và sau thẻ sản phẩm) theo định dạng chính xác sau:
 [ORDER_FORM:productId1:quantity1,productId2:quantity2,...]
