@@ -111,10 +111,6 @@ export async function POST(req: Request) {
     console.log("Intent:", intent);
 
     // Fetch dữ liệu trước khi gọi AI
-    let contextData = "";
-    let productTags = "";
-
-    // 1. Tải danh sách tất cả sản phẩm
     let productsList: any[] = [];
     try {
       const res = await fetch(`${BACKEND_URL}/products`);
@@ -125,29 +121,35 @@ export async function POST(req: Request) {
       console.error("Fetch all products error:", e);
     }
 
-    // 2. Xử lý logic tìm sản phẩm (cho cả intent product và general nếu có từ khóa khớp mạnh)
+    // Tạo danh sách tất cả sản phẩm ở dạng rút gọn để AI luôn biết cửa hàng đang bán gì
+    const allProductsConcise = productsList
+      .map((p: any) => `- ${p.name} (ID: ${p.id}): giá ${p.price?.toLocaleString("vi-VN")} VND/${p.unit || "kg"}, còn lại ${p.stockQuantity ?? 0} ${p.unit || "kg"}.`)
+      .join("\n");
+
+    // Xử lý logic tìm sản phẩm khớp (cho cả intent product và general nếu có từ khóa khớp mạnh)
     const matchedProducts = searchProductsLocally(productsList, userText);
     
     // Nhận diện ý định đặt hàng (mua, đặt, order...)
     const buyKeywords = ["đặt", "mua", "order", "lấy", "bán cho", "chốt", "thanh toán", "cọc", "muốn mua", "muốn đặt"];
     const isBuyIntent = buyKeywords.some(k => userText.toLowerCase().includes(k)) && matchedProducts.length > 0;
 
-    // Nếu có intent hỏi sản phẩm, hoặc người dùng hỏi chung nhưng khớp mạnh tên sản phẩm cụ thể, hoặc muốn mua luôn
-    if (intent === "product" || (intent === "general" && matchedProducts.length > 0) || isBuyIntent) {
-      const topProducts = matchedProducts.slice(0, 4); // Lấy tối đa 4 sản phẩm khớp nhất để hỗ trợ giỏ hàng nhiều quả
-      if (topProducts.length > 0) {
-        contextData = `\n\nDỮ LIỆU SẢN PHẨM TỪ HỆ THỐNG:\n` +
-          topProducts.map((p: any) =>
-            `- ${p.name} (ID: ${p.id}): giá ${p.price?.toLocaleString("vi-VN")} VND/${p.unit || "kg"}, còn lại ${p.stockQuantity ?? 0} ${p.unit || "kg"}. Mô tả: ${cleanHtmlText(p.description)}. Thông tin dinh dưỡng/sức khỏe: ${cleanHtmlText(p.healthInfo)}`
-          ).join("\n");
+    let detailedProductsContext = "";
+    let productTags = "";
 
-        productTags = topProducts.map((p: any) =>
-          `[PRODUCT:${p.id}:${p.name}:${p.price}:${p.unit || "kg"}:${p.stockQuantity ?? 0}]`
+    const topProducts = matchedProducts.slice(0, 4); // Lấy tối đa 4 sản phẩm khớp nhất
+    if (topProducts.length > 0) {
+      detailedProductsContext = `THÔNG TIN CHI TIẾT SẢN PHẨM KHỚP VỚI CÂU HỎI:\n` +
+        topProducts.map((p: any) =>
+          `- ${p.name} (ID: ${p.id}): Mô tả: ${cleanHtmlText(p.description)}. Thông tin dinh dưỡng/sức khỏe: ${cleanHtmlText(p.healthInfo)}`
         ).join("\n");
-      }
+
+      productTags = topProducts.map((p: any) =>
+        `[PRODUCT:${p.id}:${p.name}:${p.price}:${p.unit || "kg"}:${p.stockQuantity ?? 0}]`
+      ).join("\n");
     }
 
-    // 3. Xử lý logic đơn hàng
+    // Xử lý logic đơn hàng
+    let ordersContext = "";
     if (intent === "order") {
       try {
         const res = await fetch(`${BACKEND_URL}/orders/my-orders`, {
@@ -166,19 +168,19 @@ export async function POST(req: Request) {
               COMPLETED: "Đã hoàn thành",
               CANCELLED: "Đã hủy đơn",
             };
-            contextData = `\n\nDỮ LIỆU ĐƠN HÀNG CỦA KHÁCH:\n` +
+            ordersContext = `DỮ LIỆU ĐƠN HÀNG CỦA KHÁCH:\n` +
               orders.slice(0, 5).map((o: any) =>
                 `- Đơn #${o.id}: ${statusMap[o.status] || o.status}, thành tiền (đã gồm ship) ${o.finalAmount?.toLocaleString("vi-VN")} VND (tiền hàng: ${o.totalAmount?.toLocaleString("vi-VN")} VND, phí ship: ${o.shippingFee?.toLocaleString("vi-VN")} VND), ngày đặt hàng: ${new Date(o.createdAt).toLocaleDateString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" })}`
               ).join("\n");
           } else {
-            contextData = "\n\nDỮ LIỆU ĐƠN HÀNG: Khách hàng chưa có đơn hàng nào.";
+            ordersContext = "DỮ LIỆU ĐƠN HÀNG: Khách hàng chưa có đơn hàng nào.";
           }
         } else {
-          contextData = "\n\nDỮ LIỆU ĐƠN HÀNG: Không thể truy xuất (chưa đăng nhập hoặc lỗi hệ thống).";
+          ordersContext = "DỮ LIỆU ĐƠN HÀNG: Không thể truy xuất (chưa đăng nhập hoặc lỗi hệ thống).";
         }
       } catch (e) {
         console.error("Fetch orders error:", e);
-        contextData = "\n\nDỮ LIỆU ĐƠN HÀNG: Lỗi kết nối máy chủ.";
+        ordersContext = "DỮ LIỆU ĐƠN HÀNG: Lỗi kết nối máy chủ.";
       }
     }
 
@@ -187,18 +189,23 @@ Nhiệm vụ: Trả lời thân thiện về hoa quả, dinh dưỡng, món ăn 
 TUYỆT ĐỐI KHÔNG ĐƯỢC hiển thị bất kỳ mã số ID sản phẩm nào (ví dụ: "ID: 1", "ID: 14", "mã ID"...) trong câu trả lời trò chuyện với khách hàng. Các mã ID này chỉ được sử dụng cho cấu trúc tag đặt hàng hoặc tag sản phẩm ở cuối câu trả lời.
 
 QUY TẮC BÁN HÀNG VÀ HIỂN THỊ THẺ SẢN PHẨM QUAN TRỌNG:
-1. Bạn CHỈ ĐƯỢC PHÉP tư vấn bán hoặc tạo thẻ đặt hàng cho các sản phẩm xuất hiện trong danh sách "DỮ LIỆU SẢN PHẨM TỪ HỆ THỐNG" được cung cấp ở dưới.
+1. Bạn CHỈ ĐƯỢC PHÉP tư vấn bán hoặc tạo thẻ đặt hàng cho các sản phẩm thực sự có trong "DANH SÁCH TẤT CẢ SẢN PHẨM HIỆN CÓ CỦA CỬA HÀNG" dưới đây.
 2. NGUYÊN TẮC HIỂN THỊ THẺ SẢN PHẨM [PRODUCT:...]:
-   - Bạn chỉ được phép chèn thẻ sản phẩm [PRODUCT:id:name:price:unit:stock] ở cuối câu trả lời đối với các sản phẩm bạn KHUYÊN DÙNG, ĐỀ XUẤT khách mua, hoặc các sản phẩm khách chủ động tìm hiểu/hỏi mua.
-   - TUYỆT ĐỐI KHÔNG hiển thị thẻ sản phẩm cho các sản phẩm mà bạn CẢNH BÁO không nên dùng, khuyên tránh xa, hoặc sản phẩm không được đề xuất trong câu trả lời (Ví dụ: Nếu khách bị tiểu đường và bạn khuyên "không nên ăn Na Chi Lăng", thì TUYỆT ĐỐI KHÔNG chèn thẻ [PRODUCT:...] của Na Chi Lăng ở cuối câu trả lời).
-3. Nếu khách hàng yêu cầu mua một sản phẩm KHÔNG có trong danh sách "DỮ LIỆU SẢN PHẨM TỪ HỆ THỐNG" (hoặc khi danh sách này trống), bạn BẮT BUỘC phải lịch sự thông báo rằng cửa hàng hiện không kinh doanh sản phẩm này.
+   - Bạn bắt buộc chèn thẻ sản phẩm [PRODUCT:id:name:price:unit:stock] ở cuối câu trả lời đối với các sản phẩm bạn KHUYÊN DÙNG, ĐỀ XUẤT khách mua, hoặc các sản phẩm khách chủ động tìm hiểu/hỏi mua.
+   - Thông tin trong thẻ [PRODUCT:id:name:price:unit:stock] phải lấy chính xác từ DANH SÁCH TẤT CẢ SẢN PHẨM HIỆN CÓ CỦA CỬA HÀNG dưới đây (bao gồm: id, tên chính xác của sản phẩm, giá bán, đơn vị tính, số lượng còn lại). Ví dụ: [PRODUCT:6:Dưa Hấu Sài Gòn:28000:quả:60].
+   - TUYỆT ĐỐI KHÔNG hiển thị thẻ sản phẩm cho các sản phẩm mà bạn CẢNH BÁO không nên dùng, khuyên tránh xa, hoặc sản phẩm không được đề xuất trong câu trả lời.
+3. Nếu khách hàng yêu cầu mua một sản phẩm KHÔNG có trong danh sách của cửa hàng, bạn BẮT BUỘC phải lịch sự thông báo rằng cửa hàng hiện không kinh doanh sản phẩm này.
 4. TUYỆT ĐỐI KHÔNG tự bịa đặt rằng cửa hàng có bán sản phẩm đó, không tự bịa đặt giá cả, không tự bịa đặt số lượng tồn kho.
 
-DỮ LIỆU SẢN PHẨM TỪ HỆ THỐNG:
-${contextData ? contextData : "Không có sản phẩm nào khớp với yêu cầu tìm kiếm của khách hàng trong hệ thống của cửa hàng."}
-${productTags ? `\n\nHướng dẫn chèn thẻ sản phẩm: Hãy chèn chính xác thẻ sản phẩm của những sản phẩm được khuyên dùng hoặc khách hàng muốn mua/tìm hiểu (lấy từ danh sách dưới đây) ở cuối câu trả lời. Hãy BỎ QUA thẻ của sản phẩm không phù hợp hoặc bị cảnh báo không nên ăn:\n${productTags}` : ""}
+DANH SÁCH TẤT CẢ SẢN PHẨM HIỆN CÓ CỦA CỬA HÀNG:
+${allProductsConcise ? allProductsConcise : "Cửa hàng hiện tại chưa có sản phẩm nào."}
 
-Nếu khách hàng biểu lộ ý định muốn đặt mua/mua hàng đối với các sản phẩm có trong "DỮ LIỆU SẢN PHẨM TỪ HỆ THỐNG" ở trên, bạn BẮT BUỘC phải tạo tag đặt hàng ở cuối câu trả lời (sau phần text trả lời và sau thẻ sản phẩm) theo định dạng chính xác sau:
+${detailedProductsContext ? `\n${detailedProductsContext}\n` : ""}
+${ordersContext ? `\n${ordersContext}\n` : ""}
+
+${productTags ? `\nHướng dẫn chèn thẻ sản phẩm: Hãy chèn chính xác thẻ sản phẩm của những sản phẩm được khuyên dùng hoặc khách hàng muốn mua/tìm hiểu (lấy từ danh sách dưới đây) ở cuối câu trả lời. Hãy BỎ QUA thẻ của sản phẩm không phù hợp hoặc bị cảnh báo không nên ăn:\n${productTags}` : "Hãy tự tạo và chèn thẻ [PRODUCT:id:name:price:unit:stock] tương ứng cho các sản phẩm bạn muốn gợi ý dựa trên danh sách sản phẩm hiện có ở trên."}
+
+Nếu khách hàng biểu lộ ý định muốn đặt mua/mua hàng đối với các sản phẩm có trong danh sách sản phẩm ở trên, bạn BẮT BUỘC phải tạo tag đặt hàng ở cuối câu trả lời (sau phần text trả lời và sau thẻ sản phẩm) theo định dạng chính xác sau:
 [ORDER_FORM:productId1:quantity1,productId2:quantity2,...]
 
 LƯU Ý QUAN TRỌNG VỀ THẺ ĐẶT HÀNG (ORDER_FORM):
@@ -207,7 +214,7 @@ LƯU Ý QUAN TRỌNG VỀ THẺ ĐẶT HÀNG (ORDER_FORM):
    TUYỆT ĐỐI KHÔNG bỏ sót sản phẩm nào khách yêu cầu, và KHÔNG được tạo nhiều thẻ [ORDER_FORM] riêng biệt.
 2. productId là ID của sản phẩm lấy chính xác từ dữ liệu hệ thống ở trên.
 3. quantity là số lượng khách hàng muốn mua (tự phân tích từ tin nhắn của khách, mặc định là 1 nếu khách không chỉ rõ số lượng).
-4. TUYỆT ĐỐI KHÔNG ĐƯỢC tạo thẻ đặt hàng [ORDER_FORM:...] nếu số lượng khách hàng yêu cầu vượt quá số lượng còn lại trong kho (stockQuantity) của bất kỳ sản phẩm nào họ muốn đặt mua (ví dụ: khách muốn mua 500 kg táo nhưng trong kho chỉ còn lại 145 kg). Trong trường hợp này, hãy lịch sự xin lỗi và thông báo rõ ràng cho khách hàng biết sản phẩm đó hiện không đủ tồn kho (nêu rõ số lượng còn lại trong kho) để họ có thể điều chỉnh số lượng mua hợp lý.
+4. TUYỆT ĐỐI KHÔNG ĐƯỢC tạo thẻ đặt hàng [ORDER_FORM:...] nếu số lượng khách hàng yêu cầu vượt quá số lượng còn lại trong kho (stockQuantity) của bất kỳ sản phẩm nào họ muốn đặt mua. Trong trường hợp này, hãy lịch sự xin lỗi và thông báo rõ ràng cho khách hàng biết sản phẩm đó hiện không đủ tồn kho (nêu rõ số lượng còn lại trong kho) để họ có thể điều chỉnh số lượng mua hợp lý.
 
 ĐIỀU KIỆN HIỂN THỊ FORM:
 - NẾU bạn tạo thẻ [ORDER_FORM:...]: Hãy hướng dẫn khách hàng điền các thông tin trong form bên dưới để hoàn tất đặt hàng.
