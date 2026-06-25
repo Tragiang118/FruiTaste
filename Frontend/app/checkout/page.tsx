@@ -50,6 +50,14 @@ export default function CheckoutPage() {
     }
   }, [isAuthenticated, isLoading, router]);
 
+  useEffect(() => {
+    if (selectedAddress) {
+      const name = selectedAddress.recipientName || '';
+      const phone = selectedAddress.phone || '';
+      setTransferContent(`${name} ${phone} Thanh toán FruiTaste`.trim());
+    }
+  }, [selectedAddress]);
+
   // Đồng bộ giỏ hàng từ server khi vào trang checkout, cảnh báo nếu số lượng bị giảm
   const hasSynced = useRef(false);
   useEffect(() => {
