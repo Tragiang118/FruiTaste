@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useCartStore, useAuthStore } from '@/lib/store';
 import api from '@/lib/axios';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -27,9 +27,14 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 export default function CheckoutPage() {
   const { user, isAuthenticated, isLoading } = useAuthStore();
   const { items: allItems, removeItem, selectedIds, setSelectedIds } = useCartStore();
+  const searchParams = useSearchParams();
+  const buyNowId = searchParams.get('buyNow');
+  const buyNowQty = Number(searchParams.get('qty')) || 1;
 
   // Lọc lấy các sản phẩm đã chọn từ giỏ hàng
-  const items = allItems.filter(i => selectedIds.includes(i.id));
+  const items = buyNowId
+    ? allItems.filter(i => i.id === Number(buyNowId)).map(i => ({ ...i, quantity: buyNowQty }))
+    : allItems.filter(i => selectedIds.includes(i.id));
 
   const [hiddenProductError, setHiddenProductError] = useState<{ message: string, productId: number | null } | null>(null);
   const router = useRouter();

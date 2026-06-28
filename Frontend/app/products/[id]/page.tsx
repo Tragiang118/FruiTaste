@@ -97,7 +97,7 @@ export default function ProductDetailPage() {
           image: mediaUrls[0] || 'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=800&q=80',
           stockQuantity: product.stockQuantity
         });
-        router.push('/checkout');
+        router.push(`/checkout?buyNow=${product.id}&qty=${Number(quantity) || 1}`);
       } catch (e) {
         console.error('Buy now failed', e);
       }
