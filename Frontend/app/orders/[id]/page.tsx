@@ -129,29 +129,32 @@ export default function OrderDetailPage() {
             <span className="text-[#FF6B4A] font-medium text-[#FF6B4A]">Chi tiết đơn hàng #{order.id}</span>
           </div>
         </div>
-        <div className="space-y-4 shadow-sm pb-10 bg-white rounded-3xl overflow-hidden">
+        <div className="shadow-sm pb-10 bg-white rounded-3xl overflow-hidden border border-gray-100">
 
           {/* Header - Trạng thái & Lịch sử */}
-          <div className="p-6 bg-gradient-to-r from-primary to-green-600 text-white min-h-[140px] flex items-center justify-between">
-            <div className="space-y-1.5 max-w-sm">
-              <h1 className="text-2xl font-black">{isCancelled ? 'Đơn Đã Hủy' : 'Đang xử lý kiện hàng...'}</h1>
-              <p className="text-xs text-green-50 opacity-90 leading-relaxed">
+          <div className="px-6 py-5 md:px-8 md:py-6 bg-gradient-to-r from-white via-[#FFF8F3] to-[#FFF3ED] border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="space-y-2 max-w-xl">
+              <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-primary">
+                Chi tiết đơn hàng
+              </div>
+              <h1 className="text-2xl font-black text-gray-900">{isCancelled ? 'Đơn Đã Hủy' : 'Đang xử lý kiện hàng...'}</h1>
+              <p className="text-sm text-gray-500 leading-relaxed">
                 Cảm ơn các bạn đã mua hoa quả tại FruiTaste! Đơn hàng được đóng gói kiểm tra kĩ lưỡng nhất.
               </p>
             </div>
-            <div className="text-right flex flex-col items-end gap-1">
-              <span className="bg-white/20 px-3 py-1 rounded-full text-xs font-bold uppercase backdrop-blur-sm shadow-sm opacity-80 backdrop-filter gap-1 flex justify-center items-center">
+            <div className="text-left md:text-right flex flex-col items-start md:items-end gap-2 shrink-0">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-gray-900 px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-white shadow-sm">
                 MÃ ĐƠN: #{order.id}
-                <div title="Sao chép" onClick={() => navigator.clipboard.writeText(order.id.toString())} className="cursor-pointer hover:text-white transition-colors">
+                <div title="Sao chép" onClick={() => navigator.clipboard.writeText(order.id.toString())} className="cursor-pointer text-white/80 hover:text-white transition-colors">
                   <Copy size={12} />
                 </div>
               </span>
-              <span className="text-sm font-medium mt-1 text-green-100">{new Date(order.createdAt).toLocaleString('vi-VN')}</span>
+              <span className="text-sm font-medium text-gray-500">{new Date(order.createdAt).toLocaleString('vi-VN')}</span>
             </div>
           </div>
 
           {!isCancelled && (
-            <div className="px-6 py-10 bg-white border-b border-gray-100 overflow-x-auto">
+            <div className="px-6 py-8 bg-white border-b border-gray-100 overflow-x-auto">
               <div className="flex items-center justify-between relative min-w-[650px] max-w-3xl mx-auto">
                 <div className="absolute top-[24px] left-[10%] right-[10%] h-1 bg-gray-100 -translate-y-1/2 z-0 rounded-full" />
                 {currentStepIndex >= 0 && (
