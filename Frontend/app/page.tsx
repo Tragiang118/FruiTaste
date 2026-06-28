@@ -112,8 +112,8 @@ export default function HomePage() {
                 <Card key={p.id} className="rounded-3xl border-0 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] hover:shadow-lg transition-shadow relative group">
                   <CardContent className="p-4">
                     <Link href={`/products/${p.id}`}>
-                      <div className={`${productBgColors[idx % productBgColors.length]} rounded-2xl aspect-[4/3] w-full flex items-center justify-center mb-6 overflow-hidden`}>
-                        <img src={getImageUrl(p.mediaUrls?.[0] || 'https://via.placeholder.com/300')} alt={p.name} className="w-full h-full object-cover filter drop-shadow-md mix-blend-multiply group-hover:scale-110 transition-transform duration-300" />
+                      <div className={`relative overflow-hidden block aspect-[4/3] w-full mb-6 rounded-2xl ${productBgColors[idx % productBgColors.length]}`}>
+                        <img src={getImageUrl(p.mediaUrls?.[0] || 'https://via.placeholder.com/300')} alt={p.name} className="absolute inset-0 w-full h-full object-cover filter drop-shadow-md mix-blend-multiply group-hover:scale-110 transition-transform duration-300" />
                       </div>
                     </Link>
                     <div className="px-2 flex flex-col flex-1">

@@ -6,7 +6,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
 import { ChevronRight, Home, ChevronDown, ArrowUp, ArrowDown, Search, SlidersHorizontal, Plus, Check } from 'lucide-react';
-import BackButton from '@/components/BackButton';
 import { useCartStore, useAuthStore } from '@/lib/store';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { getImageUrl, cn } from '@/lib/utils';
@@ -155,8 +154,7 @@ function ProductsPage() {
     <div className="min-h-screen bg-[#FFFDFB] text-gray-900 pt-12 pb-0 overflow-x-hidden">   
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-        <div className="flex items-center justify-between w-full mb-8 mt-0">
-            <BackButton className="px-0 h-auto mb-0" />
+        <div className="flex items-center justify-end w-full mb-8 mt-0">
             <div className="flex items-center gap-2 text-sm text-gray-500">
                 <Link href="/" className="hover:text-[#FF6B4A] flex items-center gap-1 "><Home size={14}/> Trang chủ</Link>
                 <ChevronRight size={14} />
@@ -300,11 +298,11 @@ function ProductsPage() {
                   const outStock = p.stockQuantity <= 0;
                   return (
                   <div key={p.id || idx} className="bg-white rounded-3xl border border-gray-100 shadow-sm hover:shadow-xl hover:border-green-100 transition-all flex flex-col group overflow-hidden">
-                      <Link href={`/products/${p.id}`} className="relative overflow-hidden flex aspect-[4/3] bg-white w-full flex-shrink-0 items-center justify-center p-0">
+                      <Link href={`/products/${p.id}`} className="relative overflow-hidden block aspect-[4/3] bg-white w-full flex-shrink-0 p-0">
                           <img
                             src={getImageUrl(p.mediaUrls?.[0] || 'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=400&q=80')}   
                             alt={p.name}
-                            className="w-full h-full object-cover filter mix-blend-multiply group-hover:scale-110 transition-transform duration-500"
+                            className="absolute inset-0 w-full h-full object-cover filter mix-blend-multiply group-hover:scale-110 transition-transform duration-500"
                           />
                           {outStock && (
                              <div className="absolute inset-0 bg-white/70 backdrop-blur-[1px] flex items-center justify-center z-10">

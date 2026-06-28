@@ -5,7 +5,6 @@ import api from '@/lib/axios';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Minus, Plus, ShoppingCart, CreditCard, ChevronRight, ChevronLeft, Home, ShieldCheck, Truck, RefreshCcw } from 'lucide-react';
-import BackButton from '@/components/BackButton';
 import { useCartStore, useAuthStore } from '@/lib/store';
 import { getImageUrl } from '@/lib/utils';
 
@@ -116,8 +115,7 @@ export default function ProductDetailPage() {
       <div className="min-h-screen bg-[#FFFDFB] text-gray-900 font-sans pb-24 pt-8">
          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-            <div className="flex items-center justify-between w-full mb-8 mt-4">
-               <BackButton className="px-0 h-auto mb-0" />
+            <div className="flex items-center justify-end w-full mb-8 mt-4">
                <div className="flex items-center gap-2 text-sm text-gray-500">
                   <Link href="/" className="hover:text-[#FF6B4A] flex items-center gap-1"><Home size={14} /> Trang chủ</Link>
                   <ChevronRight size={14} />
