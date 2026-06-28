@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react';
 import { useAuthStore } from '@/lib/store';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
@@ -48,6 +48,8 @@ export default function LoginPage() {
 
   const { login, checkAuth } = useAuthStore();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get('redirect');
 
   // OTP Input Handlers
   const handleOtpChange = (index: number, value: string) => {
@@ -160,8 +162,10 @@ export default function LoginPage() {
       const user = useAuthStore.getState().user;
       if (user?.mustChangePassword) {
         router.push('/change-password');
+      } else if (redirectTo && redirectTo.startsWith('/')) {
+        router.push(redirectTo);
       } else {
-        router.push('/'); 
+        router.push('/');
       }
     } catch (err: any) {
       const message = err.response?.data?.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.';

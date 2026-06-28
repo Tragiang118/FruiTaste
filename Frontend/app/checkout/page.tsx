@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useCartStore, useAuthStore } from '@/lib/store';
+import { useCartStore, useAuthStore, type CartItem } from '@/lib/store';
 import api from '@/lib/axios';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -24,16 +24,24 @@ import {
 } from '@/components/ui/field';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
+const DEFAULT_PRODUCT_IMAGE =
+  'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=800&q=80';
+
 export default function CheckoutPage() {
   const { user, isAuthenticated, isLoading } = useAuthStore();
   const { items: allItems, removeItem, selectedIds, setSelectedIds } = useCartStore();
   const searchParams = useSearchParams();
   const buyNowId = searchParams.get('buyNow');
   const buyNowQty = Number(searchParams.get('qty')) || 1;
+  const isBuyNow = !!buyNowId;
 
-  // Lọc lấy các sản phẩm đã chọn từ giỏ hàng
-  const items = buyNowId
-    ? allItems.filter(i => i.id === Number(buyNowId)).map(i => ({ ...i, quantity: buyNowQty }))
+  const [buyNowItem, setBuyNowItem] = useState<CartItem | null>(null);
+  const [buyNowLoading, setBuyNowLoading] = useState(isBuyNow);
+
+  const items = isBuyNow
+    ? buyNowItem
+      ? [buyNowItem]
+      : []
     : allItems.filter(i => selectedIds.includes(i.id));
 
   const [hiddenProductError, setHiddenProductError] = useState<{ message: string, productId: number | null } | null>(null);
@@ -51,9 +59,52 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
-      router.push('/login?redirect=/checkout');
+      const redirect = isBuyNow
+        ? `/checkout?buyNow=${buyNowId}&qty=${buyNowQty}`
+        : '/checkout';
+      router.push(`/login?redirect=${encodeURIComponent(redirect)}`);
     }
-  }, [isAuthenticated, isLoading, router]);
+  }, [isAuthenticated, isLoading, router, isBuyNow, buyNowId, buyNowQty]);
+
+  useEffect(() => {
+    if (!isBuyNow || !buyNowId || !isAuthenticated || isLoading) return;
+
+    let cancelled = false;
+    setBuyNowLoading(true);
+
+    api.get(`/products/${buyNowId}`)
+      .then((res) => {
+        if (cancelled) return;
+        const product = res.data;
+        const mediaUrls: string[] = product.mediaUrls || [];
+        const qty = Math.min(
+          Math.max(1, buyNowQty),
+          product.stockQuantity > 0 ? product.stockQuantity : buyNowQty
+        );
+
+        setBuyNowItem({
+          id: product.id,
+          name: product.name,
+          price: product.price,
+          quantity: qty,
+          image: mediaUrls[0] || DEFAULT_PRODUCT_IMAGE,
+          stockQuantity: product.stockQuantity,
+        });
+      })
+      .catch(() => {
+        if (!cancelled) {
+          toast.error('Không tải được sản phẩm. Vui lòng thử lại.');
+          router.push('/products');
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setBuyNowLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isBuyNow, buyNowId, buyNowQty, isAuthenticated, isLoading, router]);
 
   useEffect(() => {
     if (selectedAddress) {
@@ -63,10 +114,10 @@ export default function CheckoutPage() {
     }
   }, [selectedAddress]);
 
-  // Đồng bộ giỏ hàng từ server khi vào trang checkout, cảnh báo nếu số lượng bị giảm
+  // Đồng bộ giỏ hàng từ server (không áp dụng cho luồng Mua ngay)
   const hasSynced = useRef(false);
   useEffect(() => {
-    if (!isAuthenticated || isLoading || hasSynced.current) return;
+    if (isBuyNow || !isAuthenticated || isLoading || hasSynced.current) return;
     hasSynced.current = true;
 
     const syncCart = async () => {
@@ -96,7 +147,7 @@ export default function CheckoutPage() {
     };
 
     syncCart();
-  }, [isAuthenticated, isLoading]);
+  }, [isAuthenticated, isLoading, isBuyNow]);
 
   // Nếu không có sản phẩm nào được chọn, chuyển hướng về giỏ hàng (mở giỏ hàng ở trang products)
   useEffect(() => {
@@ -106,7 +157,9 @@ export default function CheckoutPage() {
     }
   }, [items, isLoading, isAuthenticated, router]);
 
-  if (isLoading || !isAuthenticated) return <div className="min-h-screen flex items-center justify-center text-gray-500 font-medium">Đang kiểm tra thông tin...</div>;
+  if (isLoading || !isAuthenticated || (isBuyNow && buyNowLoading)) {
+    return <div className="min-h-screen flex items-center justify-center text-gray-500 font-medium">Đang kiểm tra thông tin...</div>;
+  }
 
   if (items.length === 0) {
     return (
@@ -114,8 +167,14 @@ export default function CheckoutPage() {
         <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-6">
           <ShoppingBag className="w-12 h-12 text-gray-300" />
         </div>
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">Chưa có sản phẩm nào được chọn</h2>
-        <p className="text-gray-500 mb-8 max-w-md">Hãy quay lại giỏ hàng và chọn những trái cây bạn muốn mua nhé.</p>
+        <h2 className="text-2xl font-bold text-gray-800 mb-2">
+          {isBuyNow ? 'Không tìm thấy sản phẩm' : 'Chưa có sản phẩm nào được chọn'}
+        </h2>
+        <p className="text-gray-500 mb-8 max-w-md">
+          {isBuyNow
+            ? 'Sản phẩm không tồn tại hoặc đã hết hàng. Vui lòng chọn sản phẩm khác.'
+            : 'Hãy quay lại giỏ hàng và chọn những trái cây bạn muốn mua nhé.'}
+        </p>
         <Link href="/products">
           <Button className="bg-primary hover:bg-green-600 px-10 h-14 rounded-full font-bold text-lg shadow-lg">Tiếp tục mua sắm</Button>
         </Link>
@@ -168,11 +227,13 @@ export default function CheckoutPage() {
         toast.warning('Đơn hàng đã đặt thành công, nhưng gửi email hóa đơn thất bại.');
       }
 
-      // CHỈ XÓA CÁC SẢN PHẨM ĐÃ ĐẶT HÀNG KHỎI GIỎ HÀNG
-      for (const item of items) {
-        await removeItem(item.id);
+      // Chỉ xóa sản phẩm khỏi giỏ khi thanh toán từ giỏ hàng
+      if (!isBuyNow) {
+        for (const item of items) {
+          await removeItem(item.id);
+        }
+        setSelectedIds([]);
       }
-      setSelectedIds([]); // Clear danh sách chọn sau khi đặt thành công
 
       router.push('/checkout/success?orderId=' + order.id);
     } catch (err: any) {
@@ -423,7 +484,7 @@ export default function CheckoutPage() {
             <AlertDialogAction
               className="w-full rounded-2xl bg-primary hover:bg-green-600 text-white h-12 font-bold uppercase tracking-wider"
               onClick={async () => {
-                if (hiddenProductError?.productId) {
+                if (!isBuyNow && hiddenProductError?.productId) {
                   await removeItem(hiddenProductError.productId);
                 }
                 setHiddenProductError(null);

@@ -3,14 +3,13 @@ import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class CartService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   async getCart(userId: number) {
     let cart = await this.prisma.cart.findUnique({
       where: { userId },
       include: {
         items: {
-          orderBy: { id: 'asc' },
           include: {
             product: {
               select: {
@@ -32,7 +31,6 @@ export class CartService {
         data: { userId },
         include: {
           items: {
-            orderBy: { id: 'asc' },
             include: {
               product: {
                 select: {
