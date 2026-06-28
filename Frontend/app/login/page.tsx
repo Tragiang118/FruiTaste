@@ -31,6 +31,12 @@ import {
 } from "@/components/ui/dialog";
 import api from '@/lib/axios';
 import { toast } from 'sonner';
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+  InputOTPSeparator,
+} from "@/components/ui/input-otp";
 
 export default function LoginPage() {
   const [error, setError] = useState('');
@@ -42,47 +48,13 @@ export default function LoginPage() {
   
   // OTP states
   const [forgotStep, setForgotStep] = useState<'email' | 'otp'>('email');
-  const [otpValues, setOtpValues] = useState<string[]>(['', '', '', '', '', '']);
+  const [otp, setOtp] = useState('');
   const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
-  const otpInputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const { login, checkAuth } = useAuthStore();
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get('redirect');
-
-  // OTP Input Handlers
-  const handleOtpChange = (index: number, value: string) => {
-    if (!/^\d*$/.test(value)) return; // chỉ cho nhập số
-    
-    const newOtpValues = [...otpValues];
-    newOtpValues[index] = value.slice(-1); // chỉ lấy ký tự cuối
-    setOtpValues(newOtpValues);
-
-    // Auto-focus ô tiếp theo
-    if (value && index < 5) {
-      otpInputRefs.current[index + 1]?.focus();
-    }
-  };
-
-  const handleOtpKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Backspace' && !otpValues[index] && index > 0) {
-      otpInputRefs.current[index - 1]?.focus();
-    }
-  };
-
-  const handleOtpPaste = (e: React.ClipboardEvent) => {
-    e.preventDefault();
-    const pastedData = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
-    const newOtpValues = [...otpValues];
-    for (let i = 0; i < pastedData.length; i++) {
-      newOtpValues[i] = pastedData[i];
-    }
-    setOtpValues(newOtpValues);
-    // Focus last filled input or last input
-    const focusIndex = Math.min(pastedData.length, 5);
-    otpInputRefs.current[focusIndex]?.focus();
-  };
 
   // Gửi email yêu cầu OTP
   const handleForgotPassword = async (e: React.FormEvent) => {
@@ -99,9 +71,7 @@ export default function LoginPage() {
       const response = await api.post('/auth/forgot-password', { email: forgotEmail });
       toast.success(response.data.message || 'Mã OTP đã được gửi đến email của bạn.');
       setForgotStep('otp');
-      setOtpValues(['', '', '', '', '', '']);
-      // Focus first OTP input after a brief delay
-      setTimeout(() => otpInputRefs.current[0]?.focus(), 100);
+      setOtp('');
     } catch (err: any) {
       const message = err.response?.data?.message || 'Có lỗi xảy ra. Vui lòng thử lại sau.';
       setErrorForgot(message);
@@ -112,7 +82,6 @@ export default function LoginPage() {
 
   // Xác minh OTP
   const handleVerifyOtp = async () => {
-    const otp = otpValues.join('');
     if (otp.length !== 6) {
       toast.error('Vui lòng nhập đầy đủ mã OTP 6 số');
       return;
@@ -139,7 +108,7 @@ export default function LoginPage() {
   const handleModalClose = (open: boolean) => {
     if (!open) {
       setForgotStep('email');
-      setOtpValues(['', '', '', '', '', '']);
+      setOtp('');
       setForgotEmail('');
       setErrorForgot('');
     }
@@ -325,20 +294,20 @@ export default function LoginPage() {
               </DialogHeader>
               <div className="space-y-6 py-4">
                 {/* OTP Input Group */}
-                <div className="flex justify-center gap-2" onPaste={handleOtpPaste}>
-                  {otpValues.map((value, index) => (
-                    <input
-                      key={index}
-                      ref={(el) => { otpInputRefs.current[index] = el; }}
-                      type="text"
-                      inputMode="numeric"
-                      maxLength={1}
-                      value={value}
-                      onChange={(e) => handleOtpChange(index, e.target.value)}
-                      onKeyDown={(e) => handleOtpKeyDown(index, e)}
-                      className="w-12 h-14 text-center text-xl font-bold border-2 border-gray-200 rounded-xl focus:border-[#FF6B4A] focus:ring-2 focus:ring-[#FF6B4A]/20 outline-none transition-all"
-                    />
-                  ))}
+                <div className="flex justify-center">
+                  <InputOTP maxLength={6} value={otp} onChange={setOtp}>
+                    <InputOTPGroup>
+                      <InputOTPSlot index={0} className="w-12 h-14 text-xl font-bold" />
+                      <InputOTPSlot index={1} className="w-12 h-14 text-xl font-bold" />
+                      <InputOTPSlot index={2} className="w-12 h-14 text-xl font-bold" />
+                    </InputOTPGroup>
+                    <InputOTPSeparator />
+                    <InputOTPGroup>
+                      <InputOTPSlot index={3} className="w-12 h-14 text-xl font-bold" />
+                      <InputOTPSlot index={4} className="w-12 h-14 text-xl font-bold" />
+                      <InputOTPSlot index={5} className="w-12 h-14 text-xl font-bold" />
+                    </InputOTPGroup>
+                  </InputOTP>
                 </div>
 
                 {/* Gửi lại OTP */}
@@ -361,7 +330,7 @@ export default function LoginPage() {
                   type="button"
                   onClick={handleVerifyOtp}
                   className="w-full bg-[#FF6B4A] hover:bg-[#E55A39] text-white py-6 rounded-xl font-semibold transition-all shadow-md shadow-orange-100 cursor-pointer"
-                  disabled={isVerifyingOtp || otpValues.join('').length !== 6}
+                  disabled={isVerifyingOtp || otp.length !== 6}
                 >
                   {isVerifyingOtp ? (
                     <span className="flex items-center gap-2">

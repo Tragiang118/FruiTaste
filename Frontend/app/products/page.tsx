@@ -9,6 +9,7 @@ import { ChevronRight, Home, ChevronDown, ArrowUp, ArrowDown, Search, SlidersHor
 import { useCartStore, useAuthStore } from '@/lib/store';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { getImageUrl, cn } from '@/lib/utils';
+import { Spinner } from '@/components/ui/spinner';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,7 +32,7 @@ import {
 
 export default function ProductsPageShell() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex justify-center items-center"><div className="animate-spin rounded-full h-10 w-10 border-t-4 border-b-4 border-green-500"></div></div>}>
+    <Suspense fallback={<div className="min-h-screen flex justify-center items-center"><Spinner className="size-10 text-green-500" /></div>}>
       <ProductsPage />
     </Suspense>
   );
@@ -282,7 +283,7 @@ function ProductsPage() {
         <div className="w-full">
            {loading ? (
              <div className="flex justify-center items-center h-40">
-                <div className="animate-spin rounded-full h-10 w-10 border-t-4 border-b-4 border-green-500"></div>
+                <Spinner className="size-10 text-green-500" />
              </div>
            ) : filteredProducts.length === 0 ? (
              <div className="text-center py-24 bg-white rounded-3xl border border-gray-100 shadow-sm">

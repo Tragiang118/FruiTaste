@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { Search, Clock, ChefHat, Flame, Home, ChevronRight } from "lucide-react";
 import { getImageUrl } from '@/lib/utils';
+import { Spinner } from '@/components/ui/spinner';
 
 export default function RecipesPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -61,7 +62,10 @@ export default function RecipesPage() {
         </div>
 
         {loading ? (
-          <div className="text-center text-gray-500 py-12">Đang tải món ăn...</div>
+          <div className="flex flex-col gap-2 items-center justify-center py-12">
+            <Spinner className="size-10 text-[#FF6B4A]" />
+            <span className="text-gray-500 text-sm font-semibold">Đang tải món ăn...</span>
+          </div>
         ) : filteredRecipes.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {filteredRecipes.map((recipe, idx) => (

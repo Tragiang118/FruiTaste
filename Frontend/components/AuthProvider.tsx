@@ -3,6 +3,7 @@
 import { useAuthStore } from '@/lib/store';
 import { useRouter, usePathname } from 'next/navigation';
 import { useEffect, useRef } from 'react';
+import { Spinner } from '@/components/ui/spinner';
 
 const protectedPaths = ['/profile', '/orders', '/checkout', '/admin']; 
 export default function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -29,7 +30,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
+        <Spinner className="size-12 text-green-500" />
       </div>
     );
   }

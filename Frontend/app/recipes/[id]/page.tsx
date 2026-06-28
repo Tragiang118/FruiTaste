@@ -8,6 +8,7 @@ import { useCartStore } from '@/lib/store';
 import BackButton from '@/components/BackButton';
 import { toast } from 'sonner';
 import { getImageUrl } from '@/lib/utils';
+import { Spinner } from '@/components/ui/spinner';
 
 export default function RecipeDetailPage() {
   const { id } = useParams();
@@ -23,7 +24,12 @@ export default function RecipeDetailPage() {
   }, [id]);
 
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center font-bold text-gray-500">Đang tải công thức...</div>;
+    return (
+      <div className="min-h-screen flex flex-col gap-3 items-center justify-center bg-[#FFFDFB]">
+        <Spinner className="size-12 text-[#FF6B4A]" />
+        <span className="font-bold text-gray-500">Đang tải công thức...</span>
+      </div>
+    );
   }
 
   if (!recipe) {

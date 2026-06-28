@@ -8,6 +8,7 @@ import { Minus, Plus, ShoppingCart, CreditCard, ChevronRight, ChevronLeft, Home,
 import { useCartStore, useAuthStore } from '@/lib/store';
 import BackButton from '@/components/BackButton';
 import { getImageUrl } from '@/lib/utils';
+import { Spinner } from '@/components/ui/spinner';
 
 const DEFAULT_PRODUCT_IMAGE =
    'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=800&q=80';
@@ -99,7 +100,7 @@ export default function ProductDetailPage() {
    };
 
    if (loading) {
-      return <div className="min-h-screen flex justify-center items-center bg-[#FFFDFB]"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#FF6B4A]"></div></div>;
+      return <div className="min-h-screen flex justify-center items-center bg-[#FFFDFB]"><Spinner className="size-12 text-[#FF6B4A]" /></div>;
    }
 
    if (!product) {
