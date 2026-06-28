@@ -146,41 +146,6 @@
   }
 }
 
-/* Tighten cards padding */
-.admin-layout .bg-white.shadow-sm.p-8,
-.admin-layout [data-slot="card"].p-8,
-.admin-layout .bg-white.shadow-sm .p-8,
-.admin-layout [data-slot="card"] .p-8 {
-  padding: 1.25rem !important;
-}
-
-.admin-layout .bg-white.shadow-sm.p-6,
-.admin-layout [data-slot="card"].p-6,
-.admin-layout .bg-white.shadow-sm .p-6,
-.admin-layout [data-slot="card"] .p-6 {
-  padding: 1rem !important;
-}
-
-.admin-layout .bg-white.shadow-sm .p-5,
-.admin-layout [data-slot="card"] .p-5 {
-  padding: 0.875rem !important;
-}
-
-.admin-layout .bg-white.shadow-sm .p-4,
-.admin-layout [data-slot="card"] .p-4 {
-  padding: 0.75rem !important;
-}
-
-/* Welcome banner specific paddings */
-.admin-layout .relative.w-full.bg-white.p-6 {
-  padding: 1.25rem !important;
-}
-
-@media (min-width: 768px) {
-  .admin-layout .relative.w-full.bg-white.md\:p-8 {
-    padding: 1.5rem !important;
-  }
-}
 
 /* Table styles in admin */
 .admin-layout table th,
