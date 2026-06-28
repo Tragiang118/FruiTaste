@@ -132,17 +132,7 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
-/* Custom styling overrides for Admin layout and pages */
-.admin-layout .rounded-\[2rem\],
-.admin-layout .rounded-\[2\.5rem\],
-.admin-layout .rounded-3xl {
-  border-radius: 1rem !important;
-}
-
-.admin-layout .rounded-2xl {
-  border-radius: 0.75rem !important;
-}
-
+/* Custom styling overrides for Admin layout and pages - Keep original border-radius but reduce padding/spacing */
 /* Reduce layout container padding */
 .admin-layout > main > div > .p-6,
 .admin-layout > main > div > .p-6 > div > .p-6 {
@@ -156,12 +146,7 @@
   }
 }
 
-/* Tighten cards */
-.admin-layout .bg-white.shadow-sm,
-.admin-layout [data-slot="card"] {
-  border-radius: 1rem !important;
-}
-
+/* Tighten cards padding */
 .admin-layout .bg-white.shadow-sm.p-8,
 .admin-layout [data-slot="card"].p-8,
 .admin-layout .bg-white.shadow-sm .p-8,
@@ -207,4 +192,4 @@
 /* Spacing gap adjustments */
 .admin-layout .gap-8 {
   gap: 1.25rem !important;
-}
+}
