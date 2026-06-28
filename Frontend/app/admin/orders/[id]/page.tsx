@@ -8,7 +8,7 @@ import { format } from 'date-fns';
 import { vi } from 'date-fns/locale/vi';
 import {
   Package, User, Phone, MapPin, CreditCard, ChevronDown,
-  CheckCircle2, Clock, Truck, Box, XCircle, RefreshCw
+  CheckCircle2, Clock, Truck, Box, XCircle, RefreshCw, X
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -155,13 +155,13 @@ export default function AdminOrderDetailPage() {
           </p>
         </div>
 
-        <div className="w-full md:w-auto shrink-0 flex gap-2">
+        <div className="w-full md:w-auto shrink-0 flex flex-wrap justify-end gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
                 disabled={updating || order.status === 'CANCELLED'}
                 className={cn(
-                  "w-full md:w-auto rounded-full font-bold px-6 h-10 border transition-all cursor-pointer",
+                  "w-full sm:w-auto rounded-full font-bold px-6 h-10 border transition-all cursor-pointer",
                   order.status === 'COMPLETED' ? "bg-green-50 text-green-600 border-green-100" :
                     order.status === 'CANCELLED' ? "bg-red-50 text-red-500 border-red-100 opacity-80" :
                       "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
@@ -187,6 +187,17 @@ export default function AdminOrderDetailPage() {
               </DropdownMenuContent>
             )}
           </DropdownMenu>
+
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={() => router.push('/admin/orders')}
+            className="rounded-full h-10 w-10 shrink-0 text-gray-400 hover:text-gray-600 hover:bg-gray-100 border border-gray-200 bg-white"
+            aria-label="Quay lại danh sách đơn hàng"
+          >
+            <X size={18} />
+          </Button>
         </div>
       </div>
 

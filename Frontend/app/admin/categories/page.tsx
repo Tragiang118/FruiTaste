@@ -5,7 +5,7 @@ import api from '@/lib/axios';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { PlusCircle, Search, Edit2, Trash2, Tag, BookOpen, MoreHorizontal, RefreshCw, Edit, ArrowUpDown, Layers, Image as ImageIcon, Loader2, X } from 'lucide-react';
+import { PlusCircle, Search, Edit2, Trash2, Tag, Tags, BookOpen, MoreHorizontal, RefreshCw, Edit, ArrowUpDown, Image as ImageIcon, Loader2, X } from 'lucide-react';
 import { 
   Table, 
   TableBody, 
@@ -178,7 +178,7 @@ export default function AdminCategoriesPage() {
       <div className="flex flex-col md:flex-row justify-between gap-4 items-start md:items-center">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight flex items-center gap-2">
-            <Layers className="w-6 h-6 text-primary" />
+            <Tags className="w-6 h-6 text-primary" />
             Quản lý Danh mục
           </h1>
         </div>

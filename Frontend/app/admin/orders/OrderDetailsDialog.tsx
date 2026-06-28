@@ -7,9 +7,10 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogClose,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Eye, Package, User, Phone, MapPin, CreditCard, ChevronDown, CheckCircle2, Clock, Truck, Box, XCircle, RefreshCw } from 'lucide-react';
+import { Eye, Package, User, Phone, MapPin, CreditCard, ChevronDown, CheckCircle2, Clock, Truck, Box, XCircle, RefreshCw, X } from 'lucide-react';
 import api from '@/lib/axios';
 import { toast } from 'sonner';
 import { cn, getImageUrl } from '@/lib/utils';
@@ -133,7 +134,7 @@ export default function OrderDetailsDialog({ orderId, onUpdate }: OrderDetailsDi
           <Eye size={18} />
         </Button>
       </DialogTrigger>
-      <DialogContent className="w-[95vw] md:max-w-3xl rounded-[2rem] p-0 overflow-hidden border-none shadow-2xl bg-white">
+      <DialogContent className="w-[95vw] md:max-w-3xl rounded-[2rem] p-0 overflow-hidden border-none shadow-2xl bg-white" showCloseButton={false}>
         <DialogHeader className="p-6 md:p-8 bg-gray-50/50 border-b border-gray-100 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 space-y-0 text-left">
           <div className="flex-1">
             <DialogTitle className="text-sm font-bold text-gray-700 ml-1 flex items-center gap-3">
@@ -150,38 +151,52 @@ export default function OrderDetailsDialog({ orderId, onUpdate }: OrderDetailsDi
           </div>
 
           {order && (
-            <div className="w-full md:w-auto shrink-0">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    disabled={updating || order.status === 'CANCELLED'}
-                    className={cn(
-                      "w-full md:w-auto rounded-full font-bold px-6 h-10 border transition-all cursor-pointer",
-                      order.status === 'COMPLETED' ? "bg-green-50 text-green-600 border-green-100" :
-                        order.status === 'CANCELLED' ? "bg-red-50 text-red-500 border-red-100 opacity-80" :
-                          "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
-                    )}
-                  >
-                    {updating ? <RefreshCw className="w-4 h-4 animate-spin mr-2" /> : getStatusIcon(order.status)}
-                    <span className="mx-2 truncate">{getStatusLabel(order.status)}</span>
-                    {order.status !== 'CANCELLED' && <ChevronDown size={16} className="opacity-50 ml-auto" />}
-                  </Button>
-                </DropdownMenuTrigger>
-                {order.status !== 'CANCELLED' && (
-                  <DropdownMenuContent className="w-56 rounded-2xl shadow-xl border-gray-100 p-2 bg-white" align="end">
-                    <DropdownMenuLabel className="text-sm font-bold text-gray-700 ml-1">Cập nhật trạng thái</DropdownMenuLabel>
-                    <DropdownMenuSeparator className="my-1 bg-gray-50" />
-                    <DropdownMenuRadioGroup value={order.status} onValueChange={handleStatusChange}>
-                      <DropdownMenuRadioItem value="PENDING" className="cursor-pointer rounded-xl p-2.5 px-3 py-2 pr-10 font-bold text-blue-400 text-xs transition-colors">Chờ xác nhận</DropdownMenuRadioItem>
-                      <DropdownMenuRadioItem value="CONFIRMED" className="cursor-pointer rounded-xl p-2.5 px-3 py-2 pr-10 font-bold text-blue-600 text-xs transition-colors">Đã duyệt</DropdownMenuRadioItem>
-                      <DropdownMenuRadioItem value="PREPARING" className="cursor-pointer rounded-xl p-2.5 px-3 py-2 pr-10 font-bold text-amber-600 text-xs transition-colors">Đang chuẩn bị</DropdownMenuRadioItem>
-                      <DropdownMenuRadioItem value="SHIPPING" className="cursor-pointer rounded-xl p-2.5 px-3 py-2 pr-10 font-bold text-purple-600 text-xs transition-colors">Đang giao</DropdownMenuRadioItem>
-                      <DropdownMenuRadioItem value="COMPLETED" className="cursor-pointer rounded-xl p-2.5 px-3 py-2 pr-10 font-bold text-green-600 text-xs transition-colors">Hoàn thành</DropdownMenuRadioItem>
-                      <DropdownMenuRadioItem value="CANCELLED" className="cursor-pointer rounded-xl p-2.5 px-3 py-2 pr-10 font-bold text-red-500 text-xs transition-colors">Hủy đơn hàng</DropdownMenuRadioItem>
-                    </DropdownMenuRadioGroup>
-                  </DropdownMenuContent>
-                )}
-              </DropdownMenu>
+            <div className="w-full md:w-auto shrink-0 flex flex-wrap justify-end gap-2">
+              <div className="basis-full sm:basis-auto">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      disabled={updating || order.status === 'CANCELLED'}
+                      className={cn(
+                        "w-full sm:w-auto rounded-full font-bold px-6 h-10 border transition-all cursor-pointer",
+                        order.status === 'COMPLETED' ? "bg-green-50 text-green-600 border-green-100" :
+                          order.status === 'CANCELLED' ? "bg-red-50 text-red-500 border-red-100 opacity-80" :
+                            "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
+                      )}
+                    >
+                      {updating ? <RefreshCw className="w-4 h-4 animate-spin mr-2" /> : getStatusIcon(order.status)}
+                      <span className="mx-2 truncate">{getStatusLabel(order.status)}</span>
+                      {order.status !== 'CANCELLED' && <ChevronDown size={16} className="opacity-50 ml-auto" />}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  {order.status !== 'CANCELLED' && (
+                    <DropdownMenuContent className="w-56 rounded-2xl shadow-xl border-gray-100 p-2 bg-white" align="end">
+                      <DropdownMenuLabel className="text-sm font-bold text-gray-700 ml-1">Cập nhật trạng thái</DropdownMenuLabel>
+                      <DropdownMenuSeparator className="my-1 bg-gray-50" />
+                      <DropdownMenuRadioGroup value={order.status} onValueChange={handleStatusChange}>
+                        <DropdownMenuRadioItem value="PENDING" className="cursor-pointer rounded-xl p-2.5 px-3 py-2 pr-10 font-bold text-blue-400 text-xs transition-colors">Chờ xác nhận</DropdownMenuRadioItem>
+                        <DropdownMenuRadioItem value="CONFIRMED" className="cursor-pointer rounded-xl p-2.5 px-3 py-2 pr-10 font-bold text-blue-600 text-xs transition-colors">Đã duyệt</DropdownMenuRadioItem>
+                        <DropdownMenuRadioItem value="PREPARING" className="cursor-pointer rounded-xl p-2.5 px-3 py-2 pr-10 font-bold text-amber-600 text-xs transition-colors">Đang chuẩn bị</DropdownMenuRadioItem>
+                        <DropdownMenuRadioItem value="SHIPPING" className="cursor-pointer rounded-xl p-2.5 px-3 py-2 pr-10 font-bold text-purple-600 text-xs transition-colors">Đang giao</DropdownMenuRadioItem>
+                        <DropdownMenuRadioItem value="COMPLETED" className="cursor-pointer rounded-xl p-2.5 px-3 py-2 pr-10 font-bold text-green-600 text-xs transition-colors">Hoàn thành</DropdownMenuRadioItem>
+                        <DropdownMenuRadioItem value="CANCELLED" className="cursor-pointer rounded-xl p-2.5 px-3 py-2 pr-10 font-bold text-red-500 text-xs transition-colors">Hủy đơn hàng</DropdownMenuRadioItem>
+                      </DropdownMenuRadioGroup>
+                    </DropdownMenuContent>
+                  )}
+                </DropdownMenu>
+              </div>
+
+              <DialogClose asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="rounded-full h-10 w-10 shrink-0 text-gray-400 hover:text-gray-600 hover:bg-gray-100 border border-gray-200 bg-white"
+                  aria-label="Đóng chi tiết đơn hàng"
+                >
+                  <X size={18} />
+                </Button>
+              </DialogClose>
             </div>
           )}
         </DialogHeader>
