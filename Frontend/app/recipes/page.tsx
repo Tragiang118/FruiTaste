@@ -44,7 +44,7 @@ export default function RecipesPage() {
         </div>
 
       <div className="max-w-7xl mx-auto mb-12 text-center">
-        <h1 className="text-4xl md:text-5xl font-extrabold text-[#1A1A1A] mb-4 tracking-tight leading-tight">Góc Món ăn</h1>
+        <h1 className="text-[60px] font-extrabold text-[#1A1A1A] mb-4 tracking-tight leading-tight">Góc Món ăn</h1>
         <p className="text-lg text-gray-600 max-w-2xl mx-auto">Sáng tạo thức uống và món tráng miệng tuyệt vời từ những loại trái cây tươi ngon nhất của FruiTaste.</p>
       </div>
 
@@ -55,7 +55,7 @@ export default function RecipesPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
             <Input 
               type="search" 
-              placeholder="Tìm kiếm món ăn (vd: Sinh tố)..." 
+              placeholder="Tìm kiếm món ăn..." 
               className="w-full pl-9 pr-4 h-10 rounded-full border-gray-200 bg-white shadow-sm focus-visible:ring-1 focus-visible:ring-[#FF6B4A]/30 transition-all text-sm [&::-webkit-search-cancel-button]:cursor-pointer [&::-webkit-search-cancel-button]:[filter:grayscale(100%)_opacity(50%)]"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}

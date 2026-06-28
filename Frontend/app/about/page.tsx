@@ -43,7 +43,7 @@ export default function AboutPage() {
           <span className="text-[#FF6B4A] font-bold tracking-wider uppercase text-[11px] mb-2 block">
             Câu chuyện của FruiTaste
           </span>
-          <h1 className="text-2xl md:text-3xl font-black text-gray-900 mb-2 tracking-tight">
+          <h1 className="text-[60px] font-extrabold text-gray-900 mb-2 tracking-tight leading-tight">
             Mang Trái Cây Sạch Đến Mọi Nhà
           </h1>
           <p className="text-gray-500 text-xs md:text-sm max-w-lg mx-auto leading-relaxed">
