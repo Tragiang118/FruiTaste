@@ -1,10 +1,120 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, ServiceUnavailableException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { SenderType } from '@prisma/client';
+import { ConfigService } from '@nestjs/config';
+import { createGroq } from '@ai-sdk/groq';
+import { streamText } from 'ai';
+import { CHATBOT_MODEL } from './chat.schemas';
+import { buildChatbotSystemPrompt } from './chat.prompt';
+import { cleanHtmlText, searchProductsLocally, detectIntent } from './chat.tools';
 
 @Injectable()
 export class ChatService {
-  constructor(private prisma: PrismaService) {}
+  private groqClient?: ReturnType<typeof createGroq>;
+
+  constructor(
+    private prisma: PrismaService,
+    private configService: ConfigService,
+  ) {}
+
+  private getGroq() {
+    if (this.groqClient) return this.groqClient;
+
+    const apiKey = this.configService.get<string>('GROQ_API_KEY');
+    if (!apiKey) {
+      throw new ServiceUnavailableException('Chatbot chưa được cấu hình GROQ_API_KEY trong .env');
+    }
+
+    this.groqClient = createGroq({ apiKey });
+    return this.groqClient;
+  }
+
+  async chatStream(userText: string, userId?: number): Promise<any> {
+    const cleanUserText = userText.trim();
+    const intent = detectIntent(cleanUserText);
+
+    // Fetch dữ liệu trước khi gọi AI
+    let productsList: any[] = [];
+    try {
+      productsList = await this.prisma.product.findMany({
+        where: { isDeleted: false, isActive: true },
+      });
+    } catch (e) {
+      console.error("Fetch all products error:", e);
+    }
+
+    // Tạo danh sách tất cả sản phẩm ở dạng rút gọn để AI luôn biết cửa hàng đang bán gì
+    const allProductsConcise = productsList
+      .map((p: any) => `- ${p.name} (ID: ${p.id}): giá ${p.price?.toLocaleString("vi-VN")} VND/${p.unit || "kg"}, còn lại ${p.stockQuantity ?? 0} ${p.unit || "kg"}.`)
+      .join("\n");
+
+    // Xử lý logic tìm sản phẩm khớp
+    const matchedProducts = searchProductsLocally(productsList, cleanUserText);
+
+    let detailedProductsContext = "";
+    let productTags = "";
+
+    const topProducts = matchedProducts.slice(0, 4); // Lấy tối đa 4 sản phẩm khớp nhất
+    if (topProducts.length > 0) {
+      detailedProductsContext = `THÔNG TIN CHI TIẾT SẢN PHẨM KHỚP VỚI CÂU HỎI:\n` +
+        topProducts.map((p: any) =>
+          `- ${p.name} (ID: ${p.id}): Mô tả: ${cleanHtmlText(p.description)}. Thông tin dinh dưỡng/sức khỏe: ${cleanHtmlText(p.healthInfo)}`
+        ).join("\n");
+
+      productTags = topProducts.map((p: any) =>
+        `[PRODUCT:${p.id}:${p.name}:${p.price}:${p.unit || "kg"}:${p.stockQuantity ?? 0}]`
+      ).join("\n");
+    }
+
+    // Xử lý logic đơn hàng
+    let ordersContext = "";
+    if (intent === "order" && userId) {
+      try {
+        const orders = await this.prisma.order.findMany({
+          where: { userId },
+          orderBy: { createdAt: 'desc' },
+          take: 5,
+        });
+
+        if (orders.length > 0) {
+          const statusMap: Record<string, string> = {
+            PENDING: "Chờ xác nhận",
+            CONFIRMED: "Đã xác nhận",
+            PREPARING: "Đang chuẩn bị hàng",
+            SHIPPING: "Đang giao hàng",
+            COMPLETED: "Đã hoàn thành",
+            CANCELLED: "Đã hủy đơn",
+          };
+          ordersContext = `DỮ LIỆU ĐƠN HÀNG CỦA KHÁCH:\n` +
+            orders.map((o: any) =>
+              `- Đơn #${o.id}: ${statusMap[o.status] || o.status}, thành tiền (đã gồm ship) ${o.finalAmount?.toLocaleString("vi-VN")} VND (tiền hàng: ${o.totalAmount?.toLocaleString("vi-VN")} VND, phí ship: ${o.shippingFee?.toLocaleString("vi-VN")} VND), ngày đặt hàng: ${new Date(o.createdAt).toLocaleDateString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" })}`
+            ).join("\n");
+        } else {
+          ordersContext = "DỮ LIỆU ĐƠN HÀNG: Khách hàng chưa có đơn hàng nào.";
+        }
+      } catch (e) {
+        console.error("Fetch orders error:", e);
+        ordersContext = "DỮ LIỆU ĐƠN HÀNG: Lỗi kết nối máy chủ.";
+      }
+    } else if (intent === "order" && !userId) {
+      ordersContext = "DỮ LIỆU ĐƠN HÀNG: Không thể truy xuất (chưa đăng nhập).";
+    }
+
+    const systemPrompt = buildChatbotSystemPrompt({
+      allProductsConcise,
+      detailedProductsContext,
+      ordersContext,
+      productTags,
+    });
+
+    const result = streamText({
+      model: this.getGroq()(CHATBOT_MODEL),
+      system: systemPrompt,
+      messages: [{ role: "user", content: cleanUserText }],
+    });
+
+    return result;
+  }
 
   // Tạo phiên chat mới
   async createSession(userId?: number) {

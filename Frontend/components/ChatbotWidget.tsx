@@ -456,11 +456,12 @@ export default function ChatbotWidget() {
     abortRef.current = controller;
 
     try {
-      const res = await fetch("/api/chat", {
+      const res = await fetch(`${BACKEND_API}/chat/query`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text: text.trim() }),
         signal: controller.signal,
+        credentials: "include",
       });
 
       if (!res.ok || !res.body) throw new Error("API error");
