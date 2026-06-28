@@ -1,5 +1,5 @@
 'use client';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import api from '@/lib/axios';
 import Link from 'next/link';
@@ -11,6 +11,7 @@ import { getImageUrl } from '@/lib/utils';
 
 export default function ProductDetailPage() {
   const { id } = useParams();
+  const router = useRouter();
   const [product, setProduct] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState<number | string>(1);
@@ -79,14 +80,28 @@ export default function ProductDetailPage() {
     }
   };
 
-  const handleBuyNow = () => {
+  const handleBuyNow = async () => {
     const { isAuthenticated } = useAuthStore.getState();
     if (!isAuthenticated) {
       window.location.href = '/login';
       return;
     }
-    handleAddToCart();
-    
+    if (product) {
+      const mediaUrls: string[] = product.mediaUrls || [];
+      try {
+        await addItem({
+          id: product.id,
+          name: product.name,
+          price: product.price,
+          quantity: Number(quantity) || 1,
+          image: mediaUrls[0] || 'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=800&q=80',
+          stockQuantity: product.stockQuantity
+        });
+        router.push('/checkout');
+      } catch (e) {
+        console.error('Buy now failed', e);
+      }
+    }
   };
 
   if (loading) {
