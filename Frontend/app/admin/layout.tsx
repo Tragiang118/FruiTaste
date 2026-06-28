@@ -63,7 +63,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   ];
 
   return (
-    <div className="flex h-screen bg-[#F8F9FA] overflow-hidden">
+    <div className="flex h-screen bg-[#F8F9FA] overflow-hidden admin-layout">
 
       <aside className={`max-md:hidden bg-white border-r border-gray-100 transition-all duration-300 flex flex-col h-full z-20 ${isSidebarOpen ? 'w-64' : 'w-20'}`}>
         <div className={`h-[88px] flex items-center flex-shrink-0 transition-all duration-300 ${isSidebarOpen ? 'px-8 justify-start' : 'justify-center w-full'}`}>
