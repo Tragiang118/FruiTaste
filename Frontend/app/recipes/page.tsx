@@ -66,19 +66,23 @@ export default function RecipesPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {filteredRecipes.map((recipe, idx) => (
               <div key={recipe.id || idx} className="border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 rounded-[2rem] overflow-hidden group cursor-pointer bg-white">
-                <div className="relative h-60 w-full overflow-hidden">
-                    <img 
-                      src={getImageUrl(recipe.imageUrl || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&q=80")} 
-                      alt={recipe.title || recipe.name} 
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
-                    />
-                </div>
+                <Link href={`/recipes/${recipe.id || idx + 1}`}>
+                  <div className="relative h-60 w-full overflow-hidden">
+                      <img 
+                        src={getImageUrl(recipe.imageUrl || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&q=80")} 
+                        alt={recipe.title || recipe.name} 
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                      />
+                  </div>
+                </Link>
                 
                 <div className="p-5">
                    <div className="flex justify-between items-start gap-3 mb-4">
-                      <h3 className="font-bold text-lg group-hover:text-[#FF6B4A] transition-colors line-clamp-2 flex-1 leading-snug">
-                         {recipe.title || recipe.name}
-                      </h3>
+                      <Link href={`/recipes/${recipe.id || idx + 1}`} className="flex-1">
+                        <h3 className="font-bold text-lg group-hover:text-[#FF6B4A] transition-colors line-clamp-2 leading-snug">
+                           {recipe.title || recipe.name}
+                        </h3>
+                      </Link>
                       <span className="flex items-center gap-1 text-xs font-semibold text-gray-500 bg-gray-50 border border-gray-100 px-2.5 py-1 rounded-full shrink-0">
                          <Clock size={12} className="text-gray-400" /> {recipe.prepTime || 15}p
                       </span>

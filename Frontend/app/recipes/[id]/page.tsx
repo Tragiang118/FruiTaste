@@ -5,6 +5,7 @@ import api from '@/lib/axios';
 import Link from 'next/link';
 import { Home, ChevronRight, Clock, BookOpen, Utensils, Flame, ShoppingCart, Plus, ShoppingBag } from 'lucide-react';
 import { useCartStore } from '@/lib/store';
+import BackButton from '@/components/BackButton';
 import { toast } from 'sonner';
 import { getImageUrl } from '@/lib/utils';
 
@@ -65,7 +66,8 @@ export default function RecipeDetailPage() {
   return (
     <div className="min-h-screen bg-[#FFFDFB] text-gray-900 font-sans pb-20 pt-4 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
-        <div className="flex items-center justify-end w-full mb-6 mt-2">
+        <div className="flex items-center justify-between w-full mb-6 mt-2">
+          <BackButton className="px-0 h-auto mb-0" />
           <div className="flex items-center gap-2 text-sm text-gray-500 leading-tight">
             <Link href="/" className="hover:text-[#FF6B4A] flex items-center gap-1"><Home size={14} /> Trang chủ</Link>
             <ChevronRight size={14} />
