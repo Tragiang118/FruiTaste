@@ -10,6 +10,7 @@ export class CartService {
       where: { userId },
       include: {
         items: {
+          orderBy: { id: 'asc' },
           include: {
             product: {
               select: {
@@ -31,6 +32,7 @@ export class CartService {
         data: { userId },
         include: {
           items: {
+            orderBy: { id: 'asc' },
             include: {
               product: {
                 select: {
