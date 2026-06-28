@@ -15,13 +15,6 @@ export default function Footer() {
             <p className="text-sm text-gray-500 leading-relaxed">
               Cửa hàng hoa quả tươi ngon, giao hàng nhanh chóng, mang hương vị thiên nhiên đến tận tay bạn. Chúng tôi cam kết chất lượng và sự hài lòng của khách hàng là ưu tiên hàng đầu.
             </p>
-            <div className="flex flex-col gap-2 items-start">
-              <div className="flex gap-2">
-                <span className="text-xs bg-gray-50 px-2.5 py-1 rounded-full text-gray-400 font-semibold border">🌿 Tươi ngon</span>
-                <span className="text-xs bg-gray-50 px-2.5 py-1 rounded-full text-gray-400 font-semibold border">💰 Giá tốt</span>
-              </div>
-              <span className="text-xs bg-gray-50 px-2.5 py-1 rounded-full text-gray-400 font-semibold border">🕒 Giao hàng nhanh</span>
-            </div>
           </div>
 
           {/* Categories */}
