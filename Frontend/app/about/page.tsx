@@ -1,5 +1,4 @@
 import { Leaf, Truck, ShieldCheck, Home, ChevronRight } from "lucide-react";
-import BackButton from '@/components/BackButton';
 import Link from "next/link";
 
 export default function AboutPage() {
@@ -25,8 +24,7 @@ export default function AboutPage() {
     <div className="min-h-screen bg-[#FFFDFB] text-gray-900 font-sans pt-12 pb-0">
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between w-full mb-6 mt-0">
-          <BackButton className="px-0 h-auto mb-0" />
+        <div className="flex items-center justify-end w-full mb-6 mt-0">
           <div className="flex items-center gap-2 text-sm text-gray-500">
             <Link href="/" className="hover:text-[#FF6B4A] flex items-center gap-1 font-medium">
               <Home size={14} /> Trang chủ

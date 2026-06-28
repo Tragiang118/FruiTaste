@@ -1,12 +1,10 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import api from "@/lib/axios";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { Search, Clock, ChefHat, Flame, Home, ChevronRight } from "lucide-react";
-import BackButton from '@/components/BackButton';
 import { getImageUrl } from '@/lib/utils';
 
 export default function RecipesPage() {
@@ -34,8 +32,7 @@ export default function RecipesPage() {
   return (
     <div className="min-h-screen bg-[#FFFDFB] text-gray-900 font-sans pt-12 pb-0 px-4 sm:px-6 lg:px-8">
 
-        <div className="flex items-center justify-between w-full mb-8 mt-0">
-           <BackButton className="px-0 h-auto mb-0" />
+        <div className="flex items-center justify-end w-full mb-8 mt-0">
            <div className="flex items-center gap-2 text-sm text-gray-500">
                <Link href="/" className="hover:text-[#FF6B4A] flex items-center gap-1"><Home size={14}/> Trang chủ</Link>
                <ChevronRight size={14} />
@@ -68,7 +65,7 @@ export default function RecipesPage() {
         ) : filteredRecipes.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {filteredRecipes.map((recipe, idx) => (
-              <Card key={recipe.id || idx} className="border-0 shadow-sm hover:shadow-xl transition-all duration-300 rounded-[2rem] overflow-hidden group cursor-pointer bg-white">
+              <div key={recipe.id || idx} className="border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 rounded-[2rem] overflow-hidden group cursor-pointer bg-white">
                 <div className="relative h-60 w-full overflow-hidden">
                     <img 
                       src={getImageUrl(recipe.imageUrl || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&q=80")} 
@@ -77,7 +74,7 @@ export default function RecipesPage() {
                     />
                 </div>
                 
-                <CardContent className="p-5">
+                <div className="p-5">
                    <div className="flex justify-between items-start gap-3 mb-4">
                       <h3 className="font-bold text-lg group-hover:text-[#FF6B4A] transition-colors line-clamp-2 flex-1 leading-snug">
                          {recipe.title || recipe.name}
@@ -92,8 +89,8 @@ export default function RecipesPage() {
                         Xem Chi Tiết
                      </Button>
                    </Link>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             ))}
           </div>
         ) : (
