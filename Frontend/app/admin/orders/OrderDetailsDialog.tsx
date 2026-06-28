@@ -134,7 +134,7 @@ export default function OrderDetailsDialog({ orderId, onUpdate }: OrderDetailsDi
         </Button>
       </DialogTrigger>
       <DialogContent className="w-[95vw] md:max-w-3xl rounded-[2rem] p-0 overflow-hidden border-none shadow-2xl bg-white">
-        <DialogHeader className="p-6 md:p-8 bg-gray-50/50 border-b border-gray-100 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 space-y-0 text-left">
+        <DialogHeader className="p-4 md:p-6 bg-gray-50/50 border-b border-gray-100 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 space-y-0 text-left">
           <div className="flex-1">
             <DialogTitle className="text-sm font-bold text-gray-700 ml-1 flex items-center gap-3">
               <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
@@ -143,7 +143,7 @@ export default function OrderDetailsDialog({ orderId, onUpdate }: OrderDetailsDi
               <span className="leading-tight">Chi tiết đơn hàng #{orderId}</span>
             </DialogTitle>
             {order && (
-              <p className="text-sm text-gray-500 mt-1 font-medium ml-13">
+              <p className="text-sm text-gray-500 mt-0.5 font-medium ml-13">
                 Ngày đặt: {new Date(order.createdAt).toLocaleString('vi-VN')}
               </p>
             )}
@@ -188,7 +188,7 @@ export default function OrderDetailsDialog({ orderId, onUpdate }: OrderDetailsDi
           )}
         </DialogHeader>
 
-        <div className="p-6 md:p-8 space-y-8 max-h-[70vh] overflow-y-auto bg-white">
+        <div className="p-4 md:p-6 space-y-6 max-h-[70vh] overflow-y-auto bg-white">
           {loading ? (
             <div className="flex flex-col items-center justify-center py-20 gap-4">
               <RefreshCw className="animate-spin text-primary w-10 h-10" />
@@ -198,8 +198,8 @@ export default function OrderDetailsDialog({ orderId, onUpdate }: OrderDetailsDi
             <>
               {/* Status Timeline */}
               {order.status !== 'CANCELLED' && (
-                <div className="bg-white border border-gray-100 rounded-[2rem] p-6 shadow-sm overflow-x-auto">
-                  <div className="flex items-center justify-between relative min-w-[500px] max-w-2xl mx-auto py-4">
+                <div className="bg-white border border-gray-100 rounded-[2rem] p-4 shadow-sm overflow-x-auto">
+                  <div className="flex items-center justify-between relative min-w-[500px] max-w-2xl mx-auto py-2">
                     <div className="absolute top-[24px] left-[10%] right-[10%] h-0.5 bg-gray-100 -translate-y-1/2 z-0" />
 
                     {[
@@ -214,7 +214,7 @@ export default function OrderDetailsDialog({ orderId, onUpdate }: OrderDetailsDi
                       const isCompleted = idx <= currentIdx;
 
                       return (
-                        <div key={step.key} className="flex flex-col items-center gap-2 relative z-10 flex-1">
+                        <div key={step.key} className="flex flex-col items-center gap-1.5 relative z-10 flex-1">
                           <div className={cn(
                             "w-10 h-10 rounded-full flex justify-center items-center shadow-sm transition-all border-4 border-white",
                             isCompleted ? "bg-primary text-white" : "bg-gray-100 text-gray-400"
@@ -239,7 +239,7 @@ export default function OrderDetailsDialog({ orderId, onUpdate }: OrderDetailsDi
               )}
 
               {order.status === 'CANCELLED' && (
-                <div className="bg-red-50 border border-red-100 rounded-[2rem] p-6 flex items-center gap-4 text-red-600">
+                <div className="bg-red-50 border border-red-100 rounded-[2rem] p-4 flex items-center gap-3 text-red-600">
                   <div className="w-12 h-12 rounded-2xl bg-red-100 flex items-center justify-center shrink-0">
                     <XCircle size={24} />
                   </div>
@@ -266,11 +266,11 @@ export default function OrderDetailsDialog({ orderId, onUpdate }: OrderDetailsDi
 
               {/* Customer Info */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="bg-gray-50/50 rounded-[2rem] p-6 border border-gray-50">
-                  <h4 className="text-sm font-bold text-gray-700 ml-1 flex items-center gap-2 mb-4">
+                <div className="bg-gray-50/50 rounded-[2rem] p-4 border border-gray-50">
+                  <h4 className="text-sm font-bold text-gray-700 ml-1 flex items-center gap-2 mb-3">
                     <User size={14} className="text-primary" /> Thông tin người nhận
                   </h4>
-                  <div className="space-y-3">
+                  <div className="space-y-2.5">
                     <p className="text-lg font-black text-gray-900">{order.shippingName}</p>
                     <p className="text-sm text-gray-600 flex items-center gap-2 font-medium">
                       <Phone size={14} className="text-gray-400" /> {order.shippingPhone}
@@ -281,11 +281,11 @@ export default function OrderDetailsDialog({ orderId, onUpdate }: OrderDetailsDi
                   </div>
                 </div>
 
-                <div className="bg-gray-50/50 rounded-[2rem] p-6 border border-gray-50">
-                  <h4 className="text-sm font-bold text-gray-700 ml-1 flex items-center gap-2 mb-4">
+                <div className="bg-gray-50/50 rounded-[2rem] p-4 border border-gray-50">
+                  <h4 className="text-sm font-bold text-gray-700 ml-1 flex items-center gap-2 mb-3">
                     <CreditCard size={14} className="text-primary" /> Thanh toán
                   </h4>
-                  <div className="space-y-3">
+                  <div className="space-y-2.5">
                     <p className="text-sm font-bold text-gray-700">
                       Phương thức: <span className="text-gray-900">{order.payment?.method === 'BANK_TRANSFER' ? 'Chuyển khoản' : 'Thanh toán khi nhận hàng (COD)'}</span>
                     </p>
@@ -330,7 +330,7 @@ export default function OrderDetailsDialog({ orderId, onUpdate }: OrderDetailsDi
 
               {/* Order Items */}
               <div>
-                <h4 className="text-sm font-bold text-gray-700 ml-1 flex items-center gap-2 mb-4">
+                <h4 className="text-sm font-bold text-gray-700 ml-1 flex items-center gap-2 mb-3">
                   <Package size={14} className="text-primary" /> Sản phẩm đã đặt
                 </h4>
                 <div className="border border-gray-100 rounded-3xl overflow-hidden shadow-sm">
@@ -398,12 +398,12 @@ export default function OrderDetailsDialog({ orderId, onUpdate }: OrderDetailsDi
       <AlertDialog open={showCancelAlert} onOpenChange={setShowCancelAlert}>
         <AlertDialogContent className="bg-white rounded-3xl border-none shadow-xl">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-xl font-bold text-gray-900">Xác nhận hủy đơn hàng?</AlertDialogTitle>
+            <AlertDialogTitle className="text-lg font-bold text-gray-900">Xác nhận hủy đơn hàng?</AlertDialogTitle>
             <AlertDialogDescription className="text-gray-600">
               Bạn có chắc chắn muốn hủy đơn hàng này không? Hành động này sẽ hoàn lại số lượng tồn kho cho các sản phẩm trong đơn và không thể hoàn tác.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="mt-4">
+          <AlertDialogFooter className="mt-3">
             <AlertDialogCancel className="rounded-full border-gray-200 cursor-pointer">Trở lại</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => pendingStatus && executeStatusChange(pendingStatus)}
