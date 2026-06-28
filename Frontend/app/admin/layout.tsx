@@ -52,7 +52,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   if (!isAuthenticated || user?.role !== 'ADMIN') return null;
 
   const adminModules = [
-    { title: 'Trang chủ', href: '/admin', icon: <Home size={20} /> },
+    { title: 'Quản trị', href: '/admin', icon: <Home size={20} /> },
     { title: 'Quản lý người dùng', href: '/admin/users', icon: <Users size={20} /> },
     { title: 'Quản lý danh mục', href: '/admin/categories', icon: <Tags size={20} /> },
     { title: 'Quản lý sản phẩm', href: '/admin/products', icon: <Package size={20} /> },
