@@ -36,12 +36,9 @@ services:
       - ./Backend/.env
     # Override only variables that need routing inside the Docker network
     environment:
-      DATABASE_URL: "postgresql://admin:123456@postgres-db:5432/fruitaste?schema=public"
+      DATABASE_URL: "postgresql://admin:123456@165.227.35.109:5432/fruitaste?schema=public&sslmode=require"
       FRONTEND_URL: "http://localhost:3000"
     command: sh -c "npx prisma db push && npm run start:prod"
-    depends_on:
-      postgres-db:
-        condition: service_healthy
     networks:
       - fruitaste-network
 
