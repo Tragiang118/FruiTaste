@@ -32,7 +32,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const router = useRouter();
   const pathname = usePathname();
   const [isMounted, setIsMounted] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true); 
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   useEffect(() => {
@@ -68,26 +68,25 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <aside className={`max-md:hidden bg-white border-r border-gray-100 transition-all duration-300 flex flex-col h-full z-20 ${isSidebarOpen ? 'w-64' : 'w-20'}`}>
         <div className={`h-[88px] flex items-center flex-shrink-0 transition-all duration-300 ${isSidebarOpen ? 'px-8 justify-start' : 'justify-center w-full'}`}>
           <Link href="/" className="flex items-center gap-3 overflow-hidden group">
-             <img src="/durian-logo.png?v=3" alt="FruiTaste Logo" className="w-12 h-12 object-contain flex-shrink-0 group-hover:scale-110 transition-transform" />
-             <div className={`flex items-center whitespace-nowrap transition-all duration-300 overflow-hidden ${isSidebarOpen ? 'max-w-[200px] opacity-100' : 'max-w-0 opacity-0'}`}>
-               <span className="text-2xl font-black text-gray-900 leading-none">Frui<span className="text-green-600">Taste</span></span>
-             </div>
+            <img src="/durian-logo.png?v=3" alt="FruiTaste Logo" className="w-12 h-12 object-contain flex-shrink-0 group-hover:scale-110 transition-transform" />
+            <div className={`flex items-center whitespace-nowrap transition-all duration-300 overflow-hidden ${isSidebarOpen ? 'max-w-[200px] opacity-100' : 'max-w-0 opacity-0'}`}>
+              <span className="text-2xl font-black text-gray-900 leading-none">Frui<span className="text-green-600">Taste</span></span>
+            </div>
           </Link>
         </div>
 
         {/* User Card Removed */}
-        
+
         <div className="flex-1 overflow-y-auto py-6 flex flex-col gap-2">
           {adminModules.map((module, index) => {
             const isActive = pathname === module.href;
             return (
               <div key={index} className="px-4">
                 <Link href={module.href}>
-                  <div className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-200 group ${
-                    isActive 
-                      ? 'bg-green-50 text-green-600 shadow-sm shadow-green-600/5 font-bold' 
+                  <div className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-200 group ${isActive
+                      ? 'bg-green-50 text-green-600 shadow-sm shadow-green-600/5 font-bold'
                       : 'text-gray-400 hover:bg-gray-50 hover:text-gray-600 font-medium'
-                  } ${!isSidebarOpen && 'justify-center px-0'}`}>
+                    } ${!isSidebarOpen && 'justify-center px-0'}`}>
                     <div className={`flex-shrink-0 transition-colors ${isActive ? 'text-green-600' : 'text-gray-400 group-hover:text-gray-600'}`}>
                       {module.icon}
                     </div>
@@ -133,11 +132,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   const isActive = pathname === module.href;
                   return (
                     <Link key={index} href={module.href} onClick={() => setIsMobileSidebarOpen(false)}>
-                      <div className={`flex items-center gap-3 px-4 py-4 rounded-2xl transition-all ${
-                        isActive 
-                          ? 'bg-green-50 text-green-600 shadow-sm font-bold' 
+                      <div className={`flex items-center gap-3 px-4 py-4 rounded-2xl transition-all ${isActive
+                          ? 'bg-green-50 text-green-600 shadow-sm font-bold'
                           : 'text-gray-400 hover:bg-gray-50 hover:text-gray-600 font-medium'
-                      }`}>
+                        }`}>
                         <div className={isActive ? 'text-green-600' : ''}>{module.icon}</div>
                         <span className="text-[15px]">{module.title}</span>
                       </div>
@@ -147,8 +145,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </div>
 
               <div className="mt-auto pt-6 border-t border-gray-100">
-                <Button 
-                  variant="ghost" 
+                <Button
+                  variant="ghost"
                   className="w-full justify-start gap-3 px-4 py-6 rounded-2xl text-red-500 hover:bg-red-50 hover:text-red-600 font-medium transition-all"
                   onClick={async () => {
                     await logout();
@@ -165,17 +163,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
         <header className="bg-white/80 backdrop-blur-md sticky top-0 z-30 px-6 py-4 flex items-center justify-between border-b border-gray-100 flex-shrink-0 h-[88px]">
           <div className="flex items-center gap-4">
-            <Button 
-              variant="outline" 
-              size="icon" 
+            <Button
+              variant="outline"
+              size="icon"
               className="rounded-xl border border-gray-200 text-gray-500 hover:text-gray-700 bg-white shadow-sm md:flex hidden cursor-pointer"
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
             >
               <Menu size={20} />
             </Button>
-            <Button 
-              variant="outline" 
-              size="icon" 
+            <Button
+              variant="outline"
+              size="icon"
               className="rounded-xl border border-gray-200 text-gray-500 hover:text-gray-700 bg-white shadow-sm md:hidden flex cursor-pointer"
               onClick={() => setIsMobileSidebarOpen(true)}
             >
@@ -183,10 +181,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </Button>
 
             <div className="flex items-center gap-2 text-sm text-gray-500 ml-2">
-                {/* Empty space to maintain layout if needed, or just remove if not needed */}
+              {/* Empty space to maintain layout if needed, or just remove if not needed */}
             </div>
           </div>
-          
+
           <div className="flex items-center gap-4">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -222,7 +220,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   </DropdownMenuItem>
                   <DropdownMenuItem className="cursor-pointer py-2.5 hover:text-[#FF6B4A] focus:text-[#FF6B4A] focus:bg-orange-50 transition-colors" onClick={() => router.push('/profile')}>
                     <User className="mr-2" size={16} />
-                    Hồ sơ cá nhân
+                    Thông tin cá nhân
                   </DropdownMenuItem>
                   <DropdownMenuItem className="cursor-pointer py-2.5 hover:text-[#FF6B4A] focus:text-[#FF6B4A] focus:bg-orange-50 transition-colors" onClick={() => router.push('/orders')}>
                     <ShoppingBag className="mr-2" size={16} />
@@ -234,7 +232,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   </DropdownMenuItem>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem 
+                <DropdownMenuItem
                   className="text-red-500 cursor-pointer text-sm font-semibold focus:text-red-600 focus:bg-red-50 py-2.5"
                   onClick={async () => {
                     await logout();
@@ -252,24 +250,24 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="flex-1 overflow-y-auto w-full">
           <div className="p-6 md:p-8 max-w-[1600px] mx-auto w-full">
             <div className="flex items-center justify-between w-full mb-8">
-                <div>
-                   {pathname.split('/').length > 3 && (
-                     <BackButton />
-                   )}
-                </div>
-                <div className="flex items-center gap-2 text-sm text-gray-500">
-                    <Link href="/" className="hover:text-[#FF6B4A] flex items-center gap-1 font-medium"><Home size={14} /> Trang chủ</Link>
+              <div>
+                {pathname.split('/').length > 3 && (
+                  <BackButton />
+                )}
+              </div>
+              <div className="flex items-center gap-2 text-sm text-gray-500">
+                <Link href="/" className="hover:text-[#FF6B4A] flex items-center gap-1 font-medium"><Home size={14} /> Trang chủ</Link>
+                <ChevronRight size={14} />
+                <Link href="/admin" className={`hover:text-[#FF6B4A] font-medium ${pathname === '/admin' ? 'text-[#FF6B4A]' : ''}`}>Quản trị</Link>
+                {pathname !== '/admin' && (
+                  <>
                     <ChevronRight size={14} />
-                    <Link href="/admin" className={`hover:text-[#FF6B4A] font-medium ${pathname === '/admin' ? 'text-[#FF6B4A]' : ''}`}>Quản trị</Link>
-                    {pathname !== '/admin' && (
-                      <>
-                        <ChevronRight size={14} />
-                        <span className="text-[#FF6B4A] font-medium truncate">
-                          {adminModules.find(m => m.href === pathname)?.title || 'Chi tiết'}
-                        </span>
-                      </>
-                    )}
-                </div>
+                    <span className="text-[#FF6B4A] font-medium truncate">
+                      {adminModules.find(m => m.href === pathname)?.title || 'Chi tiết'}
+                    </span>
+                  </>
+                )}
+              </div>
             </div>
             {children}
           </div>
