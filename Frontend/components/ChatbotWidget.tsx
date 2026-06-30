@@ -414,6 +414,7 @@ type ChatMsg = {
 };
 
 export default function ChatbotWidget() {
+  const { isAuthenticated, isLoading } = useAuthStore();
   const pathname = usePathname();
   const [messages, setMessages] = useState<ChatMsg[]>([]);
   const [input, setInput] = useState("");
@@ -620,7 +621,7 @@ export default function ChatbotWidget() {
     pathname === "/register" ||
     pathname === "/profile";
 
-  if (!mounted || isHiddenRoute) {
+  if (!mounted || isLoading || !isAuthenticated || isHiddenRoute) {
     return null;
   }
 
