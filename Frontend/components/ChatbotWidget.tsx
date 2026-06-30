@@ -440,6 +440,31 @@ export default function ChatbotWidget() {
     return () => clearTimeout(timeout);
   }, [isOpen]);
 
+  const autoAddToCart = async (productId: number, quantity: number) => {
+    try {
+      const res = await fetch(`${BACKEND_API}/products/${productId}`);
+      if (!res.ok) return;
+      const product = await res.json();
+      if (!product) return;
+
+      const { addItem } = useCartStore.getState();
+      const imageUrl = product.mediaUrls?.[0] ? getImageUrl(product.mediaUrls[0]) : "";
+
+      await addItem({
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        image: imageUrl || "",
+        stockQuantity: product.stockQuantity ?? 0,
+        quantity: quantity,
+      });
+
+      toast.success(`Đã thêm ${quantity} ${product.unit || 'kg'} ${product.name} vào giỏ hàng`);
+    } catch (err) {
+      console.error("Auto add to cart failed", err);
+    }
+  };
+
   // Hàm gửi tin nhắn và đọc stream thủ công
   const sendMessage = async (text: string) => {
     if (!text.trim() || isBusy) return;
@@ -513,6 +538,7 @@ export default function ChatbotWidget() {
         let cleanText = fullText
           .replace(/\[PRODUCT:[^\]]*\]/gi, "")
           .replace(/\[ORDER_FORM:[^\]]*\]/gi, "")
+          .replace(/\[ADD_TO_CART:[^\]]*\]/gi, "")
           .replace(/<[^>]*>.*?<\/[^>]*>/gs, "")
           .trim();
 
@@ -523,6 +549,17 @@ export default function ChatbotWidget() {
         );
       }
 
+      // Tự động thêm vào giỏ hàng sau khi stream xong và phát hiện tag [ADD_TO_CART:id:qty]
+      const addToCartRegex = /\[ADD_TO_CART:\s*(\d+)\s*:\s*(\d+)\]/i;
+      const addToCartMatch = addToCartRegex.exec(fullText);
+      if (addToCartMatch) {
+        const pId = parseInt(addToCartMatch[1], 10);
+        const qty = parseInt(addToCartMatch[2], 10);
+        if (!isNaN(pId) && !isNaN(qty)) {
+          autoAddToCart(pId, qty);
+        }
+      }
+
       // Lưu vào DB sau khi stream xong
       const BACKEND = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
       const userMsgsCount = messages.filter((m) => m.role === "user").length + 1;
@@ -531,6 +568,7 @@ export default function ChatbotWidget() {
         const botText = fullText
           .replace(/\[PRODUCT:[^\]]*\]/gi, "")
           .replace(/\[ORDER_FORM:[^\]]*\]/gi, "")
+          .replace(/\[ADD_TO_CART:[^\]]*\]/gi, "")
           .trim();
         fetch(`${BACKEND}/chat/save`, {
           method: "POST",
