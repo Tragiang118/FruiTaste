@@ -531,11 +531,36 @@ function ImportContent() {
                                         const profitMargin = pricingConfig?.defaultProfitMargin ?? 0.30;
 
                                         if (manualPrice > 0) {
+                                          const effectiveCost = importPrice > 0 ? importPrice / (1 - lossRate) : 0;
+                                          const lossAmount = effectiveCost - importPrice;
+                                          const netPrice = manualPrice / (1 + taxRate);
+                                          const taxAmount = manualPrice - netPrice;
+                                          const profitAmount = netPrice - effectiveCost;
+                                          const actualMarginPercent = netPrice > 0 ? Math.round((profitAmount / netPrice) * 100) : 0;
+
                                           return (
                                             <div className="space-y-3">
-                                              <h4 className="font-black text-[11px] text-gray-900 uppercase tracking-widest border-b pb-2">Giá bán thủ công</h4>
+                                              <h4 className="font-black text-[11px] text-emerald-700 uppercase tracking-widest border-b border-emerald-100 pb-2">Bóc tách giá bán thủ công</h4>
+                                              <div className="space-y-2">
+                                                <div className="flex justify-between text-[11px]">
+                                                  <span className="text-gray-400 font-bold">1. Giá gốc nhập:</span>
+                                                  <span className="font-black text-gray-600">{importPrice.toLocaleString()}đ</span>
+                                                </div>
+                                                <div className="flex justify-between text-[11px]">
+                                                  <span className="text-gray-400 font-bold">2. Hao hụt ({Math.round(lossRate * 100)}%):</span>
+                                                  <span className="font-black text-orange-400">+{Math.round(lossAmount).toLocaleString()}đ</span>
+                                                </div>
+                                                <div className="flex justify-between text-[11px] text-green-600">
+                                                  <span className="font-bold">3. Lãi thực tế ({actualMarginPercent}%):</span>
+                                                  <span className="font-black">+{Math.round(profitAmount).toLocaleString()}đ</span>
+                                                </div>
+                                                <div className="flex justify-between text-[11px] text-red-400">
+                                                  <span className="font-bold">4. Thuế VAT ({Math.round(taxRate * 100)}%):</span>
+                                                  <span className="font-black">+{Math.round(taxAmount).toLocaleString()}đ</span>
+                                                </div>
+                                              </div>
                                               <div className="bg-emerald-50 p-2.5 rounded-xl flex justify-between items-center border border-emerald-100">
-                                                <span className="text-[10px] font-black text-emerald-600 uppercase">Giá bán thủ công:</span>
+                                                <span className="text-[10px] font-black text-emerald-600 uppercase">Giá bán ấn định:</span>
                                                 <span className="text-base font-black text-emerald-700">{manualPrice.toLocaleString()}đ</span>
                                               </div>
                                             </div>
