@@ -204,12 +204,12 @@ export default function InventoryPage() {
                 Lịch sử kho
              </Button>
            </Link>
-           <Link href="/admin/inventory/import">
-             <Button className="bg-primary text-white rounded-full px-5 shadow-lg shadow-primary/20 hover:scale-[1.02] transition-all cursor-pointer h-8 font-bold text-xs gap-2">
-                <PlusCircle className="h-3.5 w-3.5" />
-                Tạo phiếu xuất/nhập kho
-             </Button>
-           </Link>
+           <Link href="/admin/inventory/create">
+            <Button className="bg-primary text-white rounded-full px-5 shadow-lg shadow-primary/20 hover:scale-[1.02] transition-all cursor-pointer h-8 font-bold text-xs gap-2">
+              <PlusCircle className="h-3.5 w-3.5" />
+              Tạo phiếu xuất/nhập kho
+            </Button>
+          </Link>
         </div>
       </div>
 
@@ -537,12 +537,12 @@ export default function InventoryPage() {
                     </TableCell>
                     <TableCell className="text-center">
                       <div className="flex items-center justify-center gap-1">
-                        <Link href={`/admin/inventory/import?productId=${item.productId}`}>
+                        <Link href={`/admin/inventory/create?productId=${item.productId}`}>
                           <Button variant="ghost" size="icon" title="Nhập kho" className="h-8 w-8 text-green-500 hover:text-green-600 hover:bg-green-50 rounded-full transition-all">
                              <Plus size={16} />
                           </Button>
                         </Link>
-                        <Link href={`/admin/inventory/import?type=export&productId=${item.productId}`}>
+                        <Link href={`/admin/inventory/create?type=export&productId=${item.productId}`}>
                           <Button 
                             variant="ghost" 
                             size="icon" 
