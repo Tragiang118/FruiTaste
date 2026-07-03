@@ -248,9 +248,35 @@ function ImportContent() {
     }
 
     if (type === 'import') {
-      const invalidPriceItem = importItems.find(item => !item.importPrice || Number(item.importPrice) < 1000);
+      const invalidPriceItem = importItems.find(item => !item.importPrice || Number(item.importPrice) < 1000 || Number(item.importPrice) > 3000000);
       if (invalidPriceItem) {
-        toast.error(`Sản phẩm "${invalidPriceItem.productName}" phải có giá nhập từ 1,000 VNĐ`);
+        toast.error(`Sản phẩm "${invalidPriceItem.productName}" phải có giá nhập từ 1.000đ đến 3.000.000đ`);
+        return;
+      }
+
+      const invalidManualPriceItem = importItems.find(item => item.manualPrice !== '' && item.manualPrice !== undefined && (Number(item.manualPrice) < 1000 || Number(item.manualPrice) > 3000000));
+      if (invalidManualPriceItem) {
+        toast.error(`Sản phẩm "${invalidManualPriceItem.productName}" có giá bán thủ công phải từ 1.000đ đến 3.000.000đ`);
+        return;
+      }
+
+      const invalidMarginItem = importItems.find(item => {
+        if (!item.manualPrice || Number(item.manualPrice) <= 0) return false;
+        const importPrice = Number(item.importPrice || 0);
+        const manualPrice = Number(item.manualPrice);
+        const lossRate = pricingConfig?.defaultLossRate ?? 0.05;
+        const taxRate = pricingConfig?.defaultTaxRate ?? 0.05;
+
+        const effectiveCost = importPrice > 0 ? importPrice / (1 - lossRate) : 0;
+        const netPrice = manualPrice / (1 + taxRate);
+        const profitAmount = netPrice - effectiveCost;
+        const margin = netPrice > 0 ? (profitAmount / netPrice) * 100 : 0;
+
+        return margin < 5 || margin > 60;
+      });
+
+      if (invalidMarginItem) {
+        toast.error(`Sản phẩm "${invalidMarginItem.productName}" có mức lãi thực tế từ giá thủ công phải nằm trong khoảng 5% - 60%`);
         return;
       }
     }
@@ -496,6 +522,9 @@ function ImportContent() {
                                 {(item.importPrice as any) !== '' && Number(item.importPrice) < 1000 && (
                                   <p className="text-[9px] font-bold text-red-500 uppercase ml-2 mt-1 italic">Tối thiểu 1.000đ</p>
                                 )}
+                                {(item.importPrice as any) !== '' && Number(item.importPrice) > 3000000 && (
+                                  <p className="text-[9px] font-bold text-red-500 uppercase ml-2 mt-1 italic">Tối đa 3.000.000đ</p>
+                                )}
                               </div>
 
                               <div className="space-y-1">
@@ -513,6 +542,24 @@ function ImportContent() {
                                   className="h-10 w-full rounded-xl bg-gray-50 border-gray-100 text-right font-black text-sm text-primary px-3 focus:bg-white focus:ring-primary"
                                   placeholder='Để trống để dùng giá gợi ý'
                                 />
+                                {(() => {
+                                  if ((item.manualPrice as any) === '' || item.manualPrice === undefined) return null;
+                                  const manualVal = Number(item.manualPrice);
+                                  if (manualVal < 1000) return <p className="text-[9px] font-bold text-red-500 uppercase ml-2 mt-1 italic">Tối thiểu 1.000đ</p>;
+                                  if (manualVal > 3000000) return <p className="text-[9px] font-bold text-red-500 uppercase ml-2 mt-1 italic">Tối đa 3.000.000đ</p>;
+
+                                  const importPrice = Number(item.importPrice || 0);
+                                  const lossRate = pricingConfig?.defaultLossRate ?? 0.05;
+                                  const taxRate = pricingConfig?.defaultTaxRate ?? 0.05;
+                                  const effectiveCost = importPrice > 0 ? importPrice / (1 - lossRate) : 0;
+                                  const netPrice = manualVal / (1 + taxRate);
+                                  const profitAmount = netPrice - effectiveCost;
+                                  const margin = netPrice > 0 ? (profitAmount / netPrice) * 100 : 0;
+
+                                  if (margin < 5) return <p className="text-[9px] font-bold text-red-500 uppercase ml-2 mt-1 italic">Cảnh báo: Lãi quá thấp (&lt; 5%)</p>;
+                                  if (margin > 60) return <p className="text-[9px] font-bold text-red-500 uppercase ml-2 mt-1 italic">Cảnh báo: Lãi quá cao (&gt; 60%)</p>;
+                                  return null;
+                                })()}
                               </div>
 
                               <div className="space-y-1">
@@ -537,10 +584,11 @@ function ImportContent() {
                                           const taxAmount = manualPrice - netPrice;
                                           const profitAmount = netPrice - effectiveCost;
                                           const actualMarginPercent = netPrice > 0 ? Math.round((profitAmount / netPrice) * 100) : 0;
+                                          const isInvalidMargin = actualMarginPercent < 5 || actualMarginPercent > 60;
 
                                           return (
                                             <div className="space-y-3">
-                                              <h4 className="font-black text-[11px] text-emerald-700 uppercase tracking-widest border-b border-emerald-100 pb-2">Bóc tách giá bán thủ công</h4>
+                                              <h4 className="font-black text-[11px] text-emerald-700 uppercase tracking-widest border-b border-emerald-100 pb-2">Chi tiết giá bán</h4>
                                               <div className="space-y-2">
                                                 <div className="flex justify-between text-[11px]">
                                                   <span className="text-gray-400 font-bold">1. Giá gốc nhập:</span>
@@ -550,7 +598,7 @@ function ImportContent() {
                                                   <span className="text-gray-400 font-bold">2. Hao hụt ({Math.round(lossRate * 100)}%):</span>
                                                   <span className="font-black text-orange-400">+{Math.round(lossAmount).toLocaleString()}đ</span>
                                                 </div>
-                                                <div className="flex justify-between text-[11px] text-green-600">
+                                                <div className={cn("flex justify-between text-[11px]", isInvalidMargin ? "text-red-600 font-black" : "text-green-600")}>
                                                   <span className="font-bold">3. Lãi thực tế ({actualMarginPercent}%):</span>
                                                   <span className="font-black">+{Math.round(profitAmount).toLocaleString()}đ</span>
                                                 </div>
@@ -559,6 +607,11 @@ function ImportContent() {
                                                   <span className="font-black">+{Math.round(taxAmount).toLocaleString()}đ</span>
                                                 </div>
                                               </div>
+                                              {isInvalidMargin && (
+                                                <p className="text-[9px] font-bold text-red-500 uppercase bg-red-50 p-2 rounded-xl border border-red-100 text-center">
+                                                  ⚠️ Tỷ lệ lãi thực tế ({actualMarginPercent}%) phải từ 5% đến 60%
+                                                </p>
+                                              )}
                                               <div className="bg-emerald-50 p-2.5 rounded-xl flex justify-between items-center border border-emerald-100">
                                                 <span className="text-[10px] font-black text-emerald-600 uppercase">Giá bán ấn định:</span>
                                                 <span className="text-base font-black text-emerald-700">{manualPrice.toLocaleString()}đ</span>

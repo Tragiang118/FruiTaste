@@ -216,6 +216,8 @@ export default function AdminProductsPage() {
       newErrors.price = 'Giá không được để trống';
     } else if (Number(editingProduct.price) < 1000) {
       newErrors.price = 'Giá phải từ 1,000 VNĐ';
+    } else if (Number(editingProduct.price) > 3000000) {
+      newErrors.price = 'Giá tối đa 3,000,000 VNĐ';
     }
 
     if (!editingProduct.unit?.trim()) newErrors.unit = 'Đơn vị không được để trống';
