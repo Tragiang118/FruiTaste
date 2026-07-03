@@ -131,7 +131,7 @@ export class PricingService {
         profitAmount,
         taxAmount,
         grossPrice,
-        profitMargin: safeProfitMargin * 100
+        profitMargin: profitMargin * 100
       }
     };
   }
