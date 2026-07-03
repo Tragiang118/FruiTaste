@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/componen
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogAction, AlertDialogCancel } from '@/components/ui/alert-dialog';
 import { CreditCard, ChevronRight, PackageCheck, ShoppingBag, Loader2, Clock } from 'lucide-react';
+import { Spinner } from '@/components/ui/spinner';
 import Link from 'next/link';
 import AddressSection from '@/components/checkout/AddressSection';
 import BackButton from '@/components/BackButton';
@@ -29,7 +30,7 @@ const DEFAULT_PRODUCT_IMAGE =
 
 export default function CheckoutPage() {
   const { user, isAuthenticated, isLoading } = useAuthStore();
-  const { items: allItems, removeItem, selectedIds, setSelectedIds } = useCartStore();
+  const { items: allItems, removeItem, clearCart, selectedIds, setSelectedIds } = useCartStore();
   const searchParams = useSearchParams();
   const buyNowId = searchParams.get('buyNow');
   const buyNowQty = Number(searchParams.get('qty')) || 1;
@@ -51,6 +52,7 @@ export default function CheckoutPage() {
   const [paymentMethod, setPaymentMethod] = useState('COD');
   const [transferContent, setTransferContent] = useState('THANH TOAN FRUIT');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
 
   const isOffHours = () => {
     const hour = new Date().getHours();
@@ -157,6 +159,14 @@ export default function CheckoutPage() {
     }
   }, [items, isLoading, isAuthenticated, router]);
 
+  if (isSuccess) {
+    return (
+      <div className="min-h-screen bg-[#F6FBF6] flex items-center justify-center">
+        <Spinner className="w-10 h-10 text-primary" />
+      </div>
+    );
+  }
+
   if (isLoading || !isAuthenticated || (isBuyNow && buyNowLoading)) {
     return <div className="min-h-screen flex items-center justify-center text-gray-500 font-medium">Đang kiểm tra thông tin...</div>;
   }
@@ -229,10 +239,17 @@ export default function CheckoutPage() {
 
       // Chỉ xóa sản phẩm khỏi giỏ khi thanh toán từ giỏ hàng
       if (!isBuyNow) {
-        for (const item of items) {
-          await removeItem(item.id);
+        setIsSuccess(true);
+        if (items.length === allItems.length) {
+          await clearCart();
+        } else {
+          for (const item of items) {
+            await removeItem(item.id);
+          }
         }
         setSelectedIds([]);
+      } else {
+        setIsSuccess(true);
       }
 
       router.push('/checkout/success?orderId=' + order.id);
