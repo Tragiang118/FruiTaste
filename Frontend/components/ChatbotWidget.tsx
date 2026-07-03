@@ -38,8 +38,7 @@ const ChatOrderCard = ({ id, status, finalAmount, createdAt }: { id: number, sta
   return (
     <div className="flex flex-col gap-2.5 bg-white p-3 rounded-xl border border-gray-100 shadow-sm cursor-default" style={{ maxWidth: '280px', fontFamily: 'sans-serif', width: '100%', marginBottom: '2px' }}>
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-1.5">
-          <span className="text-sm">📦</span>
+        <div className="flex items-center">
           <span className="font-extrabold text-xs text-gray-900">Đơn hàng #{id}</span>
         </div>
         <span

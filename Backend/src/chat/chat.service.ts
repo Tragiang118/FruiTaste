@@ -54,7 +54,7 @@ export class ChatService {
     let detailedProductsContext = "";
     let productTags = "";
 
-    const topProducts = matchedProducts.slice(0, 4); // Lấy tối đa 4 sản phẩm khớp nhất
+    const topProducts = matchedProducts.slice(0, 5); // Lấy tối đa 5 sản phẩm khớp nhất
     if (topProducts.length > 0) {
       detailedProductsContext = `THÔNG TIN CHI TIẾT SẢN PHẨM KHỚP VỚI CÂU HỎI:\n` +
         topProducts.map((p: any) =>
