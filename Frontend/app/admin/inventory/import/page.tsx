@@ -609,11 +609,11 @@ function ImportContent() {
                                               </div>
                                               {isInvalidMargin && (
                                                 <p className="text-[9px] font-bold text-red-500 uppercase bg-red-50 p-2 rounded-xl border border-red-100 text-center">
-                                                  ⚠️ Tỷ lệ lãi thực tế ({actualMarginPercent}%) phải từ 5% đến 60%
+                                                  Tỷ lệ lãi thực tế ({actualMarginPercent}%) chỉ từ 5% đến 60%
                                                 </p>
                                               )}
                                               <div className="bg-emerald-50 p-2.5 rounded-xl flex justify-between items-center border border-emerald-100">
-                                                <span className="text-[10px] font-black text-emerald-600 uppercase">Giá bán ấn định:</span>
+                                                <span className="text-[10px] font-black text-emerald-600">GIÁ BÁN THỦ CÔNG:</span>
                                                 <span className="text-base font-black text-emerald-700">{manualPrice.toLocaleString()}đ</span>
                                               </div>
                                             </div>
