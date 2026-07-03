@@ -72,8 +72,6 @@ export class PricingService {
       manualPrice
     } = dto;
 
-    // Thuế suất GTGT — lấy từ cấu hình DB, admin có thể cập nhật khi pháp luật thay đổi
-    const taxRate = config.defaultTaxRate ?? 0.05;
     // Hao hụt: dùng giá trị riêng của sản phẩm nếu có, ngược lại dùng mặc định toàn hệ thống
     const lossRate = customLossRate ?? config.defaultLossRate ?? 0.05;
     // Lợi nhuận: dùng giá trị riêng của sản phẩm nếu có, ngược lại dùng mặc định toàn hệ thống
@@ -83,9 +81,7 @@ export class PricingService {
     if (manualPrice && manualPrice > 0) {
       const effectiveCost = costPrice / (1 - lossRate);
       const lossAmount = effectiveCost - costPrice;
-      const netPrice = manualPrice / (1 + taxRate);
-      const taxAmount = manualPrice - netPrice;
-      const profitAmount = netPrice - effectiveCost;
+      const profitAmount = manualPrice - effectiveCost;
 
       return {
         suggestedPrice: manualPrice,
@@ -94,31 +90,23 @@ export class PricingService {
           costPrice,
           effectiveCost,
           lossAmount,
-          netPrice,
           profitAmount,
-          taxAmount,
-          profitMargin: netPrice > 0 ? (profitAmount / netPrice) * 100 : 0
+          profitMargin: effectiveCost > 0 ? (profitAmount / effectiveCost) * 100 : 0
         }
       };
     }
 
-    // 2. Tính toán tự động theo công thức Margin Pricing chuẩn
-    // Bước 1: Tính giá vốn thực tế sau hao hụt
+    // 2. Tính toán tự động theo công thức Hộ kinh doanh cá thể (Bỏ VAT)
+    // Bước 1: Giá vốn thực tế sau hao hụt
     const effectiveCost = costPrice / (1 - lossRate);
     const lossAmount = effectiveCost - costPrice;
 
-    // Bước 2: Tính giá bán chưa thuế (Giá Net) theo Margin Pricing
-    const netPrice = effectiveCost / (1 - profitMargin);
-    const profitAmount = netPrice - effectiveCost;
+    // Bước 2: Giá bán dự kiến theo biên lợi nhuận
+    const rawPrice = effectiveCost * (1 + profitMargin);
+    const profitAmount = rawPrice - effectiveCost;
 
-    // Bước 3: Tính tiền thuế VAT
-    const taxAmount = netPrice * taxRate;
-
-    // Bước 4: Giá bán gợi ý cuối cùng (Giá Gross)
-    const grossPrice = netPrice + taxAmount;
-
-    // Làm tròn giá gợi ý đến hàng nghìn (Math.ceil(grossPrice / 1000) * 1000)
-    const suggestedPrice = Math.ceil(grossPrice / 1000) * 1000;
+    // Làm tròn giá gợi ý đến hàng nghìn (Math.ceil(rawPrice / 1000) * 1000)
+    const suggestedPrice = Math.ceil(rawPrice / 1000) * 1000;
 
     return {
       suggestedPrice,
@@ -127,10 +115,7 @@ export class PricingService {
         costPrice,
         effectiveCost,
         lossAmount,
-        netPrice,
         profitAmount,
-        taxAmount,
-        grossPrice,
         profitMargin: profitMargin * 100
       }
     };
