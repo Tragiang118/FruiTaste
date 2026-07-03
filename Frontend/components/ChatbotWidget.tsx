@@ -9,7 +9,9 @@ import {
   User,
   X,
   Plus,
+  ChevronRight,
 } from "lucide-react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { Streamdown } from "streamdown";
@@ -20,6 +22,51 @@ import api from "@/lib/axios";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const BACKEND_API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+
+const ChatOrderCard = ({ id, status, finalAmount, createdAt }: { id: number, status: string, finalAmount: number, createdAt?: string }) => {
+  const statusConfig: Record<string, { label: string, color: string, bg: string }> = {
+    PENDING: { label: 'Chờ xác nhận', color: '#f97316', bg: '#fff7ed' },
+    CONFIRMED: { label: 'Đã xác nhận', color: '#2563eb', bg: '#eff6ff' },
+    PREPARING: { label: 'Đang chuẩn bị', color: '#8b5cf6', bg: '#f5f3ff' },
+    SHIPPING: { label: 'Đang giao hàng', color: '#0284c7', bg: '#f0f9ff' },
+    COMPLETED: { label: 'Hoàn thành', color: '#16a34a', bg: '#f0fdf4' },
+    CANCELLED: { label: 'Đã hủy', color: '#dc2626', bg: '#fef2f2' },
+  };
+
+  const currentStatus = statusConfig[status] || { label: status, color: '#4b5563', bg: '#f3f4f6' };
+
+  return (
+    <div className="flex flex-col gap-2.5 bg-white p-3 rounded-xl border border-gray-100 shadow-sm cursor-default" style={{ maxWidth: '280px', fontFamily: 'sans-serif', width: '100%', marginBottom: '2px' }}>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-1.5">
+          <span className="text-sm">📦</span>
+          <span className="font-extrabold text-xs text-gray-900">Đơn hàng #{id}</span>
+        </div>
+        <span
+          className="text-[10px] font-bold px-2.5 py-0.5 rounded-full"
+          style={{ color: currentStatus.color, backgroundColor: currentStatus.bg }}
+        >
+          {currentStatus.label}
+        </span>
+      </div>
+
+      <div className="flex items-center justify-between text-xs pt-1.5 border-t border-gray-50">
+        <div>
+          <span className="text-[9px] text-gray-400 font-medium block">Thành tiền</span>
+          <span className="font-extrabold text-xs text-[#FF6B4A]">
+            {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(finalAmount)}
+          </span>
+        </div>
+        <Link
+          href={`/orders/${id}`}
+          className="text-[11px] font-bold text-gray-700 bg-gray-50 hover:bg-[#FF6B4A] hover:text-white px-2.5 py-1.5 rounded-lg transition-all no-underline flex items-center gap-0.5 border border-gray-100"
+        >
+          Xem chi tiết <ChevronRight size={12} />
+        </Link>
+      </div>
+    </div>
+  );
+};
 
 const ChatProductCard = ({ id, name, price, unit = "kg", stock = 0 }: { id: number, name: string, price: number, unit?: string, stock?: number }) => {
   const { addItem } = useCartStore();
@@ -408,6 +455,7 @@ type ChatMsg = {
   role: "user" | "assistant";
   text: string;
   products?: any[];
+  orderCards?: any[];
   orderForm?: {
     items: Array<{ productId: number; quantity: number }>;
   };
@@ -473,7 +521,7 @@ export default function ChatbotWidget() {
 
     const userMsg: ChatMsg = { id: Date.now().toString(), role: "user", text: text.trim() };
     const assistantId = (Date.now() + 1).toString();
-    const assistantMsg: ChatMsg = { id: assistantId, role: "assistant", text: "", products: [] };
+    const assistantMsg: ChatMsg = { id: assistantId, role: "assistant", text: "", products: [], orderCards: [] };
 
     setMessages((prev) => [...prev, userMsg, assistantMsg]);
     setIsBusy(true);
@@ -514,6 +562,18 @@ export default function ChatbotWidget() {
           }
         }
 
+        // Parse order cards từ tag [ORDER_CARD:id:status:finalAmount:createdAt]
+        const orderCards: any[] = [];
+        const orderCardRegex = /\[ORDER_CARD:\s*([^:]+)\s*:\s*([^:]+)\s*:\s*([^:]+)\s*:\s*([^\]]+)\]/gi;
+        const orderMatches = Array.from(fullText.matchAll(orderCardRegex));
+        for (const match of orderMatches) {
+          const [_, id, status, finalAmount, createdAt] = match;
+          const oId = id.trim();
+          if (!orderCards.some((o) => String(o.id) === oId)) {
+            orderCards.push({ id: oId, status: status.trim(), finalAmount: finalAmount.trim(), createdAt: createdAt.trim() });
+          }
+        }
+
         // Parse order form từ tag [ORDER_FORM:id1:qty1,id2:qty2,...]
         let orderForm: any = undefined;
         // Dùng regex không có flag g để tránh lỗi stateful lastIndex khi stream
@@ -538,6 +598,7 @@ export default function ChatbotWidget() {
         // Dọn text hiển thị
         let cleanText = fullText
           .replace(/\[PRODUCT:[^\]]*\]/gi, "")
+          .replace(/\[ORDER_CARD:[^\]]*\]/gi, "")
           .replace(/\[ORDER_FORM:[^\]]*\]/gi, "")
           .replace(/\[ADD_TO_CART:[^\]]*\]/gi, "")
           .replace(/<[^>]*>.*?<\/[^>]*>/gs, "")
@@ -545,7 +606,7 @@ export default function ChatbotWidget() {
 
         setMessages((prev) =>
           prev.map((m) =>
-            m.id === assistantId ? { ...m, text: cleanText, products, orderForm } : m
+            m.id === assistantId ? { ...m, text: cleanText, products, orderCards, orderForm } : m
           )
         );
       }
@@ -858,6 +919,20 @@ export default function ChatbotWidget() {
                           price={Number(p.price) || 0}
                           unit={p.unit}
                           stock={Number(p.stock) || 0}
+                        />
+                      ))}
+                    </div>
+                  )}
+
+                  {(message.orderCards && message.orderCards.length > 0) && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px', width: '100%' }}>
+                      {message.orderCards.map((o: any, i: number) => (
+                        <ChatOrderCard
+                          key={`${o.id}-${i}`}
+                          id={Number(o.id)}
+                          status={o.status}
+                          finalAmount={Number(o.finalAmount) || 0}
+                          createdAt={o.createdAt}
                         />
                       ))}
                     </div>

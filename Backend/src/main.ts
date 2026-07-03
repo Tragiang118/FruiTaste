@@ -1,4 +1,5 @@
 import 'dotenv/config';
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 import dns from 'dns';
 dns.setDefaultResultOrder('ipv4first');
 import { NestFactory } from '@nestjs/core';

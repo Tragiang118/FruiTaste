@@ -143,11 +143,8 @@ export default function OrderDetailPage() {
               </p>
             </div>
             <div className="text-left md:text-right flex flex-col items-start md:items-end gap-2 shrink-0">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-gray-900 px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-white shadow-sm">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-gray-900 px-3.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-white shadow-sm">
                 MÃ ĐƠN: #{order.id}
-                <div title="Sao chép" onClick={() => navigator.clipboard.writeText(order.id.toString())} className="cursor-pointer text-white/80 hover:text-white transition-colors">
-                  <Copy size={12} />
-                </div>
               </span>
               <span className="text-sm font-medium text-gray-500">{new Date(order.createdAt).toLocaleString('vi-VN')}</span>
             </div>

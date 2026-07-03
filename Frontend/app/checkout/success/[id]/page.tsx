@@ -5,14 +5,16 @@ import { useParams, useRouter } from 'next/navigation';
 import api from '@/lib/axios';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { MapPin, Package, Truck, CheckCircle2, Copy, FileText, XCircle, Home, ChevronRight, Store } from 'lucide-react';
+import { MapPin, Package, Truck, CheckCircle2, Copy, FileText, XCircle, Home, ChevronRight, Store, ShieldCheck } from 'lucide-react';
 import BackButton from '@/components/BackButton';
 import Link from 'next/link';
 import { getImageUrl } from '@/lib/utils';
+import { format } from 'date-fns';
+import { vi } from 'date-fns/locale/vi';
 
 interface OrderDetail {
   id: number;
-  status: 'PENDING' | 'CONFIRMED' | 'SHIPPING' | 'COMPLETED' | 'CANCELLED';
+  status: 'PENDING' | 'CONFIRMED' | 'PREPARING' | 'SHIPPING' | 'COMPLETED' | 'CANCELLED';
   shippingName: string;
   shippingPhone: string;
   shippingAddress: string;
@@ -66,10 +68,11 @@ export default function CheckoutSuccessDetailPage() {
   if (!order) return null;
 
   const steps = [
-    { key: 'PENDING', label: 'Chờ xác nhận', icon: <FileText className="w-6 h-6" /> },
-    { key: 'CONFIRMED', label: 'Đã xác nhận. Đang chuẩn bị hàng', icon: <Package className="w-6 h-6" /> },
-    { key: 'SHIPPING', label: 'Đang giao hàng', icon: <Truck className="w-6 h-6" /> },
-    { key: 'COMPLETED', label: 'Đã nhận được hàng', icon: <CheckCircle2 className="w-6 h-6" /> },
+    { key: 'PENDING', label: 'Chờ xác nhận', icon: <FileText className="w-6 h-6" />, time: order.createdAt },
+    { key: 'CONFIRMED', label: 'Đã xác nhận', icon: <ShieldCheck className="w-6 h-6" />, time: (order as any).confirmedAt },
+    { key: 'PREPARING', label: 'Đang chuẩn bị', icon: <Package className="w-6 h-6" />, time: (order as any).preparingAt },
+    { key: 'SHIPPING', label: 'Đang giao hàng', icon: <Truck className="w-6 h-6" />, time: (order as any).shippingAt },
+    { key: 'COMPLETED', label: 'Hoàn thành', icon: <CheckCircle2 className="w-6 h-6" />, time: (order as any).completedAt },
   ];
 
   const currentStepIndex = steps.findIndex(s => s.key === order.status);
@@ -88,48 +91,51 @@ export default function CheckoutSuccessDetailPage() {
           </div>
         </div>
 
-        <div className="space-y-4 shadow-sm pb-10 bg-white rounded-3xl overflow-hidden border border-gray-100">
-          <div className="p-6 bg-[#FFF4E6] border-b border-orange-100/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="space-y-1.5">
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="text-[#FF6B4A] w-7 h-7 shrink-0" />
-                <h1 className="text-2xl font-black text-gray-900">{isCancelled ? 'Đơn Đã Hủy' : 'Đặt hàng thành công!'}</h1>
+        <div className="shadow-sm pb-10 bg-white rounded-3xl overflow-hidden border border-gray-100">
+          {/* Header - Trạng thái & Lịch sử */}
+          <div className="px-6 py-5 md:px-8 md:py-6 bg-gradient-to-r from-white via-[#FFF8F3] to-[#FFF3ED] border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="space-y-2 max-w-xl">
+              <div className="inline-flex items-center gap-2 rounded-full bg-[#FF6B4A]/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-[#FF6B4A]">
+                Chi tiết đơn hàng
               </div>
-              <p className="text-xs text-gray-600 leading-relaxed font-medium pl-9">
-                Cảm ơn bạn đã mua sắm tại FruiTaste. Chúng tôi sẽ sớm giao hàng đến bạn!
+              <h1 className="text-2xl font-black text-gray-900">{isCancelled ? 'Đơn Đã Hủy' : 'Đang xử lý kiện hàng...'}</h1>
+              <p className="text-sm text-gray-500 leading-relaxed">
+                Cảm ơn các bạn đã mua hoa quả tại FruiTaste! Đơn hàng được đóng gói kiểm tra kĩ lưỡng nhất.
               </p>
             </div>
-            <div className="md:text-right flex flex-col md:items-end gap-1.5 pl-9 md:pl-0">
-              <span className="bg-white border border-[#FFD8CD] text-[#FF6B4A] px-3.5 py-1 rounded-full text-xs font-black uppercase shadow-sm gap-1.5 flex justify-center items-center w-fit">
+            <div className="text-left md:text-right flex flex-col items-start md:items-end gap-2 shrink-0">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-gray-900 px-3.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-white shadow-sm">
                 MÃ ĐƠN: #{order.id}
-                <div title="Sao chép" onClick={() => navigator.clipboard.writeText(order.id.toString())} className="cursor-pointer hover:text-[#E55A39] transition-colors">
-                  <Copy size={12} />
-                </div>
               </span>
-              <span className="text-xs font-medium text-gray-500">{new Date(order.createdAt).toLocaleString('vi-VN')}</span>
+              <span className="text-sm font-medium text-gray-500">{new Date(order.createdAt).toLocaleString('vi-VN')}</span>
             </div>
           </div>
 
           {!isCancelled && (
-            <div className="px-6 py-10 bg-white border-b border-gray-100 overflow-x-auto">
-              <div className="flex items-center justify-between relative min-w-[600px] max-w-3xl mx-auto">
-                <div className="absolute top-1/2 left-[10%] right-[10%] h-1 bg-gray-100 -translate-y-1/2 z-0 rounded-full" />
+            <div className="px-6 py-8 bg-white border-b border-gray-100 overflow-x-auto">
+              <div className="flex items-center justify-between relative min-w-[650px] max-w-3xl mx-auto">
+                <div className="absolute top-6 left-[10%] right-[10%] h-1 bg-gray-100 -translate-y-1/2 z-0 rounded-full" />
                 {currentStepIndex >= 0 && (
                   <div
-                    className="absolute top-1/2 left-[10%] h-1 bg-[#FF6B4A] -translate-y-1/2 z-0 rounded-full transition-all duration-1000"
+                    className="absolute top-6 left-[10%] h-1 bg-gray-900 -translate-y-1/2 z-0 rounded-full transition-all duration-1000"
                     style={{ width: `${(currentStepIndex / (steps.length - 1)) * 80}%` }}
                   />
                 )}
                 {steps.map((step, idx) => {
                   const active = idx <= currentStepIndex;
                   return (
-                    <div key={step.key} className="flex flex-col items-center gap-3 relative z-10 w-1/4">
-                      <div className={`w-12 h-12 rounded-full flex justify-center items-center font-bold outline outline-4 outline-white shadow-sm transition-colors duration-500 ${active ? 'bg-[#FF6B4A] text-white border-2 border-[#FF6B4A]' : 'bg-gray-100 text-gray-400 border border-gray-200'}`}>
+                    <div key={step.key} className="flex flex-col items-center gap-2 relative z-10 flex-1">
+                      <div className={`w-12 h-12 rounded-full flex justify-center items-center font-bold outline outline-4 outline-white shadow-sm transition-colors duration-500 ${active ? 'bg-gray-900 text-white border-2 border-gray-900' : 'bg-gray-100 text-gray-400 border border-gray-200'}`}>
                         {step.icon}
                       </div>
-                      <span className={`text-xs font-bold text-center w-full max-w-[100px] leading-tight ${active ? 'text-[#FF6B4A]' : 'text-gray-400'}`}>
+                      <span className={`text-[10px] font-bold text-center w-full max-w-[80px] leading-tight ${active ? 'text-gray-900' : 'text-gray-400'}`}>
                         {step.label}
                       </span>
+                      {step.time && (
+                        <span className="text-[9px] text-gray-400 font-medium text-center mt-0.5">
+                          {format(new Date(step.time), "HH:mm dd/MM", { locale: vi })}
+                        </span>
+                      )}
                     </div>
                   );
                 })}
