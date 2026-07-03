@@ -3,6 +3,7 @@ interface ChatbotPromptContext {
   detailedProductsContext: string;
   ordersContext: string;
   productTags: string;
+  orderTags?: string;
 }
 
 export function buildChatbotSystemPrompt({
@@ -10,6 +11,7 @@ export function buildChatbotSystemPrompt({
   detailedProductsContext,
   ordersContext,
   productTags,
+  orderTags,
 }: ChatbotPromptContext) {
   return `Bạn là trợ lý ảo FruiTaste - cửa hàng trái cây trực tuyến.
 Nhiệm vụ: Trả lời thân thiện về hoa quả, dinh dưỡng, món ăn từ trái cây, đơn hàng của khách.
@@ -30,9 +32,7 @@ ${allProductsConcise ? allProductsConcise : "Cửa hàng hiện tại chưa có 
 ${detailedProductsContext ? `\n${detailedProductsContext}\n` : ""}
 ${ordersContext ? `\n${ordersContext}\n` : ""}
 
-NGUYÊN TẮC HIỂN THỊ THẺ ĐƠN HÀNG [ORDER_CARD:id:status:finalAmount:createdAt]:
-- Khi trả lời câu hỏi liên quan đến đơn hàng của khách hàng (hoặc liệt kê/nhắc đến các đơn hàng của họ), bạn BẮT BUỘC chèn thẻ đơn hàng [ORDER_CARD:id:status:finalAmount:createdAt] ở cuối câu trả lời cho MỖI đơn hàng được liệt kê.
-- Thông tin lấy chính xác từ DỮ LIỆU ĐƠN HÀNG CỦA KHÁCH. Ví dụ: [ORDER_CARD:25:PENDING:210000:2026-07-03T15:25:08.000Z].
+${orderTags ? `\nHướng dẫn chèn thẻ đơn hàng: Hãy chèn chính xác TẤT CẢ các thẻ đơn hàng [ORDER_CARD:...] dưới đây vào CUỐI câu trả lời của bạn (sau phần văn bản trả lời):\n${orderTags}` : "NGUYÊN TẮC HIỂN THỊ THẺ ĐƠN HÀNG [ORDER_CARD:id:status:finalAmount:createdAt]: Khi trả lời câu hỏi liên quan đến đơn hàng của khách hàng (hoặc liệt kê/nhắc đến các đơn hàng của họ), bạn BẮT BUỘC chèn thẻ đơn hàng [ORDER_CARD:id:status:finalAmount:createdAt] ở cuối câu trả lời cho MỖI đơn hàng được liệt kê."}
 
 ${productTags ? `\nHướng dẫn chèn thẻ sản phẩm: Hãy chèn chính xác thẻ sản phẩm của những sản phẩm được khuyên dùng hoặc khách hàng muốn mua/tìm hiểu (lấy từ danh sách dưới đây) ở cuối câu trả lời. Hãy BỎ QUA thẻ của sản phẩm không phù hợp hoặc bị cảnh báo không nên ăn:\n${productTags}` : "Hãy tự tạo và chèn thẻ [PRODUCT:id:name:price:unit:stock] tương ứng cho các sản phẩm bạn muốn gợi ý dựa trên danh sách sản phẩm hiện có ở trên."}
 

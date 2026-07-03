@@ -68,6 +68,7 @@ export class ChatService {
 
     // Xử lý logic đơn hàng
     let ordersContext = "";
+    let orderTags = "";
     if (intent === "order" && userId) {
       try {
         const orders = await this.prisma.order.findMany({
@@ -89,6 +90,10 @@ export class ChatService {
             orders.map((o: any) =>
               `- Đơn #${o.id}: ${statusMap[o.status] || o.status}, thành tiền (đã gồm ship) ${o.finalAmount?.toLocaleString("vi-VN")} VND (tiền hàng: ${o.totalAmount?.toLocaleString("vi-VN")} VND, phí ship: ${o.shippingFee?.toLocaleString("vi-VN")} VND), ngày đặt hàng: ${new Date(o.createdAt).toLocaleDateString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" })}`
             ).join("\n");
+
+          orderTags = orders.map((o: any) =>
+            `[ORDER_CARD:${o.id}:${o.status}:${o.finalAmount}:${o.createdAt}]`
+          ).join("\n");
         } else {
           ordersContext = "DỮ LIỆU ĐƠN HÀNG: Khách hàng chưa có đơn hàng nào.";
         }
@@ -105,6 +110,7 @@ export class ChatService {
       detailedProductsContext,
       ordersContext,
       productTags,
+      orderTags,
     });
 
     const result = streamText({
