@@ -22,7 +22,29 @@ services:
     networks:
       - fruitaste-network
 
-  # 2. NestJS Backend Service
+  # 2. pgAdmin Database UI
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: fruitaste-pgadmin
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@fruitaste.com
+      PGADMIN_DEFAULT_PASSWORD: "123456"
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+      PGADMIN_REPLACE_SERVERS_ON_STARTUP: 'True'
+      PGPASS_FILE: /pgadmin4/pgpass
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres-db
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+      - ./pgadmin/servers.json:/pgadmin4/servers.json:ro
+      - ./pgadmin/pgpass:/pgadmin4/pgpass:ro
+    networks:
+      - fruitaste-network
+
+  # 3. NestJS Backend Service
   backend-service:
     build:
       context: ./Backend
@@ -42,7 +64,7 @@ services:
     networks:
       - fruitaste-network
 
-  # 3. Next.js Frontend Service
+  # 4. Next.js Frontend Service
   frontend-service:
     build:
       context: ./Frontend
@@ -66,6 +88,8 @@ services:
 
 volumes:
   postgres_data:
+    driver: local
+  pgadmin_data:
     driver: local
 
 networks:

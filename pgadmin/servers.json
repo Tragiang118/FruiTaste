@@ -1,0 +1,13 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "Fruitaste PostgreSQL",
+      "Group": "Servers",
+      "Host": "postgres-db",
+      "Port": 5432,
+      "MaintenanceDB": "fruitaste",
+      "Username": "admin",
+      "SSLMode": "prefer"
+    }
+  }
+}

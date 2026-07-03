@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CalculatePricingDto, UpdatePricingConfigDto } from './dto/pricing.dto';
 
@@ -56,60 +56,82 @@ export class PricingService {
   }
 
   /**
-   * Tính toán giá bán dựa trên cấu hình
+   * Tính toán giá bán dựa trên công thức Biên lợi nhuận gộp (Margin Pricing) chuẩn bán lẻ
+   * - Thuế VAT: Lấy từ cấu hình DB (defaultTaxRate) — có thể thay đổi theo quy định pháp luật
+   * - Bước 1: Giá vốn thực tế = Giá nhập / (1 - Tỷ lệ hao hụt)
+   * - Bước 2: Giá bán chưa thuế (Net) = Giá vốn thực tế / (1 - Biên lợi nhuận mong muốn)
+   * - Bước 3: Tiền thuế VAT = Giá bán chưa thuế × thuế suất
+   * - Bước 4: Giá bán gợi ý (Gross) = Giá bán chưa thuế + Tiền thuế (Làm tròn lên hàng 1.000đ)
    */
   async calculatePrice(dto: CalculatePricingDto) {
     const config = await this.getConfig();
     const {
       costPrice,
-      lossRate = 0.05,
+      lossRate: customLossRate,
       customProfitMargin,
       manualPrice
     } = dto;
 
-    const taxRate = config.defaultTaxRate;
-    const profitMargin = customProfitMargin ?? config.defaultProfitMargin;
+    // Thuế suất GTGT — lấy từ cấu hình DB, admin có thể cập nhật khi pháp luật thay đổi
+    const taxRate = config.defaultTaxRate ?? 0.05;
+    // Hao hụt: dùng giá trị riêng của sản phẩm nếu có, ngược lại dùng mặc định toàn hệ thống
+    const lossRate = customLossRate ?? config.defaultLossRate ?? 0.05;
+    // Lợi nhuận: dùng giá trị riêng của sản phẩm nếu có, ngược lại dùng mặc định toàn hệ thống
+    const profitMargin = customProfitMargin ?? config.defaultProfitMargin ?? 0.30;
 
-    // 1. Nếu nhập giá thủ công
+    // 1. Trường hợp nhập giá thủ công
     if (manualPrice && manualPrice > 0) {
-      // Tính toán breakdown dựa trên giá thủ công
-      const taxes = manualPrice * taxRate;
-      const profit = manualPrice - (costPrice / (1 - lossRate)) - taxes;
-      
+      const effectiveCost = costPrice / (1 - lossRate);
+      const lossAmount = effectiveCost - costPrice;
+      const netPrice = manualPrice / (1 + taxRate);
+      const taxAmount = manualPrice - netPrice;
+      const profitAmount = netPrice - effectiveCost;
+
       return {
         suggestedPrice: manualPrice,
         isManual: true,
         breakdown: {
-          effectiveCost: costPrice / (1 - lossRate),
-          taxes,
-          actualProfit: profit,
-          profitMargin: (profit / manualPrice) * 100
+          costPrice,
+          effectiveCost,
+          lossAmount,
+          netPrice,
+          profitAmount,
+          taxAmount,
+          profitMargin: netPrice > 0 ? (profitAmount / netPrice) * 100 : 0
         }
       };
     }
 
-    // 2. Tính toán tự động theo công thức Margin-based
-    // S = EC / (1 - (ProfitMargin + TaxRate))
+    // 2. Tính toán tự động theo công thức Margin Pricing chuẩn
+    // Bước 1: Tính giá vốn thực tế sau hao hụt
     const effectiveCost = costPrice / (1 - lossRate);
-    const totalVariableRates = profitMargin + taxRate;
+    const lossAmount = effectiveCost - costPrice;
 
-    if (totalVariableRates >= 1) {
-      throw new BadRequestException('Tổng tỷ lệ lợi nhuận và thuế không được vượt quá 100%');
-    }
+    // Bước 2: Tính giá bán chưa thuế (Giá Net) theo Margin Pricing
+    const netPrice = effectiveCost / (1 - profitMargin);
+    const profitAmount = netPrice - effectiveCost;
 
-    let suggestedPrice = effectiveCost / (1 - totalVariableRates);
+    // Bước 3: Tính tiền thuế VAT
+    const taxAmount = netPrice * taxRate;
 
-    // Làm tròn giá đến hàng nghìn gần nhất
-    suggestedPrice = Math.ceil(suggestedPrice / 1000) * 1000;
+    // Bước 4: Giá bán gợi ý cuối cùng (Giá Gross)
+    const grossPrice = netPrice + taxAmount;
+
+    // Làm tròn giá gợi ý đến hàng nghìn (Math.ceil(grossPrice / 1000) * 1000)
+    const suggestedPrice = Math.ceil(grossPrice / 1000) * 1000;
 
     return {
       suggestedPrice,
       isManual: false,
       breakdown: {
+        costPrice,
         effectiveCost,
-        taxes: suggestedPrice * taxRate,
-        expectedProfit: suggestedPrice * profitMargin,
-        profitMargin: profitMargin * 100
+        lossAmount,
+        netPrice,
+        profitAmount,
+        taxAmount,
+        grossPrice,
+        profitMargin: safeProfitMargin * 100
       }
     };
   }
@@ -126,15 +148,15 @@ export class PricingService {
       create: {
         productId,
         costPrice: dto.costPrice,
-        lossRate: dto.lossRate,
-        customProfitMargin: dto.customProfitMargin,
-        manualPrice: dto.manualPrice
+        lossRate: dto.lossRate ?? null,         // null = dùng defaultLossRate
+        customProfitMargin: dto.customProfitMargin ?? null, // null = dùng defaultProfitMargin
+        manualPrice: dto.manualPrice && dto.manualPrice > 0 ? dto.manualPrice : null
       },
       update: {
         costPrice: dto.costPrice,
-        lossRate: dto.lossRate,
-        customProfitMargin: dto.customProfitMargin,
-        manualPrice: dto.manualPrice
+        lossRate: dto.lossRate ?? null,
+        customProfitMargin: dto.customProfitMargin ?? null,
+        manualPrice: dto.manualPrice && dto.manualPrice > 0 ? dto.manualPrice : null
       }
     });
 

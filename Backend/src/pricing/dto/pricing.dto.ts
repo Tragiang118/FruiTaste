@@ -12,15 +12,13 @@ export class CalculatePricingDto {
   @Min(0)
   @Max(1)
   @IsOptional()
-  lossRate?: number;
-
-
+  lossRate?: number; // Ghi đè per-product (null = dùng defaultLossRate)
 
   @IsNumber()
   @Min(0)
   @Max(1)
   @IsOptional()
-  customProfitMargin?: number;
+  customProfitMargin?: number; // Ghi đè per-product (null = dùng defaultProfitMargin)
 
   @IsNumber()
   @IsOptional()
@@ -42,11 +40,7 @@ export class UpdatePricingConfigDto {
 
   @IsNumber()
   @Min(0)
+  @Max(1)
   @IsOptional()
-  minProfitMargin?: number;
-
-  @IsNumber()
-  @Min(0)
-  @IsOptional()
-  maxProfitMargin?: number;
+  defaultLossRate?: number; // Hao hụt mặc định toàn hệ thống
 }

@@ -140,11 +140,9 @@ model Inventory {
 
 model PricingConfig {
   id                  Int      @id @default(1)
-  defaultTaxRate      Float    @default(0.08)  // 8% VAT
-  defaultProfitMargin Float    @default(0.20)  // 20% lợi nhuận mặc định
-  
-  minProfitMargin     Float    @default(0.05)  // Cảnh báo nếu lãi dưới 5%
-  maxProfitMargin     Float    @default(1.00)
+  defaultTaxRate      Float    @default(0.05)  // 5% VAT
+  defaultProfitMargin Float    @default(0.30)  // 30% lợi nhuận mặc định
+  defaultLossRate     Float    @default(0.05)  // 5% hao hụt mặc định
 
   updatedAt           DateTime @updatedAt
 }
@@ -154,9 +152,9 @@ model ProductPricing {
   product             Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   
   costPrice           Float    @default(0)     // Giá nhập gần nhất
-  lossRate            Float    @default(0.05)  // % hao hụt (0.05 = 5%)
+  lossRate            Float?                   // Ghi đè hao hụt riêng cho SP này (null = dùng defaultLossRate)
 
-  customProfitMargin  Float?                   // Ghi đè lợi nhuận riêng cho SP này
+  customProfitMargin  Float?                   // Ghi đè lợi nhuận riêng cho SP này (null = dùng defaultProfitMargin)
   manualPrice         Float?                   // Giá bán thủ công (nếu có sẽ ưu tiên dùng)
 
   updatedAt           DateTime @updatedAt

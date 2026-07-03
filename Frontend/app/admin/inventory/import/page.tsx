@@ -61,6 +61,7 @@ interface ImportItem {
   productImage: string;
   quantity: number;
   importPrice: number;
+  manualPrice?: number | '';
   unit: string;
   suggestedPrice: number;
   product?: any;
@@ -105,12 +106,13 @@ function ImportContent() {
             const defaultImportPrice = Math.round(product.price * 0.7);
             
             const lossRate = 0.05;
-            const taxRate = configRes.data.defaultTaxRate || 0.08;
-            const profitMargin = configRes.data.defaultProfitMargin || 0.20;
+            const taxRate = 0.05; // 5% thuế GTGT bán lẻ nông sản
+            const profitMargin = configRes.data.defaultProfitMargin || 0.30;
 
             const effectiveCost = defaultImportPrice / (1 - lossRate);
-            const suggested = effectiveCost / (1 - (profitMargin + taxRate));
-            const finalSuggested = Math.ceil(suggested / 1000) * 1000;
+            const netPrice = effectiveCost / (1 - profitMargin);
+            const grossPrice = netPrice + (netPrice * taxRate);
+            const finalSuggested = Math.ceil(grossPrice / 1000) * 1000;
 
             setImportItems([{
               productId: product.id,
@@ -118,6 +120,7 @@ function ImportContent() {
               productImage: product.mediaUrls?.[0] || '',
               quantity: 1,
               importPrice: defaultImportPrice,
+              manualPrice: '',
               unit: product.unit,
               suggestedPrice: finalSuggested,
               product: product
@@ -132,18 +135,23 @@ function ImportContent() {
     fetchData();
   }, [preSelectedProductId]);
 
-  const calculateSuggestedPrice = (importPrice: number) => {
-    if (!pricingConfig) return 0;
+  const calculateSuggestedPrice = (importPrice: number, manualPrice?: number | '') => {
+    if (manualPrice && Number(manualPrice) > 0) return Number(manualPrice);
+    if (!importPrice || importPrice <= 0) return 0;
     
     const lossRate = 0.05; // 5% hao hụt
-    const taxRate = pricingConfig.defaultTaxRate || 0.08; // 8% thuế
-    const profitMargin = pricingConfig.defaultProfitMargin || 0.20; // 20% lãi
+    const taxRate = 0.05; // 5% thuế GTGT bán lẻ nông sản
+    const profitMargin = pricingConfig?.defaultProfitMargin || 0.30; // 30% lợi nhuận mong muốn
 
+    // Bước 1: Giá vốn sau hao hụt
     const effectiveCost = importPrice / (1 - lossRate);
-    const totalVariableRates = profitMargin + taxRate;
-    
-    let suggested = effectiveCost / (1 - totalVariableRates);
-    return Math.ceil(suggested / 1000) * 1000; // Làm tròn lên hàng nghìn
+    // Bước 2: Giá bán chưa thuế (Net Price) theo Margin Pricing
+    const netPrice = effectiveCost / (1 - profitMargin);
+    // Bước 3: Thuế VAT (5%)
+    const taxAmount = netPrice * taxRate;
+    // Bước 4: Giá bán gợi ý (Gross Price) & Làm tròn lên hàng nghìn
+    const grossPrice = netPrice + taxAmount;
+    return Math.ceil(grossPrice / 1000) * 1000;
   };
 
   const addItem = (product: Product) => {
@@ -160,6 +168,7 @@ function ImportContent() {
       productImage: product.mediaUrls?.[0] || '',
       quantity: 1,
       importPrice: defaultImportPrice,
+      manualPrice: '',
       unit: product.unit,
       suggestedPrice: calculateSuggestedPrice(defaultImportPrice),
       product: product
@@ -191,7 +200,18 @@ function ImportContent() {
           } else {
              const price = parseInt(value) || 0;
              updatedItem.importPrice = Math.max(0, price);
-             updatedItem.suggestedPrice = calculateSuggestedPrice(updatedItem.importPrice);
+             updatedItem.suggestedPrice = calculateSuggestedPrice(updatedItem.importPrice, updatedItem.manualPrice);
+          }
+        }
+
+        if (field === 'manualPrice') {
+          if (value === '') {
+            updatedItem.manualPrice = '';
+            updatedItem.suggestedPrice = calculateSuggestedPrice(Number(updatedItem.importPrice || 0), '');
+          } else {
+            const price = parseInt(value) || 0;
+            updatedItem.manualPrice = Math.max(0, price);
+            updatedItem.suggestedPrice = calculateSuggestedPrice(Number(updatedItem.importPrice || 0), updatedItem.manualPrice);
           }
         }
         
@@ -270,7 +290,8 @@ function ImportContent() {
            await api.post(`/pricing/apply/${item.productId}`, {
              productId: item.productId,
              costPrice: Number(item.importPrice),
-             lossRate: 0.05
+             lossRate: 0.05,
+             manualPrice: item.manualPrice && Number(item.manualPrice) > 0 ? Number(item.manualPrice) : undefined
            });
         }
         toast.success('Nhập kho và cập nhật giá thành công!');
@@ -457,7 +478,7 @@ function ImportContent() {
                              </div>
                              
                              {type === 'import' && (
-                               <div className="grid grid-cols-2 gap-3 sm:gap-4 pt-2.5 border-t border-gray-50">
+                               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 pt-2.5 border-t border-gray-50">
                                    <div className="space-y-1">
                                       <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 block">Giá nhập (đ)</label>
                                       <Input 
@@ -478,43 +499,93 @@ function ImportContent() {
                                    </div>
 
                                    <div className="space-y-1">
+                                      <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 block">Manual Price (đ)</label>
+                                      <Input 
+                                        type="text" 
+                                        value={(item.manualPrice as any) !== '' ? Number(item.manualPrice).toLocaleString('vi-VN') : ''}
+                                        onChange={(e) => {
+                                          const val = e.target.value.replace(/\./g, '');
+                                          if (val === '' || /^\d+$/.test(val)) {
+                                            updateItem(item.productId, 'manualPrice', val === '' ? '' : Number(val));
+                                          }
+                                        }}
+                                        onBlur={(e) => { if (e.target.value === '') updateItem(item.productId, 'manualPrice', ''); }}
+                                        className="h-10 w-full rounded-xl bg-gray-50 border-gray-100 text-right font-black text-sm text-primary px-3 focus:bg-white focus:ring-primary"
+                                        placeholder="Để trống để tự tính"
+                                      />
+                                      {(item.manualPrice as any) !== '' && Number(item.manualPrice) > 0 && (
+                                        <p className="text-[9px] font-bold text-emerald-500 uppercase ml-2 mt-1 italic">Đang dùng giá nhập tay</p>
+                                      )}
+                                   </div>
+
+                                   <div className="space-y-1">
                                       <label className="text-[10px] font-black text-amber-500 uppercase tracking-widest ml-1 flex items-center gap-1">
                                         <Calculator size={10} /> <span>Gợi ý</span>
                                         <Popover>
                                           <PopoverTrigger asChild>
                                              <button className="text-amber-400 hover:text-amber-600 transition-colors"><Info size={11} /></button>
                                           </PopoverTrigger>
-                                          <PopoverContent className="w-64 p-4 rounded-2xl shadow-2xl border-amber-50 bg-white" align="end">
-                                             <div className="space-y-3">
-                                                <h4 className="font-black text-[11px] text-gray-900 uppercase tracking-widest border-b pb-2">Phân bổ giá bán chi tiết</h4>
-                                                <div className="space-y-2">
-                                                   <div className="flex justify-between text-[11px]">
-                                                      <span className="text-gray-400 font-bold">1. Giá gốc nhập:</span>
-                                                      <span className="font-black text-gray-600">{Number(item.importPrice || 0).toLocaleString()}đ</span>
-                                                   </div>
-                                                   <div className="flex justify-between text-[11px]">
-                                                      <span className="text-gray-400 font-bold">2. Hao hụt (5%):</span>
-                                                      <span className="font-black text-orange-400">+{Math.round(Number(item.importPrice || 0) * 0.05).toLocaleString()}đ</span>
-                                                   </div>
-                                                   <div className="flex justify-between text-[11px] text-green-600">
-                                                      <span className="font-bold">3. Lãi (20%):</span>
-                                                      <span className="font-black">+{Math.round(item.suggestedPrice * 0.2).toLocaleString()}đ</span>
-                                                   </div>
-                                                   <div className="flex justify-between text-[11px] text-red-400">
-                                                      <span className="font-bold">4. Thuế (8%):</span>
-                                                      <span className="font-black">+{Math.round(item.suggestedPrice * 0.08).toLocaleString()}đ</span>
-                                                   </div>
-                                                </div>
-                                                <div className="bg-amber-50 p-2.5 rounded-xl flex justify-between items-center mt-1 border border-amber-100">
-                                                   <span className="text-[10px] font-black text-amber-600 uppercase">GIÁ BÁN GỢI Ý:</span>
-                                                   <span className="text-base font-black text-amber-700">{item.suggestedPrice.toLocaleString()}đ</span>
-                                                </div>
-                                             </div>
+                                          <PopoverContent className="w-72 p-4 rounded-2xl shadow-2xl border-amber-50 bg-white" align="end">
+                                           {(() => {
+                                             const importPrice = Number(item.importPrice || 0);
+                                             const manualPrice = Number(item.manualPrice || 0);
+                                             const lossRate = 0.05;
+                                             const taxRate = 0.05;
+                                             const profitMargin = 0.30;
+
+                                             if (manualPrice > 0) {
+                                               return (
+                                                 <div className="space-y-3">
+                                                    <h4 className="font-black text-[11px] text-gray-900 uppercase tracking-widest border-b pb-2">Giá bán thủ công</h4>
+                                                    <div className="bg-emerald-50 p-2.5 rounded-xl flex justify-between items-center border border-emerald-100">
+                                                       <span className="text-[10px] font-black text-emerald-600 uppercase">MANUAL PRICE:</span>
+                                                       <span className="text-base font-black text-emerald-700">{manualPrice.toLocaleString()}đ</span>
+                                                    </div>
+                                                 </div>
+                                               );
+                                             }
+
+                                             const effectiveCost = importPrice > 0 ? importPrice / (1 - lossRate) : 0;
+                                             const lossAmount = effectiveCost - importPrice;
+                                             const netPrice = effectiveCost > 0 ? effectiveCost / (1 - profitMargin) : 0;
+                                             const profitAmount = netPrice - effectiveCost;
+                                             const taxAmount = netPrice * taxRate;
+                                             const grossPrice = netPrice + taxAmount;
+                                             const suggestedPrice = Math.ceil(grossPrice / 1000) * 1000;
+
+                                             return (
+                                               <div className="space-y-3">
+                                                  <h4 className="font-black text-[11px] text-gray-900 uppercase tracking-widest border-b pb-2">Phân bổ giá bán chi tiết</h4>
+                                                  <div className="space-y-2">
+                                                     <div className="flex justify-between text-[11px]">
+                                                        <span className="text-gray-400 font-bold">1. Giá gốc nhập:</span>
+                                                        <span className="font-black text-gray-600">{importPrice.toLocaleString()}đ</span>
+                                                     </div>
+                                                     <div className="flex justify-between text-[11px]">
+                                                        <span className="text-gray-400 font-bold">2. Hao hụt (5%):</span>
+                                                        <span className="font-black text-orange-400">+{Math.round(lossAmount).toLocaleString()}đ</span>
+                                                     </div>
+                                                     <div className="flex justify-between text-[11px] text-green-600">
+                                                        <span className="font-bold">3. Lãi ({Math.round(profitMargin * 100)}%):</span>
+                                                        <span className="font-black">+{Math.round(profitAmount).toLocaleString()}đ</span>
+                                                     </div>
+                                                     <div className="flex justify-between text-[11px] text-red-400">
+                                                        <span className="font-bold">4. Thuế VAT (5%):</span>
+                                                        <span className="font-black">+{Math.round(taxAmount).toLocaleString()}đ</span>
+                                                     </div>
+                                                  </div>
+                                                  <div className="bg-amber-50 p-2.5 rounded-xl flex justify-between items-center mt-1 border border-amber-100">
+                                                     <span className="text-[10px] font-black text-amber-600 uppercase">GIÁ BÁN GỢI Ý:</span>
+                                                     <span className="text-base font-black text-amber-700">{suggestedPrice.toLocaleString()}đ</span>
+                                                  </div>
+                                               </div>
+                                            );
+                                          })()}
                                           </PopoverContent>
                                         </Popover>
                                       </label>
                                       <div className="h-10 px-3 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-end font-black text-amber-600 text-sm">
-                                         {item.suggestedPrice?.toLocaleString()}đ
+                                          {(item.manualPrice && Number(item.manualPrice) > 0 ? Number(item.manualPrice) : item.suggestedPrice)?.toLocaleString()}đ
                                       </div>
                                    </div>
                                </div>
