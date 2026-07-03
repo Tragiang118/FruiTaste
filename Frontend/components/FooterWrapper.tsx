@@ -12,7 +12,9 @@ export default function FooterWrapper() {
     pathname === '/profile' ||
     pathname === '/login' ||
     pathname === '/register' ||
-    pathname === '/change-password';
+    pathname === '/change-password' ||
+    pathname === '/checkout' ||
+    pathname === '/orders';
 
   if (isHiddenRoute) {
     return null;

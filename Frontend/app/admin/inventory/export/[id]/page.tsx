@@ -29,11 +29,8 @@ export default function AdminExportDetailPage() {
       setLoading(true);
       // Fetch all stock transactions and filter client-side
       const [txRes, receiptRes] = await Promise.all([
-        api.get('/inventory/transactions'),
-        api.get(`/inventory/export/${exportId}`).catch(err => {
-          console.error("Failed to fetch export receipt details", err);
-          return { data: null };
-        })
+        api.get('/inventory/transactions').catch(() => ({ data: [] })),
+        api.get(`/inventory/export/${exportId}`).catch(() => ({ data: null }))
       ]);
 
       const filtered = txRes.data.filter((t: any) => t.referenceId === exportId && t.type === 'EXPORT');

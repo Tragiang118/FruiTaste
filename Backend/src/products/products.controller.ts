@@ -12,10 +12,10 @@ import {
 } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'; // Require Auth
-// AdminGuard có thể tạo về sau, tạm cho Protect Token
+
 @Controller('products')
 export class ProductsController {
-  constructor(private readonly productsService: ProductsService) {}
+  constructor(private readonly productsService: ProductsService) { }
 
   @Get()
   findAll(@Query('search') search?: string) {

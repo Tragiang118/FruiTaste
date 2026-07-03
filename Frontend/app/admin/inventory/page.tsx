@@ -2,15 +2,15 @@
 
 import { useState, useEffect } from 'react';
 import api from '@/lib/axios';
-import { 
-  Warehouse, 
-  Search, 
-  ArrowUpDown, 
-  Plus, 
+import {
+  Warehouse,
+  Search,
+  ArrowUpDown,
+  Plus,
   Minus,
-  History, 
-  AlertTriangle, 
-  Filter, 
+  History,
+  AlertTriangle,
+  Filter,
   ChevronDown,
   RefreshCw,
   Calendar as CalendarIcon,
@@ -135,13 +135,13 @@ export default function InventoryPage() {
   };
 
   const filteredInventory = inventory.filter(item => {
-    const matchSearch = item.product.name.toLowerCase().includes(search.toLowerCase()) || 
-                       item.productId.toString() === search;
-    
+    const matchSearch = item.product.name.toLowerCase().includes(search.toLowerCase()) ||
+      item.productId.toString() === search;
+
     if (stockFilter === 'HIGH') return matchSearch && item.currentStock > item.lowStockThreshold;
     if (stockFilter === 'LOW') return matchSearch && item.currentStock <= item.lowStockThreshold && item.currentStock > 0;
     if (stockFilter === 'OUT') return matchSearch && item.currentStock <= 0;
-    
+
     // Check Date Filter
     let matchDate = true;
     if (date?.from) {
@@ -199,12 +199,12 @@ export default function InventoryPage() {
             <RefreshCw className={`mr-2 h-3.5 w-3.5 text-gray-500 ${loading ? 'animate-spin' : ''}`} /> Làm mới
           </Button>
           <Link href="/admin/inventory/transactions">
-             <Button variant="outline" className="rounded-full border-gray-200 font-bold gap-2 bg-white shadow-sm hover:bg-gray-50 h-8 px-4 transition-all text-xs">
-                <History size={14} className="text-gray-500" />
-                Lịch sử kho
-             </Button>
-           </Link>
-           <Link href="/admin/inventory/create">
+            <Button variant="outline" className="rounded-full border-gray-200 font-bold gap-2 bg-white shadow-sm hover:bg-gray-50 h-8 px-4 transition-all text-xs">
+              <History size={14} className="text-gray-500" />
+              Lịch sử kho
+            </Button>
+          </Link>
+          <Link href="/admin/inventory/create">
             <Button className="bg-primary text-white rounded-full px-5 shadow-lg shadow-primary/20 hover:scale-[1.02] transition-all cursor-pointer h-8 font-bold text-xs gap-2">
               <PlusCircle className="h-3.5 w-3.5" />
               Tạo phiếu xuất/nhập kho
@@ -285,117 +285,117 @@ export default function InventoryPage() {
             {/* Search Bar */}
             <div className="relative w-full xl:max-w-xs">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-3.5 h-3.5" />
-              <Input 
-                placeholder="Tìm kiếm theo tên hoặc mã..." 
+              <Input
+                placeholder="Tìm kiếm theo tên hoặc mã..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-9 rounded-full bg-gray-50/50 border-gray-200 h-8 text-[13px] shadow-none font-medium focus-visible:ring-1 focus-visible:ring-gray-300 focus-visible:border-gray-300 hover:border-gray-300 transition-colors"
               />
             </div>
-            
+
             {/* Advanced Filters */}
             <div className="flex items-center gap-2 w-full xl:w-auto overflow-x-auto pb-2 xl:pb-0">
-               <div className="flex items-center gap-2 text-sm font-bold text-gray-500 whitespace-nowrap">
-                 <Filter size={16} /> Lọc theo:
-               </div>
-               
-               <DropdownMenu>
-                 <DropdownMenuTrigger asChild>
-                   <Button variant="ghost" className="rounded-full border border-gray-200 font-bold text-gray-700 bg-gray-50/50 hover:bg-gray-100 min-w-[140px] justify-between h-8 px-3 text-[13px] shadow-none transition-colors">
-                     {stockFilter === 'ALL' ? 'Tất cả trạng thái' : stockFilter === 'HIGH' ? "Còn hàng" : stockFilter === 'LOW' ? 'Sắp hết hàng' : 'Đã hết hàng'}
-                     <ChevronDown className="ml-2 h-3.5 w-3.5 opacity-40 shrink-0" />
-                   </Button>
-                 </DropdownMenuTrigger>
-                 <DropdownMenuContent className="w-56 rounded-2xl shadow-xl border-gray-100 p-2 bg-white">
-                    <DropdownMenuLabel className="text-sm font-bold text-gray-700 ml-1">Chọn trạng thái kho</DropdownMenuLabel>
-                    <DropdownMenuSeparator className="my-1 bg-gray-50" />
-                    <DropdownMenuRadioGroup value={stockFilter} onValueChange={setStockFilter}>
-                       <DropdownMenuRadioItem value="ALL" className="cursor-pointer rounded-xl font-bold p-2 text-xs">Tất cả sản phẩm</DropdownMenuRadioItem>
-                       <DropdownMenuRadioItem value="HIGH" className="cursor-pointer rounded-xl font-bold p-2 text-xs text-green-600">Còn hàng</DropdownMenuRadioItem>
-                       <DropdownMenuRadioItem value="LOW" className="cursor-pointer rounded-xl font-bold p-2 text-xs text-amber-600">Sắp hết hàng</DropdownMenuRadioItem>
-                       <DropdownMenuRadioItem value="OUT" className="cursor-pointer rounded-xl font-bold p-2 text-xs text-red-500">Đã hết hàng</DropdownMenuRadioItem>
-                    </DropdownMenuRadioGroup>
-                 </DropdownMenuContent>
-               </DropdownMenu>
+              <div className="flex items-center gap-2 text-sm font-bold text-gray-500 whitespace-nowrap">
+                <Filter size={16} /> Lọc theo:
+              </div>
 
-                {/* Quick Date Filter Dropdown */}
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="rounded-full border border-gray-200 font-bold text-gray-700 bg-gray-50/50 hover:bg-gray-100 h-8 px-3 text-[13px] gap-2 transition-colors">
-                      {getDateFilterLabel(filterDateType)}
-                      <ChevronDown size={12} className="opacity-40" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-56 rounded-2xl shadow-xl border-gray-100 p-2 bg-white" align="end">
-                    <DropdownMenuLabel className="text-sm font-bold text-gray-700 ml-1">Khoảng thời gian</DropdownMenuLabel>
-                    <DropdownMenuSeparator className="my-1 bg-gray-50" />
-                    <DropdownMenuRadioGroup value={filterDateType} onValueChange={handleDateFilterChange}>
-                      <DropdownMenuRadioItem value="all" className="cursor-pointer rounded-xl font-bold p-2 text-xs">Tất cả thời gian</DropdownMenuRadioItem>
-                      <DropdownMenuRadioItem value="today" className="cursor-pointer rounded-xl font-bold p-2 text-xs">Hôm nay</DropdownMenuRadioItem>
-                      <DropdownMenuRadioItem value="yesterday" className="cursor-pointer rounded-xl font-bold p-2 text-xs">Hôm qua</DropdownMenuRadioItem>
-                      <DropdownMenuRadioItem value="7d" className="cursor-pointer rounded-xl font-bold p-2 text-xs text-primary">7 ngày qua</DropdownMenuRadioItem>
-                      <DropdownMenuRadioItem value="30d" className="cursor-pointer rounded-xl font-bold p-2 text-xs">30 ngày qua</DropdownMenuRadioItem>
-                      <DropdownMenuRadioItem value="thisMonth" className="cursor-pointer rounded-xl font-bold p-2 text-xs">Tháng này</DropdownMenuRadioItem>
-                    </DropdownMenuRadioGroup>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="rounded-full border border-gray-200 font-bold text-gray-700 bg-gray-50/50 hover:bg-gray-100 min-w-[140px] justify-between h-8 px-3 text-[13px] shadow-none transition-colors">
+                    {stockFilter === 'ALL' ? 'Tất cả trạng thái' : stockFilter === 'HIGH' ? "Còn hàng" : stockFilter === 'LOW' ? 'Sắp hết hàng' : 'Đã hết hàng'}
+                    <ChevronDown className="ml-2 h-3.5 w-3.5 opacity-40 shrink-0" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56 rounded-2xl shadow-xl border-gray-100 p-2 bg-white">
+                  <DropdownMenuLabel className="text-sm font-bold text-gray-700 ml-1">Chọn trạng thái kho</DropdownMenuLabel>
+                  <DropdownMenuSeparator className="my-1 bg-gray-50" />
+                  <DropdownMenuRadioGroup value={stockFilter} onValueChange={setStockFilter}>
+                    <DropdownMenuRadioItem value="ALL" className="cursor-pointer rounded-xl font-bold p-2 text-xs">Tất cả sản phẩm</DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="HIGH" className="cursor-pointer rounded-xl font-bold p-2 text-xs text-green-600">Còn hàng</DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="LOW" className="cursor-pointer rounded-xl font-bold p-2 text-xs text-amber-600">Sắp hết hàng</DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="OUT" className="cursor-pointer rounded-xl font-bold p-2 text-xs text-red-500">Đã hết hàng</DropdownMenuRadioItem>
+                  </DropdownMenuRadioGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
 
-                {/* Date Picker Popover */}
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      className={cn(
-                        "rounded-full border border-gray-200 font-bold text-gray-700 bg-gray-50/50 hover:bg-gray-100 h-8 px-3 text-[13px] transition-colors"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-3.5 w-3.5 text-primary/70" />
-                      {date?.from ? (
-                        date.to ? (
-                          <>
-                            {format(date.from, "dd/MM")} - {format(date.to, "dd/MM")}
-                          </>
-                        ) : (
-                          format(date.from, "dd/MM/yyyy")
-                        )
+              {/* Quick Date Filter Dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="rounded-full border border-gray-200 font-bold text-gray-700 bg-gray-50/50 hover:bg-gray-100 h-8 px-3 text-[13px] gap-2 transition-colors">
+                    {getDateFilterLabel(filterDateType)}
+                    <ChevronDown size={12} className="opacity-40" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56 rounded-2xl shadow-xl border-gray-100 p-2 bg-white" align="end">
+                  <DropdownMenuLabel className="text-sm font-bold text-gray-700 ml-1">Khoảng thời gian</DropdownMenuLabel>
+                  <DropdownMenuSeparator className="my-1 bg-gray-50" />
+                  <DropdownMenuRadioGroup value={filterDateType} onValueChange={handleDateFilterChange}>
+                    <DropdownMenuRadioItem value="all" className="cursor-pointer rounded-xl font-bold p-2 text-xs">Tất cả thời gian</DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="today" className="cursor-pointer rounded-xl font-bold p-2 text-xs">Hôm nay</DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="yesterday" className="cursor-pointer rounded-xl font-bold p-2 text-xs">Hôm qua</DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="7d" className="cursor-pointer rounded-xl font-bold p-2 text-xs text-primary">7 ngày qua</DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="30d" className="cursor-pointer rounded-xl font-bold p-2 text-xs">30 ngày qua</DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="thisMonth" className="cursor-pointer rounded-xl font-bold p-2 text-xs">Tháng này</DropdownMenuRadioItem>
+                  </DropdownMenuRadioGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              {/* Date Picker Popover */}
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className={cn(
+                      "rounded-full border border-gray-200 font-bold text-gray-700 bg-gray-50/50 hover:bg-gray-100 h-8 px-3 text-[13px] transition-colors"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-3.5 w-3.5 text-primary/70" />
+                    {date?.from ? (
+                      date.to ? (
+                        <>
+                          {format(date.from, "dd/MM")} - {format(date.to, "dd/MM")}
+                        </>
                       ) : (
-                        <span>Lọc ngày</span>
-                      )}
-                      <ChevronDown className="ml-2 h-3.5 w-3.5 opacity-40" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-4 rounded-[2rem] shadow-2xl border-gray-100 bg-white" align="end">
-                    <div className="flex items-center justify-center gap-4 mb-4">
-                      <span className="text-sm font-bold text-gray-600">Lọc theo:</span>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="outline" className="h-8 rounded-full text-xs font-bold px-3">
-                            {dateType === 'export' ? 'Ngày xuất kho' : 'Ngày nhập kho'}
-                            <ChevronDown className="ml-2 h-3 w-3" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent className="rounded-xl shadow-lg border-gray-100 p-2 bg-white">
-                          <DropdownMenuRadioGroup value={dateType} onValueChange={(v) => setDateType(v as 'export' | 'import')}>
-                            <DropdownMenuRadioItem value="export" className="cursor-pointer rounded-lg font-bold p-2 text-xs">Ngày xuất kho</DropdownMenuRadioItem>
-                            <DropdownMenuRadioItem value="import" className="cursor-pointer rounded-lg font-bold p-2 text-xs">Ngày nhập kho</DropdownMenuRadioItem>
-                          </DropdownMenuRadioGroup>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                    <Calendar
-                      mode="range"
-                      selected={date}
-                      onSelect={(range) => {
-                        setDate(range);
-                        if (range?.from && range?.to) setFilterDateType("custom");
-                      }}
-                      numberOfMonths={2}
-                      locale={vi}
-                    />
-                  </PopoverContent>
-                </Popover>
-             </div>
-           </div>
+                        format(date.from, "dd/MM/yyyy")
+                      )
+                    ) : (
+                      <span>Lọc ngày</span>
+                    )}
+                    <ChevronDown className="ml-2 h-3.5 w-3.5 opacity-40" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-4 rounded-[2rem] shadow-2xl border-gray-100 bg-white" align="end">
+                  <div className="flex items-center justify-center gap-4 mb-4">
+                    <span className="text-sm font-bold text-gray-600">Lọc theo:</span>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" className="h-8 rounded-full text-xs font-bold px-3">
+                          {dateType === 'export' ? 'Ngày xuất kho' : 'Ngày nhập kho'}
+                          <ChevronDown className="ml-2 h-3 w-3" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent className="rounded-xl shadow-lg border-gray-100 p-2 bg-white">
+                        <DropdownMenuRadioGroup value={dateType} onValueChange={(v) => setDateType(v as 'export' | 'import')}>
+                          <DropdownMenuRadioItem value="export" className="cursor-pointer rounded-lg font-bold p-2 text-xs">Ngày xuất kho</DropdownMenuRadioItem>
+                          <DropdownMenuRadioItem value="import" className="cursor-pointer rounded-lg font-bold p-2 text-xs">Ngày nhập kho</DropdownMenuRadioItem>
+                        </DropdownMenuRadioGroup>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                  <Calendar
+                    mode="range"
+                    selected={date}
+                    onSelect={(range) => {
+                      setDate(range);
+                      if (range?.from && range?.to) setFilterDateType("custom");
+                    }}
+                    numberOfMonths={2}
+                    locale={vi}
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+          </div>
         </CardHeader>
 
         <CardContent className="p-0">
@@ -466,10 +466,10 @@ export default function InventoryPage() {
                   <TableRow>
                     <TableCell colSpan={8} className="h-64 text-center">
                       <div className="flex flex-col items-center justify-center gap-3">
-                         <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center">
-                            <Warehouse className="w-8 h-8 text-gray-200" />
-                         </div>
-                         <p className="text-gray-400 font-bold">Không tìm thấy dữ liệu tồn kho nào.</p>
+                        <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center">
+                          <Warehouse className="w-8 h-8 text-gray-200" />
+                        </div>
+                        <p className="text-gray-400 font-bold">Không tìm thấy dữ liệu tồn kho nào.</p>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -492,8 +492,8 @@ export default function InventoryPage() {
                       <div className="flex flex-col items-center">
                         <span className={cn(
                           "px-3 py-1 rounded-full text-[13px] font-black border flex items-center gap-1.5 min-w-[70px] justify-center",
-                          item.currentStock <= 0 
-                            ? "bg-red-50 text-red-500 border-red-100 shadow-sm shadow-red-100" 
+                          item.currentStock <= 0
+                            ? "bg-red-50 text-red-500 border-red-100 shadow-sm shadow-red-100"
                             : item.currentStock <= item.lowStockThreshold
                               ? "bg-amber-50 text-amber-600 border-amber-100 shadow-sm shadow-amber-100"
                               : "bg-green-50 text-green-600 border-green-100 shadow-sm shadow-green-100"
@@ -512,44 +512,44 @@ export default function InventoryPage() {
                       {item.product.unit}
                     </TableCell>
                     <TableCell className="text-center">
-                       <div className="flex flex-col items-center">
-                          <span className="text-[13px] font-bold text-gray-600">
-                             {item.lastImportDate ? new Date(item.lastImportDate).toLocaleDateString('vi-VN') : '--'}
+                      <div className="flex flex-col items-center">
+                        <span className="text-[13px] font-bold text-gray-600">
+                          {item.lastImportDate ? new Date(item.lastImportDate).toLocaleDateString('vi-VN') : '--'}
+                        </span>
+                        {item.lastImportDate && (
+                          <span className="text-[10px] text-green-500 font-bold flex items-center gap-0.5">
+                            <Plus size={10} /> Nhập
                           </span>
-                          {item.lastImportDate && (
-                            <span className="text-[10px] text-green-500 font-bold flex items-center gap-0.5">
-                               <Plus size={10} /> Nhập
-                            </span>
-                          )}
-                       </div>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell className="text-center">
-                       <div className="flex flex-col items-center">
-                          <span className="text-[13px] font-bold text-gray-600">
-                             {item.lastExportDate ? new Date(item.lastExportDate).toLocaleDateString('vi-VN') : '--'}
+                      <div className="flex flex-col items-center">
+                        <span className="text-[13px] font-bold text-gray-600">
+                          {item.lastExportDate ? new Date(item.lastExportDate).toLocaleDateString('vi-VN') : '--'}
+                        </span>
+                        {item.lastExportDate && (
+                          <span className="text-[10px] text-blue-500 font-bold flex items-center gap-0.5">
+                            <ArrowUpRight size={10} /> Xuất
                           </span>
-                          {item.lastExportDate && (
-                            <span className="text-[10px] text-blue-500 font-bold flex items-center gap-0.5">
-                               <ArrowUpRight size={10} /> Xuất
-                            </span>
-                          )}
-                       </div>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell className="text-center">
                       <div className="flex items-center justify-center gap-1">
                         <Link href={`/admin/inventory/create?productId=${item.productId}`}>
                           <Button variant="ghost" size="icon" title="Nhập kho" className="h-8 w-8 text-green-500 hover:text-green-600 hover:bg-green-50 rounded-full transition-all">
-                             <Plus size={16} />
+                            <Plus size={16} />
                           </Button>
                         </Link>
                         <Link href={`/admin/inventory/create?type=export&productId=${item.productId}`}>
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            title="Xuất kho" 
-                            className="h-8 w-8 text-blue-500 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-all cursor-pointer" 
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            title="Xuất kho"
+                            className="h-8 w-8 text-blue-500 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-all cursor-pointer"
                           >
-                             <Minus size={16} />
+                            <Minus size={16} />
                           </Button>
                         </Link>
                       </div>
