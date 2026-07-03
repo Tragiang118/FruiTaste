@@ -105,9 +105,9 @@ function ImportContent() {
           if (product) {
             const defaultImportPrice = Math.round(product.price * 0.7);
             
-            const lossRate = 0.05;
-            const taxRate = 0.05; // 5% thuế GTGT bán lẻ nông sản
-            const profitMargin = configRes.data.defaultProfitMargin || 0.30;
+            const lossRate = configRes.data.defaultLossRate ?? 0.05;
+            const taxRate = configRes.data.defaultTaxRate ?? 0.05;
+            const profitMargin = configRes.data.defaultProfitMargin ?? 0.30;
 
             const effectiveCost = defaultImportPrice / (1 - lossRate);
             const netPrice = effectiveCost / (1 - profitMargin);
@@ -139,9 +139,9 @@ function ImportContent() {
     if (manualPrice && Number(manualPrice) > 0) return Number(manualPrice);
     if (!importPrice || importPrice <= 0) return 0;
     
-    const lossRate = 0.05; // 5% hao hụt
-    const taxRate = 0.05; // 5% thuế GTGT bán lẻ nông sản
-    const profitMargin = pricingConfig?.defaultProfitMargin || 0.30; // 30% lợi nhuận mong muốn
+    const lossRate = pricingConfig?.defaultLossRate ?? 0.05;
+    const taxRate = pricingConfig?.defaultTaxRate ?? 0.05;
+    const profitMargin = pricingConfig?.defaultProfitMargin ?? 0.30;
 
     // Bước 1: Giá vốn sau hao hụt
     const effectiveCost = importPrice / (1 - lossRate);
@@ -529,9 +529,9 @@ function ImportContent() {
                                            {(() => {
                                              const importPrice = Number(item.importPrice || 0);
                                              const manualPrice = Number(item.manualPrice || 0);
-                                             const lossRate = 0.05;
-                                             const taxRate = 0.05;
-                                             const profitMargin = 0.30;
+                                             const lossRate = pricingConfig?.defaultLossRate ?? 0.05;
+                                             const taxRate = pricingConfig?.defaultTaxRate ?? 0.05;
+                                             const profitMargin = pricingConfig?.defaultProfitMargin ?? 0.30;
 
                                              if (manualPrice > 0) {
                                                return (
@@ -562,7 +562,7 @@ function ImportContent() {
                                                         <span className="font-black text-gray-600">{importPrice.toLocaleString()}đ</span>
                                                      </div>
                                                      <div className="flex justify-between text-[11px]">
-                                                        <span className="text-gray-400 font-bold">2. Hao hụt (5%):</span>
+                                                        <span className="text-gray-400 font-bold">2. Hao hụt ({Math.round(lossRate * 100)}%):</span>
                                                         <span className="font-black text-orange-400">+{Math.round(lossAmount).toLocaleString()}đ</span>
                                                      </div>
                                                      <div className="flex justify-between text-[11px] text-green-600">
@@ -570,7 +570,7 @@ function ImportContent() {
                                                         <span className="font-black">+{Math.round(profitAmount).toLocaleString()}đ</span>
                                                      </div>
                                                      <div className="flex justify-between text-[11px] text-red-400">
-                                                        <span className="font-bold">4. Thuế VAT (5%):</span>
+                                                        <span className="font-bold">4. Thuế VAT ({Math.round(taxRate * 100)}%):</span>
                                                         <span className="font-black">+{Math.round(taxAmount).toLocaleString()}đ</span>
                                                      </div>
                                                   </div>
