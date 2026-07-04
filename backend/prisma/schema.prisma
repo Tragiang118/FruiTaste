@@ -1,0 +1,330 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PREPARING
+  SHIPPING
+  COMPLETED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  COD
+  BANK_TRANSFER
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+enum TransactionType {
+  IMPORT
+  EXPORT
+  ADJUST
+  RETURN
+}
+
+enum SenderType {
+  USER
+  BOT
+}
+
+model User {
+  id                Int       @id @default(autoincrement())
+  email             String    @unique
+  password          String?   
+  fullName          String?
+  phone             String?
+  avatar            String?
+  role              Role      @default(USER)
+  isEmailVerified   Boolean   @default(false)
+  verificationToken String?
+  pendingEmail      String?
+  resetOtp          String?
+  resetOtpExpiry    DateTime?
+  otpAttempts       Int       @default(0)
+  mustChangePassword Boolean  @default(false)
+
+  isActive          Boolean   @default(true)
+  deletedAt         DateTime? // xóa mềm
+
+  addresses         Address[]
+  cart              Cart?
+  orders            Order[]
+  chatSessions      ChatSession[]
+
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+}
+
+model Address {
+  id              Int       @id @default(autoincrement())
+  userId          Int
+  recipientName   String
+  phone           String
+  fullAddress     String    // Chuỗi đầy đủ
+  label           String?   @default("Nhà riêng")
+  isDefault       Boolean   @default(false)
+
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Category {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
+  description String?   @db.Text
+  imageUrl    String?
+
+  products    Product[]
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Product {
+  id               Int       @id @default(autoincrement())
+  name             String
+  description      String?   @db.Text
+  price            Float
+  unit             String
+  stockQuantity    Int       @default(0)
+  mediaUrls        String[]  // Mảng URL ảnh/video (phần tử đầu = ảnh đại diện)
+
+  healthInfo       String?   @db.Text
+
+  tags             String[]
+
+  isActive         Boolean   @default(true)
+  isDeleted        Boolean   @default(false)
+
+  categories       Category[]
+  cartItems        CartItem[]
+  orderItems       OrderItem[]
+  inventoryTx      StockTransaction[]
+  inventory        Inventory?
+  pricing          ProductPricing?
+  importItems      ImportItem[]
+  exportItems      ExportItem[]
+  recipeIngredient RecipeIngredient[]
+
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+}
+
+model Inventory {
+  productId           Int      @id
+  currentStock        Int      @default(0)
+  lowStockThreshold   Int      @default(10)
+  lastImportDate      DateTime?
+  lastExportDate      DateTime?
+
+  product             Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  updatedAt           DateTime @updatedAt
+}
+
+model PricingConfig {
+  id                  Int      @id @default(1)
+  defaultTaxRate      Float    @default(0.05)  // 5% VAT
+  defaultProfitMargin Float    @default(0.30)  // 30% lợi nhuận mặc định
+  defaultLossRate     Float    @default(0.05)  // 5% hao hụt mặc định
+
+  updatedAt           DateTime @updatedAt
+}
+
+model ProductPricing {
+  productId           Int      @id
+  product             Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  
+  costPrice           Float    @default(0)     // Giá nhập gần nhất
+  lossRate            Float?                   // Ghi đè hao hụt riêng cho SP này (null = dùng defaultLossRate)
+
+  customProfitMargin  Float?                   // Ghi đè lợi nhuận riêng cho SP này (null = dùng defaultProfitMargin)
+  manualPrice         Float?                   // Giá bán thủ công (nếu có sẽ ưu tiên dùng)
+
+  updatedAt           DateTime @updatedAt
+}
+
+model StockTransaction {
+  id              Int             @id @default(autoincrement())
+  productId       Int
+  type            TransactionType
+  quantity        Int
+  previousStock   Int
+  newStock        Int
+  reason          String?         // Ví dụ: Nhập hàng, Bán hàng, Hủy đơn, Kiểm kho
+  referenceId     String?         // Link to Order ID or ImportReceipt ID
+  
+  product         Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  
+  createdAt       DateTime        @default(now())
+}
+
+model ImportReceipt {
+  id              Int           @id @default(autoincrement())
+  supplier        String?
+  totalItems      Int
+  totalCost       Float?
+  note            String?
+  items           ImportItem[]
+  
+  createdAt       DateTime      @default(now())
+}
+
+model ImportItem {
+  id              Int           @id @default(autoincrement())
+  receiptId       Int
+  productId       Int
+  quantity        Int
+  importPrice     Float?
+  
+  receipt         ImportReceipt @relation(fields: [receiptId], references: [id], onDelete: Cascade)
+  product         Product       @relation(fields: [productId], references: [id])
+}
+
+model ExportReceipt {
+  id              Int           @id @default(autoincrement())
+  receiver        String?
+  totalItems      Int
+  note            String?
+  items           ExportItem[]
+  
+  createdAt       DateTime      @default(now())
+}
+
+model ExportItem {
+  id              Int           @id @default(autoincrement())
+  receiptId       Int
+  productId       Int
+  quantity        Int
+  
+  receipt         ExportReceipt @relation(fields: [receiptId], references: [id], onDelete: Cascade)
+  product         Product       @relation(fields: [productId], references: [id])
+}
+
+model Cart {
+  userId    Int        @id // Dùng userId làm PK
+  
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items     CartItem[]
+}
+
+model CartItem {
+  id        Int      @id @default(autoincrement())
+  cartId    Int
+  productId Int
+  quantity  Int
+
+  cart      Cart     @relation(fields: [cartId], references: [userId], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([cartId, productId])
+}
+
+model Order {
+  id              Int           @id @default(autoincrement())
+  userId          Int
+  shippingName    String
+  shippingPhone   String
+  shippingAddress String
+  totalAmount     Float
+  shippingFee     Float         @default(0)
+  finalAmount     Float
+  status          OrderStatus   @default(PENDING)
+  cancelledBy     Role?
+  cancelledReason String?
+
+  confirmedAt     DateTime?
+  preparingAt     DateTime?
+  shippingAt      DateTime?
+  completedAt     DateTime?
+  cancelledAt     DateTime?
+
+  user            User          @relation(fields: [userId], references: [id])
+  items           OrderItem[]
+  payment         Payment?
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+}
+
+model OrderItem {
+  id              Int      @id @default(autoincrement())
+  orderId         Int
+  productId       Int
+  quantity        Int
+  priceAtPurchase Float
+
+  order           Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product         Product  @relation(fields: [productId], references: [id])
+}
+
+model Payment {
+  orderId         Int           @id // Dùng orderId làm Primary Key 
+  method          PaymentMethod
+  status          PaymentStatus @default(PENDING)
+  transactionId   String?
+
+  order           Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
+model Recipe {
+  id              Int                @id @default(autoincrement())
+  name            String
+  description     String?            @db.Text
+  prepTime        Int?               
+  instructions    String             @db.Text
+  imageUrl        String?
+
+  ingredients     RecipeIngredient[]
+
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+}
+
+model RecipeIngredient {
+  id              Int      @id @default(autoincrement())
+  recipeId        Int
+  productId       Int?     
+  ingredientName  String?  
+  quantityStr     String
+
+  recipe          Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  product         Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+}
+
+model ChatSession {
+  id        Int       @id @default(autoincrement())
+  userId    Int?
+  startedAt DateTime  @default(now())
+  endedAt   DateTime?
+
+  user     User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  messages ChatMessage[]
+}
+
+model ChatMessage {
+  id          Int        @id @default(autoincrement())
+  sessionId   Int
+  senderType  SenderType
+  messageText String     @db.Text
+  intent      String?
+  createdAt   DateTime   @default(now())
+
+  session ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+}
