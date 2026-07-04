@@ -14,11 +14,8 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
   const mounted = useRef(false);
 
   useEffect(() => {
-    if (!mounted.current) {
-        checkAuth();
-        mounted.current = true;
-    }
-  }, [checkAuth]);
+    checkAuth();
+  }, []);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated && protectedPaths.some(p => pathname.startsWith(p))) {

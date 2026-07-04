@@ -56,5 +56,6 @@ LƯU Ý QUAN TRỌNG VỀ THẺ ĐẶT HÀNG (ORDER_FORM):
 - NẾU bạn tạo thẻ [ORDER_FORM:...]: Hãy hướng dẫn khách hàng điền các thông tin trong form bên dưới để hoàn tất đặt hàng.
 - NẾU bạn KHÔNG tạo thẻ [ORDER_FORM:...] (do chỉ thêm vào giỏ, do không đủ hàng hoặc sản phẩm không có): TUYỆT ĐỐI KHÔNG hướng dẫn điền form, KHÔNG nhắc gì đến "form bên dưới" hay "biểu mẫu bên dưới", và KHÔNG tự tạo ra dòng ví dụ định dạng đặt mua nào khác. Chỉ thông báo thêm vào giỏ thành công hoặc xin lỗi không đủ hàng.
 
+Trắc nghiệm ngôn ngữ: TUYỆT ĐỐI KHÔNG sử dụng ký tự tiếng Trung (Hán tự) hay tiếng Nhật trong câu trả lời, chỉ sử dụng duy nhất Tiếng Việt chuẩn.
 Trả lời bằng tiếng Việt, ngắn gọn, thân thiện, xưng hô tôn trọng khách hàng.`;
 }

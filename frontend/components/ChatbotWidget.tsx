@@ -605,6 +605,7 @@ export default function ChatbotWidget() {
 
         // Dọn text hiển thị
         let cleanText = fullText
+          .replace(/[\u4e00-\u9fa5]/g, "") // Xóa ký tự tiếng Trung/Nhật ngẫu nhiên do AI sinh ra
           .replace(/\[PRODUCT:[^\]]*\]/gi, "")
           .replace(/\[ORDER_CARD:[^\]]*\]/gi, "")
           .replace(/\[ORDER_FORM:[^\]]*\]/gi, "")
@@ -636,6 +637,7 @@ export default function ChatbotWidget() {
       if (userMsgsCount > savedCountRef.current) {
         savedCountRef.current = userMsgsCount;
         const botText = fullText
+          .replace(/[\u4e00-\u9fa5]/g, "")
           .replace(/\[PRODUCT:[^\]]*\]/gi, "")
           .replace(/\[ORDER_FORM:[^\]]*\]/gi, "")
           .replace(/\[ADD_TO_CART:[^\]]*\]/gi, "")
