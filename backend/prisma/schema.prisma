@@ -140,7 +140,7 @@ model Inventory {
 
 model PricingConfig {
   id                  Int      @id @default(1)
-  defaultTaxRate      Float    @default(0.05)  // 5% VAT
+  defaultTaxRate      Float    @default(0)     // Thuế VAT (mặc định 0%)
   defaultProfitMargin Float    @default(0.30)  // 30% lợi nhuận mặc định
   defaultLossRate     Float    @default(0.05)  // 5% hao hụt mặc định
 

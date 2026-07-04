@@ -13,7 +13,12 @@ export class PricingService {
     let config = await this.prisma.pricingConfig.findFirst();
     if (!config) {
       config = await this.prisma.pricingConfig.create({
-        data: { id: 1 }
+        data: { id: 1, defaultTaxRate: 0 }
+      });
+    } else if (config.defaultTaxRate !== 0) {
+      config = await this.prisma.pricingConfig.update({
+        where: { id: config.id },
+        data: { defaultTaxRate: 0 }
       });
     }
     return config;

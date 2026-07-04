@@ -106,13 +106,12 @@ function ImportContent() {
             const defaultImportPrice = Math.round(product.price * 0.7);
 
             const lossRate = configRes.data.defaultLossRate ?? 0.05;
-            const taxRate = configRes.data.defaultTaxRate ?? 0.05;
+            const taxRate = configRes.data.defaultTaxRate ?? 0;
             const profitMargin = configRes.data.defaultProfitMargin ?? 0.30;
 
             const effectiveCost = defaultImportPrice / (1 - lossRate);
-            const netPrice = effectiveCost / (1 - profitMargin);
-            const grossPrice = netPrice + (netPrice * taxRate);
-            const finalSuggested = Math.ceil(grossPrice / 1000) * 1000;
+            const rawPrice = effectiveCost * (1 + profitMargin) * (1 + taxRate);
+            const finalSuggested = Math.ceil(rawPrice / 1000) * 1000;
 
             setImportItems([{
               productId: product.id,
@@ -140,18 +139,14 @@ function ImportContent() {
     if (!importPrice || importPrice <= 0) return 0;
 
     const lossRate = pricingConfig?.defaultLossRate ?? 0.05;
-    const taxRate = pricingConfig?.defaultTaxRate ?? 0.05;
+    const taxRate = pricingConfig?.defaultTaxRate ?? 0;
     const profitMargin = pricingConfig?.defaultProfitMargin ?? 0.30;
 
     // Bước 1: Giá vốn sau hao hụt
     const effectiveCost = importPrice / (1 - lossRate);
-    // Bước 2: Giá bán chưa thuế (Net Price) theo Margin Pricing
-    const netPrice = effectiveCost / (1 - profitMargin);
-    // Bước 3: Thuế VAT (5%)
-    const taxAmount = netPrice * taxRate;
-    // Bước 4: Giá bán gợi ý (Gross Price) & Làm tròn lên hàng nghìn
-    const grossPrice = netPrice + taxAmount;
-    return Math.ceil(grossPrice / 1000) * 1000;
+    // Bước 2: Giá bán dự kiến (gồm thuế nếu taxRate > 0) & Làm tròn lên hàng nghìn
+    const rawPrice = effectiveCost * (1 + profitMargin) * (1 + taxRate);
+    return Math.ceil(rawPrice / 1000) * 1000;
   };
 
   const addItem = (product: Product) => {
@@ -265,12 +260,10 @@ function ImportContent() {
         const importPrice = Number(item.importPrice || 0);
         const manualPrice = Number(item.manualPrice);
         const lossRate = pricingConfig?.defaultLossRate ?? 0.05;
-        const taxRate = pricingConfig?.defaultTaxRate ?? 0.05;
 
         const effectiveCost = importPrice > 0 ? importPrice / (1 - lossRate) : 0;
-        const netPrice = manualPrice / (1 + taxRate);
-        const profitAmount = netPrice - effectiveCost;
-        const margin = netPrice > 0 ? (profitAmount / netPrice) * 100 : 0;
+        const profitAmount = manualPrice - effectiveCost;
+        const margin = effectiveCost > 0 ? (profitAmount / effectiveCost) * 100 : 0;
 
         return margin < 5 || margin > 60;
       });
@@ -550,11 +543,9 @@ function ImportContent() {
 
                                   const importPrice = Number(item.importPrice || 0);
                                   const lossRate = pricingConfig?.defaultLossRate ?? 0.05;
-                                  const taxRate = pricingConfig?.defaultTaxRate ?? 0.05;
                                   const effectiveCost = importPrice > 0 ? importPrice / (1 - lossRate) : 0;
-                                  const netPrice = manualVal / (1 + taxRate);
-                                  const profitAmount = netPrice - effectiveCost;
-                                  const margin = netPrice > 0 ? (profitAmount / netPrice) * 100 : 0;
+                                  const profitAmount = manualVal - effectiveCost;
+                                  const margin = effectiveCost > 0 ? (profitAmount / effectiveCost) * 100 : 0;
 
                                   if (margin < 5) return <p className="text-[9px] font-bold text-red-500 uppercase ml-2 mt-1 italic">Cảnh báo: Lãi quá thấp (&lt; 5%)</p>;
                                   if (margin > 60) return <p className="text-[9px] font-bold text-red-500 uppercase ml-2 mt-1 italic">Cảnh báo: Lãi quá cao (&gt; 60%)</p>;
@@ -588,7 +579,7 @@ function ImportContent() {
                                               <h4 className="font-black text-[11px] text-emerald-700 uppercase tracking-widest border-b border-emerald-100 pb-2">Chi tiết giá bán thủ công</h4>
                                               <div className="space-y-2">
                                                 <div className="flex justify-between text-[11px]">
-                                                  <span className="text-gray-400 font-bold">1. Giá gốc nhập:</span>
+                                                  <span className="text-gray-400 font-bold">1. Giá nhập gốc:</span>
                                                   <span className="font-black text-gray-600">{importPrice.toLocaleString()}đ</span>
                                                 </div>
                                                 <div className="flex justify-between text-[11px]">
@@ -613,10 +604,13 @@ function ImportContent() {
                                           );
                                         }
 
+                                        const taxRate = pricingConfig?.defaultTaxRate ?? 0;
                                         const effectiveCost = importPrice > 0 ? importPrice / (1 - lossRate) : 0;
                                         const lossAmount = effectiveCost - importPrice;
-                                        const rawPrice = effectiveCost * (1 + profitMargin);
-                                        const profitAmount = rawPrice - effectiveCost;
+                                        const preTaxPrice = effectiveCost * (1 + profitMargin);
+                                        const profitAmount = preTaxPrice - effectiveCost;
+                                        const taxAmount = preTaxPrice * taxRate;
+                                        const rawPrice = preTaxPrice + taxAmount;
                                         const suggestedPrice = Math.ceil(rawPrice / 1000) * 1000;
 
                                         return (
@@ -624,7 +618,7 @@ function ImportContent() {
                                             <h4 className="font-black text-[11px] text-gray-900 uppercase tracking-widest border-b pb-2">Giá bán chi tiết</h4>
                                             <div className="space-y-2">
                                               <div className="flex justify-between text-[11px]">
-                                                <span className="text-gray-400 font-bold">1. Giá gốc nhập:</span>
+                                                <span className="text-gray-400 font-bold">1. Giá nhập gốc:</span>
                                                 <span className="font-black text-gray-600">{importPrice.toLocaleString()}đ</span>
                                               </div>
                                               <div className="flex justify-between text-[11px]">
@@ -635,6 +629,12 @@ function ImportContent() {
                                                 <span className="font-bold">3. Lợi nhuận ({Math.round(profitMargin * 100)}%):</span>
                                                 <span className="font-black">+{Math.round(profitAmount).toLocaleString()}đ</span>
                                               </div>
+                                              {taxRate > 0 && (
+                                                <div className="flex justify-between text-[11px] text-blue-600">
+                                                  <span className="font-bold">4. Thuế VAT ({Math.round(taxRate * 100)}%):</span>
+                                                  <span className="font-black">+{Math.round(taxAmount).toLocaleString()}đ</span>
+                                                </div>
+                                              )}
                                             </div>
                                             <div className="bg-amber-50 p-2.5 rounded-xl flex justify-between items-center mt-1 border border-amber-100">
                                               <span className="text-[10px] font-black text-amber-600 uppercase">Giá bán gợi ý:</span>
