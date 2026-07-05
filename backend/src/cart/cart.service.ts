@@ -125,14 +125,26 @@ export class CartService {
     return { items: [] };
   }
 
-  private formatCartResponse(cart: any) {
+  private formatCartResponse(cart: {
+    items?: Array<{
+      quantity: number;
+      product: {
+        id: number;
+        name: string;
+        price: number;
+        mediaUrls?: string[];
+        stockQuantity: number;
+        isActive: boolean;
+      };
+    }>;
+  } | null) {
     if (!cart || !cart.items) return { items: [] };
 
     // Loại bỏ sản phẩm bị ẩn (isActive === false)
-    const filteredItems = cart.items.filter((item: any) => item.product.isActive !== false);
+    const filteredItems = cart.items.filter((item) => item.product.isActive !== false);
 
     return {
-      items: filteredItems.map((item: any) => {
+      items: filteredItems.map((item) => {
         const stock = item.product.stockQuantity ?? 0;
         // Clamp số lượng về đúng tồn kho thực tế
         const clampedQty = Math.min(item.quantity, stock);

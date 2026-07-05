@@ -37,15 +37,7 @@ export class ProductsController {
   @Post()
   @UseGuards(JwtAuthGuard)
   create(@Body() createProductDto: CreateProductDto) {
-    return this.productsService.create({
-      name: createProductDto.name,
-      description: createProductDto.description,
-      price: createProductDto.price,
-      unit: createProductDto.unit,
-      stockQuantity: createProductDto.stockQuantity,
-      mediaUrls: createProductDto.mediaUrls,
-      categoryIds: createProductDto.categoryIds,
-    });
+    return this.productsService.create(createProductDto);
   }
 
   @Put(':id')

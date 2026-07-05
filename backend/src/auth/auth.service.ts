@@ -4,6 +4,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
+import { CreateUserDto } from '../users/dto/create-user.dto';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { MailService } from '../mail/mail.service';
@@ -170,7 +171,7 @@ export class AuthService {
     return result;
   }
 
-  async login(user: any) {
+  async login(user: { id: number; email: string; role: any; fullName?: string }) {
     const payload = {
       email: user.email,
       sub: user.id,
@@ -182,7 +183,7 @@ export class AuthService {
     };
   }
 
-  async register(user: any) {
+  async register(user: CreateUserDto) {
     // Không cần hash ở đây nữa vì UsersService.create đã thực hiện hash rồi
 
     // Tạo token dài 32 bytes ngẫu nhiên cho việc xác thực email
@@ -192,7 +193,7 @@ export class AuthService {
       email: user.email,
       password: user.password,
       fullName: user.fullName,
-      role: 'USER',
+      role: user.role || 'USER',
       isEmailVerified: false,
       verificationToken: verificationToken,
     });

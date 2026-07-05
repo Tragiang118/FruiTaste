@@ -2,6 +2,8 @@ import { ConflictException, Injectable, UnauthorizedException, BadRequestExcepti
 import { PrismaService } from '../prisma/prisma.service';
 import { Prisma, Role } from '@prisma/client';
 import { CreateUserDto } from './dto/create-user.dto';
+import { CreateAddressDto } from './dto/create-address.dto';
+import { UpdateAddressDto } from './dto/update-address.dto';
 import * as crypto from 'crypto';
 import { Cron, CronExpression } from '@nestjs/schedule';
 
@@ -293,7 +295,7 @@ export class UsersService {
     });
   }
 
-  async addAddress(userId: number, data: any) {
+  async addAddress(userId: number, data: CreateAddressDto) {
     // 1. Kiểm tra số lượng địa chỉ hiện tại (Tối đa 5)
     const currentAddresses = await this.prisma.address.count({
       where: { userId }
@@ -329,7 +331,7 @@ export class UsersService {
     });
   }
 
-  async updateAddress(userId: number, addressId: number, data: any) {
+  async updateAddress(userId: number, addressId: number, data: UpdateAddressDto) {
     // Nếu đặt làm mặc định, reset các địa chỉ khác
     if (data.isDefault) {
       await this.prisma.address.updateMany({

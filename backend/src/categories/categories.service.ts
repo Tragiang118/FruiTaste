@@ -1,5 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { CreateCategoryDto } from './dto/create-category.dto';
+import { UpdateCategoryDto } from './dto/update-category.dto';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class CategoriesService {
@@ -15,14 +18,28 @@ export class CategoriesService {
     });
   }
 
-  create(data: any) {
-    return this.prisma.category.create({ data });
+  create(dto: CreateCategoryDto) {
+    const { image, imageUrl, ...rest } = dto;
+    return this.prisma.category.create({
+      data: {
+        ...rest,
+        imageUrl: imageUrl || image,
+      },
+    });
   }
 
-  update(id: number, data: any) {
+  update(id: number, dto: UpdateCategoryDto) {
+    const { image, imageUrl, ...rest } = dto;
+    const updateData: Prisma.CategoryUpdateInput = { ...rest };
+    if (imageUrl !== undefined) {
+      updateData.imageUrl = imageUrl;
+    } else if (image !== undefined) {
+      updateData.imageUrl = image;
+    }
+
     return this.prisma.category.update({
       where: { id },
-      data,
+      data: updateData,
     });
   }
 

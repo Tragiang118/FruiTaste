@@ -1,7 +1,8 @@
-import { IsString, IsNotEmpty } from 'class-validator';
+import { IsEnum, IsNotEmpty } from 'class-validator';
+import { PaymentStatus } from '@prisma/client';
 
 export class UpdatePaymentStatusDto {
-  @IsString()
+  @IsEnum(PaymentStatus, { message: 'Trạng thái thanh toán không hợp lệ' })
   @IsNotEmpty({ message: 'Trạng thái thanh toán không được để trống' })
-  status: string;
+  status: PaymentStatus;
 }

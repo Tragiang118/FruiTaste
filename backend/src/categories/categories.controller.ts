@@ -31,27 +31,13 @@ export class CategoriesController {
   @Post()
   @UseGuards(JwtAuthGuard)
   create(@Body() dto: CreateCategoryDto) {
-    return this.categoriesService.create({
-      name: dto.name,
-      description: dto.description,
-      imageUrl: dto.imageUrl || dto.image,
-    });
+    return this.categoriesService.create(dto);
   }
 
   @Put(':id')
   @UseGuards(JwtAuthGuard)
   update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateCategoryDto) {
-    const updateData: any = {};
-    if (dto.name !== undefined) updateData.name = dto.name;
-    if (dto.description !== undefined) updateData.description = dto.description;
-    
-    if (dto.imageUrl !== undefined) {
-      updateData.imageUrl = dto.imageUrl;
-    } else if (dto.image !== undefined) {
-      updateData.imageUrl = dto.image;
-    }
-
-    return this.categoriesService.update(id, updateData);
+    return this.categoriesService.update(id, dto);
   }
 
   @Delete(':id')

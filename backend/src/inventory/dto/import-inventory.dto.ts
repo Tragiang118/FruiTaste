@@ -1,7 +1,7 @@
 import { IsInt, IsNotEmpty, IsOptional, IsString, IsNumber, Min, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
-class ImportItemDto {
+export class ImportItemDto {
   @IsInt({ message: 'productId phải là số nguyên' })
   @IsNotEmpty({ message: 'productId không được để trống' })
   productId: number;
@@ -13,8 +13,12 @@ class ImportItemDto {
 
   @IsNumber({}, { message: 'Giá nhập phải là số' })
   @Min(1000, { message: 'Giá nhập tối thiểu là 1.000đ' })
-  @IsNotEmpty({ message: 'Giá nhập không được để trống' })
-  importPrice: number;
+  @IsOptional()
+  importPrice?: number;
+
+  @IsNumber()
+  @IsOptional()
+  price?: number;
 }
 
 export class ImportInventoryDto {

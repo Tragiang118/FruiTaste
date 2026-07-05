@@ -2,10 +2,15 @@ import { Controller, Get, Delete, Patch, Post, Body, Param, ParseIntPipe, NotFou
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
+import { Role } from '@prisma/client';
 import { CreateUserDto } from './dto/create-user.dto';
 import { ChangePasswordDto, ForceChangePasswordDto } from './dto/change-password.dto';
+import { CreateAddressDto } from './dto/create-address.dto';
+import { UpdateAddressDto } from './dto/update-address.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { AuthenticatedRequest } from '../common/interfaces/authenticated-request.interface';
 
 @Controller('users')
 export class UsersController {
@@ -46,69 +51,69 @@ export class UsersController {
   @Patch(':id/role')
   async changeRole(
     @Param('id', ParseIntPipe) id: number,
-    @Body('role') role: string
+    @Body('role') role: Role
   ) {
-    const user = await this.usersService.changeRole(id, role as any);
+    const user = await this.usersService.changeRole(id, role);
     if (!user) throw new NotFoundException('Không tìm thấy user');
     return { message: 'Đã đổi quyền user thành công' };
   }
 
   @UseGuards(JwtAuthGuard)
   @Patch('profile/update')
-  async updateProfile(@Req() req: any, @Body() data: any) {
-    return this.usersService.update(req.user.userId, data);
+  async updateProfile(@Req() req: AuthenticatedRequest, @Body() dto: UpdateProfileDto) {
+    return this.usersService.update(req.user.userId || req.user.id, dto);
   }
 
   @UseGuards(JwtAuthGuard)
   @Patch('profile/request-email-change')
-  async requestEmailChange(@Req() req: any, @Body('newEmail') newEmail: string) {
-    return this.usersService.requestEmailChange(req.user.userId, newEmail);
+  async requestEmailChange(@Req() req: AuthenticatedRequest, @Body('newEmail') newEmail: string) {
+    return this.usersService.requestEmailChange(req.user.userId || req.user.id, newEmail);
   }
 
   @UseGuards(JwtAuthGuard)
   @Patch('profile/change-password')
-  async changePassword(@Req() req: any, @Body() dto: ChangePasswordDto) {
-    return this.usersService.changePassword(req.user.userId, dto.oldPassword, dto.newPassword);
+  async changePassword(@Req() req: AuthenticatedRequest, @Body() dto: ChangePasswordDto) {
+    return this.usersService.changePassword(req.user.userId || req.user.id, dto.oldPassword, dto.newPassword);
   }
 
   @UseGuards(JwtAuthGuard)
   @Post('profile/force-change-password')
-  async forceChangePassword(@Req() req: any, @Body() dto: ForceChangePasswordDto) {
-    return this.usersService.forceChangePassword(req.user.userId, dto.newPassword);
+  async forceChangePassword(@Req() req: AuthenticatedRequest, @Body() dto: ForceChangePasswordDto) {
+    return this.usersService.forceChangePassword(req.user.userId || req.user.id, dto.newPassword);
   }
 
   @UseGuards(JwtAuthGuard)
   @Get('profile/addresses')
-  async getAddresses(@Req() req: any) {
-    return this.usersService.getAddresses(req.user.userId);
+  async getAddresses(@Req() req: AuthenticatedRequest) {
+    return this.usersService.getAddresses(req.user.userId || req.user.id);
   }
 
   @UseGuards(JwtAuthGuard)
   @Post('profile/addresses')
-  async addAddress(@Req() req: any, @Body() data: any) {
-    return this.usersService.addAddress(req.user.userId, data);
+  async addAddress(@Req() req: AuthenticatedRequest, @Body() dto: CreateAddressDto) {
+    return this.usersService.addAddress(req.user.userId || req.user.id, dto);
   }
 
   @UseGuards(JwtAuthGuard)
   @Delete('profile/addresses/:id')
-  async deleteAddress(@Req() req: any, @Param('id', ParseIntPipe) id: number) {
-    return this.usersService.deleteAddress(req.user.userId, id);
+  async deleteAddress(@Req() req: AuthenticatedRequest, @Param('id', ParseIntPipe) id: number) {
+    return this.usersService.deleteAddress(req.user.userId || req.user.id, id);
   }
 
   @UseGuards(JwtAuthGuard)
   @Patch('profile/addresses/:id')
   async updateAddress(
-    @Req() req: any,
+    @Req() req: AuthenticatedRequest,
     @Param('id', ParseIntPipe) id: number,
-    @Body() data: any
+    @Body() dto: UpdateAddressDto
   ) {
-    return this.usersService.updateAddress(req.user.userId, id, data);
+    return this.usersService.updateAddress(req.user.userId || req.user.id, id, dto);
   }
 
   @UseGuards(JwtAuthGuard)
   @Patch('profile/addresses/:id/default')
-  async setDefaultAddress(@Req() req: any, @Param('id', ParseIntPipe) id: number) {
-    return this.usersService.setDefaultAddress(req.user.userId, id);
+  async setDefaultAddress(@Req() req: AuthenticatedRequest, @Param('id', ParseIntPipe) id: number) {
+    return this.usersService.setDefaultAddress(req.user.userId || req.user.id, id);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -122,14 +127,14 @@ export class UsersController {
       },
     }),
   }))
-  async uploadAvatar(@Req() req: any, @UploadedFile() file: Express.Multer.File) {
+  async uploadAvatar(@Req() req: AuthenticatedRequest, @UploadedFile() file: Express.Multer.File) {
     const avatarUrl = `/uploads/avatars/${file.filename}`;
-    return this.usersService.updateAvatar(req.user.userId, avatarUrl);
+    return this.usersService.updateAvatar(req.user.userId || req.user.id, avatarUrl);
   }
 
   @UseGuards(JwtAuthGuard)
   @Delete('profile')
-  async deleteOwnAccount(@Req() req: any) {
-    return this.usersService.softDeleteUser(req.user.userId);
+  async deleteOwnAccount(@Req() req: AuthenticatedRequest) {
+    return this.usersService.softDeleteUser(req.user.userId || req.user.id);
   }
 }

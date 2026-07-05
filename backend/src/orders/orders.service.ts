@@ -6,7 +6,8 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { PaymentStatus } from '@prisma/client';
+import { OrderStatus, PaymentStatus, Prisma } from '@prisma/client';
+import { CreateOrderDto } from './dto/create-order.dto';
 
 import { InventoryService } from '../inventory/inventory.service';
 
@@ -59,19 +60,16 @@ export class OrdersService {
     }
   }
 
-  async create(userId: number, createOrderDto: any) {
+  async create(userId: number, createOrderDto: CreateOrderDto) {
     const {
       items,
-      shippingName,
-      shippingPhone,
-      shippingAddress,
-      totalAmount,
-      shippingFee,
-      finalAmount,
       paymentMethod,
     } = createOrderDto;
 
-    // ...
+    const shippingName = createOrderDto.shippingName || createOrderDto.fullName || '';
+    const shippingPhone = createOrderDto.shippingPhone || createOrderDto.phone || '';
+    const shippingAddress = createOrderDto.shippingAddress || createOrderDto.address || '';
+    const shippingFee = createOrderDto.shippingFee || 0;
 
     return await this.prisma.$transaction(async (tx) => {
       let orderTotalAmount = 0;
@@ -112,10 +110,10 @@ export class OrdersService {
           shippingFee,
           finalAmount: orderTotalAmount + shippingFee,
           items: {
-            create: items.map((i: any) => ({
+            create: items.map((i) => ({
               product: { connect: { id: i.productId } },
               quantity: i.quantity,
-              priceAtPurchase: i.priceAtPurchase || i.price,
+              priceAtPurchase: i.priceAtPurchase || i.price || 0,
             })),
           },
           payment: {
@@ -186,7 +184,7 @@ export class OrdersService {
     return order;
   }
 
-  async updateStatus(id: number, status: any, userId?: number, role?: string) {
+  async updateStatus(id: number, status: OrderStatus, userId?: number, role?: string) {
     console.log(`[DEBUG] Update Order Status - ID: ${id}, Status: ${status}, UserID: ${userId}, Role: ${role}`);
     const order = await this.prisma.order.findUnique({ where: { id } });
     if (!order)
@@ -213,7 +211,7 @@ export class OrdersService {
           await this.inventoryService.returnStockOnCancel(tx, item.productId, item.quantity, id);
         }
         // Lấy role thực tế từ database để đảm bảo chính xác
-        const user = await tx.user.findUnique({ where: { id: userId } });
+        const user = userId ? await tx.user.findUnique({ where: { id: userId } }) : null;
         const actorRole = user?.role || 'USER';
 
         const updatedOrder = await tx.order.update({
@@ -259,7 +257,7 @@ export class OrdersService {
       });
     }
 
-    const updateData: any = { status };
+    const updateData: Prisma.OrderUpdateInput = { status };
     if (status === 'CONFIRMED') {
       updateData.confirmedAt = new Date();
     } else if (status === 'PREPARING') {

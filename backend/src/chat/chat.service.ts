@@ -1,12 +1,12 @@
 import { Injectable, ServiceUnavailableException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { SenderType } from '@prisma/client';
+import { SenderType, Product, Order } from '@prisma/client';
 import { ConfigService } from '@nestjs/config';
 import { createGroq } from '@ai-sdk/groq';
 import { streamText } from 'ai';
 import { CHATBOT_MODEL } from './chat.schemas';
 import { buildChatbotSystemPrompt } from './chat.prompt';
-import { cleanHtmlText, searchProductsLocally, detectIntent } from './chat.tools';
+import { cleanHtmlText, searchProductsLocally, detectIntent, ProductItem } from './chat.tools';
 
 @Injectable()
 export class ChatService {
@@ -34,7 +34,7 @@ export class ChatService {
     const intent = detectIntent(cleanUserText);
 
     // Fetch dữ liệu trước khi gọi AI
-    let productsList: any[] = [];
+    let productsList: Product[] = [];
     try {
       productsList = await this.prisma.product.findMany({
         where: { isDeleted: false, isActive: true },
@@ -45,11 +45,11 @@ export class ChatService {
 
     // Tạo danh sách tất cả sản phẩm ở dạng rút gọn để AI luôn biết cửa hàng đang bán gì
     const allProductsConcise = productsList
-      .map((p: any) => `- ${p.name} (ID: ${p.id}): giá ${p.price?.toLocaleString("vi-VN")} VND/${p.unit || "kg"}, còn lại ${p.stockQuantity ?? 0} ${p.unit || "kg"}.`)
+      .map((p) => `- ${p.name} (ID: ${p.id}): giá ${p.price?.toLocaleString("vi-VN")} VND/${p.unit || "kg"}, còn lại ${p.stockQuantity ?? 0} ${p.unit || "kg"}.`)
       .join("\n");
 
     // Xử lý logic tìm sản phẩm khớp
-    const matchedProducts = searchProductsLocally(productsList, cleanUserText);
+    const matchedProducts = searchProductsLocally(productsList as ProductItem[], cleanUserText);
 
     let detailedProductsContext = "";
     let productTags = "";
@@ -57,11 +57,11 @@ export class ChatService {
     const topProducts = matchedProducts.slice(0, 5); // Lấy tối đa 5 sản phẩm khớp nhất
     if (topProducts.length > 0) {
       detailedProductsContext = `THÔNG TIN CHI TIẾT SẢN PHẨM KHỚP VỚI CÂU HỎI:\n` +
-        topProducts.map((p: any) =>
-          `- ${p.name} (ID: ${p.id}): Mô tả: ${cleanHtmlText(p.description)}. Thông tin dinh dưỡng/sức khỏe: ${cleanHtmlText(p.healthInfo)}`
+        topProducts.map((p) =>
+          `- ${p.name} (ID: ${p.id}): Mô tả: ${cleanHtmlText((p as any).description || '')}. Thông tin dinh dưỡng/sức khỏe: ${cleanHtmlText(p.healthInfo || '')}`
         ).join("\n");
 
-      productTags = topProducts.map((p: any) =>
+      productTags = topProducts.map((p) =>
         `[PRODUCT:${p.id}:${p.name}:${p.price}:${p.unit || "kg"}:${p.stockQuantity ?? 0}]`
       ).join("\n");
     }
@@ -71,7 +71,7 @@ export class ChatService {
     let orderTags = "";
     if (intent === "order" && userId) {
       try {
-        const orders = await this.prisma.order.findMany({
+        const orders: Order[] = await this.prisma.order.findMany({
           where: { userId },
           orderBy: { createdAt: 'desc' },
           take: 5,
@@ -87,11 +87,11 @@ export class ChatService {
             CANCELLED: "Đã hủy đơn",
           };
           ordersContext = `DỮ LIỆU ĐƠN HÀNG CỦA KHÁCH:\n` +
-            orders.map((o: any) =>
+            orders.map((o) =>
               `- Đơn #${o.id}: ${statusMap[o.status] || o.status}, thành tiền (đã gồm ship) ${o.finalAmount?.toLocaleString("vi-VN")} VND (tiền hàng: ${o.totalAmount?.toLocaleString("vi-VN")} VND, phí ship: ${o.shippingFee?.toLocaleString("vi-VN")} VND), ngày đặt hàng: ${new Date(o.createdAt).toLocaleDateString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" })}`
             ).join("\n");
 
-          orderTags = orders.map((o: any) =>
+          orderTags = orders.map((o) =>
             `[ORDER_CARD:${o.id}:${o.status}:${o.finalAmount}:${o.createdAt}]`
           ).join("\n");
         } else {

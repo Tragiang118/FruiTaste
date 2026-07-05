@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsInt, Min, IsArray, ValidateNested, IsOptional } from 'class-validator';
+import { IsString, IsNotEmpty, IsInt, Min, IsArray, ValidateNested, IsOptional, IsNumber } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class OrderItemDto {
@@ -10,6 +10,14 @@ export class OrderItemDto {
   @Min(1, { message: 'Số lượng tối thiểu là 1' })
   @IsNotEmpty({ message: 'Số lượng không được để trống' })
   quantity: number;
+
+  @IsNumber()
+  @IsOptional()
+  priceAtPurchase?: number;
+
+  @IsNumber()
+  @IsOptional()
+  price?: number;
 }
 
 export class CreateOrderDto {
@@ -20,16 +28,32 @@ export class CreateOrderDto {
   items: OrderItemDto[];
 
   @IsString()
-  @IsNotEmpty({ message: 'Họ tên người nhận không được để trống' })
-  fullName: string;
+  @IsOptional()
+  fullName?: string;
 
   @IsString()
-  @IsNotEmpty({ message: 'Số điện thoại người nhận không được để trống' })
-  phone: string;
+  @IsOptional()
+  shippingName?: string;
 
   @IsString()
-  @IsNotEmpty({ message: 'Địa chỉ giao hàng không được để trống' })
-  address: string;
+  @IsOptional()
+  phone?: string;
+
+  @IsString()
+  @IsOptional()
+  shippingPhone?: string;
+
+  @IsString()
+  @IsOptional()
+  address?: string;
+
+  @IsString()
+  @IsOptional()
+  shippingAddress?: string;
+
+  @IsNumber()
+  @IsOptional()
+  shippingFee?: number;
 
   @IsString()
   @IsOptional()

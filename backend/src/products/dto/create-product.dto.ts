@@ -6,11 +6,11 @@ export class CreateProductDto {
   name: string;
 
   @IsString()
-  @IsOptional()
-  description?: string;
+  @IsNotEmpty({ message: 'Mô tả sản phẩm không được để trống' })
+  description: string;
 
   @IsNumber({}, { message: 'Giá sản phẩm phải là số' })
-  @Min(0, { message: 'Giá sản phẩm không được nhỏ hơn 0' })
+  @Min(1000, { message: 'Giá sản phẩm tối thiểu là 1.000 VNĐ' })
   @IsNotEmpty({ message: 'Giá sản phẩm không được để trống' })
   price: number;
 
@@ -25,12 +25,12 @@ export class CreateProductDto {
 
   @IsArray({ message: 'mediaUrls phải là một mảng' })
   @IsString({ each: true, message: 'Mỗi URL hình ảnh phải là một chuỗi' })
-  @IsOptional()
-  mediaUrls?: string[];
+  @IsNotEmpty({ message: 'Hình ảnh/Video sản phẩm không được để trống' })
+  mediaUrls: string[];
 
   @IsString()
-  @IsOptional()
-  healthInfo?: string;
+  @IsNotEmpty({ message: 'Thông tin sức khỏe/dinh dưỡng không được để trống' })
+  healthInfo: string;
 
   @IsArray({ message: 'tags phải là một mảng' })
   @IsString({ each: true, message: 'Mỗi tag phải là một chuỗi' })

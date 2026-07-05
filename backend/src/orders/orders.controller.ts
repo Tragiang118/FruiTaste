@@ -12,6 +12,8 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { UpdatePaymentStatusDto } from './dto/update-payment-status.dto';
+import { AuthenticatedRequest } from '../common/interfaces/authenticated-request.interface';
+import { PaymentStatus } from '@prisma/client';
 
 @Controller('orders')
 export class OrdersController {
@@ -19,15 +21,15 @@ export class OrdersController {
 
   @UseGuards(JwtAuthGuard)
   @Post()
-  async createOrder(@Req() req: any, @Body() createOrderDto: CreateOrderDto) {
-    const userId = req.user.userId;
+  async createOrder(@Req() req: AuthenticatedRequest, @Body() createOrderDto: CreateOrderDto) {
+    const userId = req.user.userId || req.user.id;
     return this.ordersService.create(userId, createOrderDto);
   }
 
   @UseGuards(JwtAuthGuard)
   @Get('my-orders')
-  async getMyOrders(@Req() req: any) {
-    return this.ordersService.findByUser(req.user.userId);
+  async getMyOrders(@Req() req: AuthenticatedRequest) {
+    return this.ordersService.findByUser(req.user.userId || req.user.id);
   }
 
   @Get('admin')
@@ -37,19 +39,19 @@ export class OrdersController {
 
   @UseGuards(JwtAuthGuard)
   @Get(':id')
-  async getOrderById(@Req() req: any, @Param('id') id: string) {
+  async getOrderById(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
     if (isNaN(+id)) return null;
-    return this.ordersService.findById(+id, req.user.userId, req.user.role);
+    return this.ordersService.findById(+id, req.user.userId || req.user.id, req.user.role);
   }
 
   @UseGuards(JwtAuthGuard)
   @Post(':id/status')
   async updateOrderStatus(
-    @Req() req: any,
+    @Req() req: AuthenticatedRequest,
     @Param('id') id: string,
     @Body() dto: UpdateOrderStatusDto,
   ) {
-    return this.ordersService.updateStatus(+id, dto.status, req.user.userId, req.user.role);
+    return this.ordersService.updateStatus(+id, dto.status, req.user.userId || req.user.id, req.user.role);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -58,7 +60,7 @@ export class OrdersController {
     @Param('id') id: string,
     @Body() dto: UpdatePaymentStatusDto,
   ) {
-    return this.ordersService.updatePaymentStatus(+id, dto.status as any);
+    return this.ordersService.updatePaymentStatus(+id, dto.status as PaymentStatus);
   }
 }
 

@@ -8,8 +8,19 @@ export function cleanHtmlText(html: string): string {
     .trim();
 }
 
+export interface ProductItem {
+  id: number;
+  name: string;
+  price: number;
+  unit?: string | null;
+  stockQuantity?: number | null;
+  healthInfo?: string | null;
+  tags?: string[] | null;
+  isActive?: boolean;
+}
+
 // Tìm kiếm sản phẩm tại local bằng cách tính điểm khớp từ khóa
-export function searchProductsLocally(products: any[], queryText: string): any[] {
+export function searchProductsLocally(products: ProductItem[], queryText: string): ProductItem[] {
   const cleanQuery = queryText.toLowerCase();
   
   // Các từ dừng không có giá trị phân biệt sản phẩm, bổ sung thêm các liên từ và từ hành động
@@ -28,12 +39,12 @@ export function searchProductsLocally(products: any[], queryText: string): any[]
     // Dự phòng tìm kiếm chuỗi thô nếu không tách được từ khóa nào
     const rawSearch = cleanQuery.replace(/giá|bao nhiêu|bao tiền|nhiêu|nhiu|bán không|bán ko|có bán|mua|tồn kho|còn không|tiền/gi, "").trim();
     if (!rawSearch) return [];
-    return products.filter((p: any) => p.name.toLowerCase().includes(rawSearch));
+    return products.filter((p) => p.name.toLowerCase().includes(rawSearch));
   }
 
   // Chấm điểm mức độ khớp của sản phẩm với danh sách từ khóa
   const scored = products
-    .map((p: any) => {
+    .map((p) => {
       const nameLower = p.name.toLowerCase();
       const nameWords = nameLower.split(/[\s,.\-\/]+/);
       

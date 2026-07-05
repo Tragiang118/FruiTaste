@@ -1,6 +1,9 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { TransactionType } from '@prisma/client';
+import { TransactionType, Prisma } from '@prisma/client';
+import { ImportInventoryDto } from './dto/import-inventory.dto';
+import { ExportInventoryDto } from './dto/export-inventory.dto';
+import { AdjustInventoryDto } from './dto/adjust-inventory.dto';
 
 @Injectable()
 export class InventoryService {
@@ -8,43 +11,33 @@ export class InventoryService {
 
   async getInventoryList() {
     return this.prisma.inventory.findMany({
-      where: {
-        product: {
-          isActive: true,
-          isDeleted: false
-        }
-      },
       include: {
         product: {
           select: {
+            id: true,
             name: true,
             unit: true,
             price: true,
             stockQuantity: true,
+            isActive: true,
           }
         }
-      }
+      },
+      orderBy: { productId: 'asc' }
     });
   }
 
   async getLowStock() {
-    return this.prisma.inventory.findMany({
-      where: {
-        currentStock: {
-          lte: this.prisma.inventory.fields.lowStockThreshold
-        },
-        product: {
-          isActive: true,
-          isDeleted: false
-        }
-      },
+    const inventories = await this.prisma.inventory.findMany({
       include: {
         product: { select: { name: true, unit: true, stockQuantity: true } }
       }
     });
+
+    return inventories.filter(inv => inv.currentStock <= inv.lowStockThreshold);
   }
 
-  async importProducts(dto: any) {
+  async importProducts(dto: ImportInventoryDto) {
     const { note, items, supplier, createdAt } = dto;
     
     return this.prisma.$transaction(async (tx) => {
@@ -55,10 +48,10 @@ export class InventoryService {
           totalItems: items.length,
           createdAt: createdAt ? new Date(createdAt) : undefined,
           items: {
-            create: items.map((item: any) => ({
+            create: items.map((item) => ({
               productId: item.productId,
               quantity: item.quantity,
-              price: item.price
+              importPrice: item.importPrice || item.price
             }))
           }
         }
@@ -107,7 +100,7 @@ export class InventoryService {
     });
   }
 
-  async exportProducts(dto: any) {
+  async exportProducts(dto: ExportInventoryDto) {
     const { note, items, receiver, createdAt } = dto;
 
     return this.prisma.$transaction(async (tx) => {
@@ -118,7 +111,7 @@ export class InventoryService {
           totalItems: items.length,
           createdAt: createdAt ? new Date(createdAt) : undefined,
           items: {
-            create: items.map((item: any) => ({
+            create: items.map((item) => ({
               productId: item.productId,
               quantity: item.quantity,
               reason: item.reason
@@ -172,7 +165,7 @@ export class InventoryService {
     });
   }
 
-  async adjustStock(dto: any) {
+  async adjustStock(dto: AdjustInventoryDto) {
     const { productId, quantity, reason } = dto;
     const inventory = await this.prisma.inventory.findUnique({ where: { productId } });
     if (!inventory) throw new NotFoundException('Không tìm thấy sản phẩm trong kho');
@@ -217,7 +210,7 @@ export class InventoryService {
     });
   }
 
-  async exportStockOnOrder(tx: any, productId: number, quantity: number, orderId: number) {
+  async exportStockOnOrder(tx: Prisma.TransactionClient, productId: number, quantity: number, orderId: number) {
     const inventory = await tx.inventory.findUnique({
       where: { productId }
     });
@@ -264,7 +257,7 @@ export class InventoryService {
     });
   }
 
-  async returnStockOnCancel(tx: any, productId: number, quantity: number, orderId: number) {
+  async returnStockOnCancel(tx: Prisma.TransactionClient, productId: number, quantity: number, orderId: number) {
     const inventory = await tx.inventory.findUnique({
       where: { productId }
     });

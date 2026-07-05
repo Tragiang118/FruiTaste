@@ -1,12 +1,15 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { Prisma } from '@prisma/client';
+import { CreateProductDto } from './dto/create-product.dto';
+import { UpdateProductDto } from './dto/update-product.dto';
 
 @Injectable()
 export class ProductsService {
   constructor(private prisma: PrismaService) { }
 
   async findAll(search?: string) {
-    const where: any = { isActive: true, isDeleted: false };
+    const where: Prisma.ProductWhereInput = { isActive: true, isDeleted: false };
     if (search) {
       where.name = {
         contains: search,
@@ -43,10 +46,8 @@ export class ProductsService {
     return product;
   }
 
-  async create(data: any) {
-    const { categoryIds, ...rest } = data;
-    // Bỏ stockQuantity từ rest nếu có, vì ta sẽ mặc định là 0
-    const { stockQuantity, ...productData } = rest;
+  async create(dto: CreateProductDto) {
+    const { categoryIds, stockQuantity, ...productData } = dto;
 
     return this.prisma.product.create({
       data: {
@@ -67,12 +68,11 @@ export class ProductsService {
     });
   }
 
-  async update(id: number, data: any) {
-    // Chỉ lấy các trường hợp lệ của Product để update
+  async update(id: number, dto: UpdateProductDto) {
     const {
       name, description, price, unit, mediaUrls,
       isActive, healthInfo, tags, categoryIds
-    } = data;
+    } = dto;
 
     return this.prisma.product.update({
       where: { id },
