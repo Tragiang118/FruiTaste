@@ -8,10 +8,21 @@ import * as crypto from 'crypto';
 import { Cron, CronExpression } from '@nestjs/schedule';
 
 import * as bcrypt from 'bcrypt';
+import * as disposableDomains from 'disposable-email-domains';
+
+const DISPOSABLE_DOMAIN_SET = new Set(disposableDomains);
 
 @Injectable()
 export class UsersService {
     async create(dto: CreateUserDto) {
+      // 1. Kiểm tra Email rác / Email tạm thời
+      if (dto.email) {
+        const domain = dto.email.split('@')[1]?.toLowerCase();
+        if (domain && DISPOSABLE_DOMAIN_SET.has(domain)) {
+          throw new BadRequestException('Hệ thống không cho phép đăng ký bằng Email rác / Email tạm thời!');
+        }
+      }
+
       try {
         // Hash password bằng bcrypt
         const hashedPassword = await bcrypt.hash(dto.password, 10);

@@ -20,10 +20,20 @@ import { MailModule } from './mail/mail.module';
 import { PricingModule } from './pricing/pricing.module';
 import { ChatModule } from './chat/chat.module';
 
+import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     ScheduleModule.forRoot(),
+    ThrottlerModule.forRoot([
+      {
+        name: 'default',
+        ttl: 60000,
+        limit: 100, // Default limit per min for general routes
+      },
+    ]),
     PrismaModule,
     UsersModule,
     AuthModule,
@@ -44,6 +54,12 @@ import { ChatModule } from './chat/chat.module';
     }),
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+  ],
 })
 export class AppModule { }
