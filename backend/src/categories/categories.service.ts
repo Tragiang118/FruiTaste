@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
@@ -20,10 +20,14 @@ export class CategoriesService {
 
   create(dto: CreateCategoryDto) {
     const { image, imageUrl, ...rest } = dto;
+    const finalImageUrl = imageUrl || image;
+    if (!finalImageUrl) {
+      throw new BadRequestException('Hình ảnh danh mục không được để trống');
+    }
     return this.prisma.category.create({
       data: {
         ...rest,
-        imageUrl: imageUrl || image,
+        imageUrl: finalImageUrl,
       },
     });
   }

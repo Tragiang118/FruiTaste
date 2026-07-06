@@ -1,21 +1,22 @@
-import { IsString, IsNotEmpty, IsNumber, Min, IsInt, IsOptional, IsArray } from 'class-validator';
+import { IsString, IsNotEmpty, IsNumber, Min, Max, IsInt, IsOptional, IsArray, ArrayMinSize } from 'class-validator';
 
 export class CreateProductDto {
-  @IsString()
-  @IsNotEmpty({ message: 'Tên sản phẩm không được để trống' })
+  @IsString({ message: 'Tên sản phẩm phải là chuỗi' })
+  @IsNotEmpty({ message: 'Tên không được để trống' })
   name: string;
 
-  @IsString()
-  @IsNotEmpty({ message: 'Mô tả sản phẩm không được để trống' })
-  description: string;
+  @IsString({ message: 'Mô tả sản phẩm phải là chuỗi' })
+  @IsOptional()
+  description?: string;
 
   @IsNumber({}, { message: 'Giá sản phẩm phải là số' })
-  @Min(1000, { message: 'Giá sản phẩm tối thiểu là 1.000 VNĐ' })
-  @IsNotEmpty({ message: 'Giá sản phẩm không được để trống' })
+  @Min(1000, { message: 'Giá phải từ 1,000 VNĐ' })
+  @Max(3000000, { message: 'Giá tối đa 3,000,000 VNĐ' })
+  @IsNotEmpty({ message: 'Giá không được để trống' })
   price: number;
 
-  @IsString()
-  @IsNotEmpty({ message: 'Đơn vị tính không được để trống' })
+  @IsString({ message: 'Đơn vị tính phải là chuỗi' })
+  @IsNotEmpty({ message: 'Đơn vị không được để trống' })
   unit: string;
 
   @IsInt({ message: 'Số lượng tồn kho phải là số nguyên' })
@@ -24,11 +25,11 @@ export class CreateProductDto {
   stockQuantity?: number;
 
   @IsArray({ message: 'mediaUrls phải là một mảng' })
-  @IsString({ each: true, message: 'Mỗi URL hình ảnh phải là một chuỗi' })
-  @IsNotEmpty({ message: 'Hình ảnh/Video sản phẩm không được để trống' })
+  @ArrayMinSize(1, { message: 'Cần ít nhất 1 ảnh hoặc video cho sản phẩm' })
+  @IsString({ each: true, message: 'Mỗi URL hình ảnh/video phải là một chuỗi' })
   mediaUrls: string[];
 
-  @IsString()
+  @IsString({ message: 'Thông tin sức khỏe phải là chuỗi' })
   @IsNotEmpty({ message: 'Thông tin sức khỏe/dinh dưỡng không được để trống' })
   healthInfo: string;
 

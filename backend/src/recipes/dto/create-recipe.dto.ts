@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsInt, IsArray, ValidateNested, IsNotEmpty, Min } from 'class-validator';
+import { IsString, IsOptional, IsInt, IsArray, ValidateNested, IsNotEmpty, Min, MaxLength, ArrayMinSize } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CreateRecipeIngredientDto {
@@ -22,6 +22,7 @@ export class CreateRecipeDto {
 
   @IsString()
   @IsNotEmpty({ message: 'Mô tả ngắn không được để trống' })
+  @MaxLength(300, { message: 'Mô tả ngắn không được vượt quá 300 ký tự' })
   description: string;
 
   @IsInt({ message: 'Thời gian chuẩn bị phải là số nguyên' })
@@ -34,12 +35,12 @@ export class CreateRecipeDto {
   instructions: string;
 
   @IsString()
-  @IsNotEmpty({ message: 'Ảnh đại diện món ăn không được để trống' })
+  @IsNotEmpty({ message: 'Vui lòng tải ảnh đại diện' })
   imageUrl: string;
 
   @IsArray({ message: 'Nguyên liệu phải là một mảng' })
+  @ArrayMinSize(1, { message: 'Cần ít nhất một nguyên liệu' })
   @ValidateNested({ each: true })
   @Type(() => CreateRecipeIngredientDto)
-  @IsNotEmpty({ message: 'Cần ít nhất một nguyên liệu' })
   ingredients: CreateRecipeIngredientDto[];
 }

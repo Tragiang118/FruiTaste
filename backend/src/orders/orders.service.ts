@@ -100,6 +100,10 @@ export class OrdersService {
         orderTotalAmount += product.price * item.quantity;
       }
 
+      const finalShippingFee = createOrderDto.shippingFee !== undefined
+        ? createOrderDto.shippingFee
+        : (orderTotalAmount > 300000 ? 0 : 30000);
+
       const order = await tx.order.create({
         data: {
           user: { connect: { id: userId } },
@@ -107,8 +111,8 @@ export class OrdersService {
           shippingPhone,
           shippingAddress,
           totalAmount: orderTotalAmount,
-          shippingFee,
-          finalAmount: orderTotalAmount + shippingFee,
+          shippingFee: finalShippingFee,
+          finalAmount: orderTotalAmount + finalShippingFee,
           items: {
             create: items.map((i) => ({
               product: { connect: { id: i.productId } },
