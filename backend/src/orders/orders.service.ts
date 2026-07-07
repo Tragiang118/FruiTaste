@@ -66,9 +66,9 @@ export class OrdersService {
       paymentMethod,
     } = createOrderDto;
 
-    const shippingName = createOrderDto.shippingName || createOrderDto.fullName || '';
-    const shippingPhone = createOrderDto.shippingPhone || createOrderDto.phone || '';
-    const shippingAddress = createOrderDto.shippingAddress || createOrderDto.address || '';
+    const shippingName = createOrderDto.shippingName || (createOrderDto as any).fullName || '';
+    const shippingPhone = createOrderDto.shippingPhone || (createOrderDto as any).phone || '';
+    const shippingAddress = createOrderDto.shippingAddress || (createOrderDto as any).address || '';
     const shippingFee = createOrderDto.shippingFee || 0;
 
     return await this.prisma.$transaction(async (tx) => {
