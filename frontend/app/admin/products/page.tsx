@@ -505,7 +505,7 @@ export default function AdminProductsPage() {
                           variant="ghost"
                           size="icon"
                           onClick={() => openEditModal(p)}
-                          
+                          title="Sửa sản phẩm"
                           className="h-8 w-8 text-blue-500 hover:text-blue-600 hover:bg-blue-50 rounded-xl cursor-pointer transition-all"
                         >
                           <Edit size={16} />
