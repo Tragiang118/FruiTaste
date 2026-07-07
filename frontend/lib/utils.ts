@@ -31,13 +31,15 @@ export function getImageUrl(path: string | null | undefined) {
   const finalPath = cleanPath.startsWith('/') ? cleanPath : `/${cleanPath}`;
 
   const vpsDomain = 'https://api.fruitaste.page';
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  const baseUrl = apiUrl ? apiUrl.replace(/\/api\/?$/, '') : vpsDomain;
 
   // Check if we are running in the browser
   if (typeof window !== 'undefined') {
     const hostname = window.location.hostname;
-    // Local development hostnames - load uploads from VPS domain so database images always show
+    // Local development hostnames - load uploads from local backend
     if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname.startsWith('192.168.')) {
-      return `${vpsDomain}${finalPath}`;
+      return `${baseUrl}${finalPath}`;
     }
     // Production domain mapping
     if (hostname === 'fruitaste.page' || hostname === 'www.fruitaste.page') {
@@ -45,12 +47,7 @@ export function getImageUrl(path: string | null | undefined) {
     }
   }
 
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-  if (apiUrl) {
-    const baseUrl = apiUrl.replace(/\/api\/?$/, '');
-    return `${baseUrl}${finalPath}`;
-  }
-  return `${vpsDomain}${finalPath}`;
+  return `${baseUrl}${finalPath}`;
 }
 
 export function getAvatarUrl(avatarPath: string | null | undefined, nameOrEmail?: string) {
