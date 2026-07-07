@@ -42,6 +42,8 @@ interface Order {
   finalAmount: number;
   status: 'PENDING' | 'PREPARING' | 'SHIPPING' | 'COMPLETED' | 'CANCELLED';
   createdAt: string;
+  shippingName?: string;
+  shippingPhone?: string;
   user: {
     fullName: string;
     phone: string;
@@ -340,9 +342,9 @@ export default function AdminOrdersPage() {
                       <TableRow key={order.id} className="border-gray-50 hover:bg-gray-50/50 transition-colors group">
                         <TableCell className="text-center font-bold text-gray-400 py-3 text-[13px]">#{order.id}</TableCell>
                         <TableCell>
-                          <span className="font-bold text-gray-900 group-hover:text-primary transition-colors text-[13px]">{order.user?.fullName || 'Khách hàng'}</span>
+                          <span className="font-bold text-gray-900 group-hover:text-primary transition-colors text-[13px]">{order.shippingName || order.user?.fullName || 'Khách hàng'}</span>
                         </TableCell>
-                        <TableCell className="text-gray-600 font-medium text-[13px]">{order.user?.phone || '---'}</TableCell>
+                        <TableCell className="text-gray-600 font-medium text-[13px]">{order.shippingPhone || order.user?.phone || '---'}</TableCell>
                         <TableCell className="font-black text-gray-900 text-[13px]">
                           {(order.finalAmount || 0).toLocaleString('vi-VN')} đ
                         </TableCell>
