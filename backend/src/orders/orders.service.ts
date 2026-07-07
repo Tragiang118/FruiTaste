@@ -27,6 +27,9 @@ export class OrdersService {
       where: {
         status: 'PENDING',
         createdAt: { lt: twoHoursAgo },
+        payment: {
+          method: 'BANK_TRANSFER',
+        },
       },
       include: { items: true },
     });
