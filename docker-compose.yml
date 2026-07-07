@@ -47,7 +47,7 @@ services:
   # 3. NestJS Backend Service
   backend-service:
     build:
-      context: ./Backend
+      context: ./backend
       dockerfile: Dockerfile
     container_name: fruitaste-backend
     restart: always
@@ -55,7 +55,7 @@ services:
       - "8000:8000"
     # Load all environment variables (including email secrets) from local backend/.env
     env_file:
-      - ./Backend/.env
+      - ./backend/.env
     # Override only variables that need routing inside the Docker network
     environment:
       DATABASE_URL: "postgresql://admin:123456@165.227.35.109:5432/fruitaste?schema=public&sslmode=require"
@@ -67,7 +67,7 @@ services:
   # 4. Next.js Frontend Service
   frontend-service:
     build:
-      context: ./Frontend
+      context: ./frontend
       dockerfile: Dockerfile
       args:
         - NEXT_PUBLIC_API_URL=http://localhost:8000/api
@@ -77,7 +77,7 @@ services:
       - "3000:3000"
     # Load all environment variables (Google, Resend, Groq keys) from local frontend/.env
     env_file:
-      - ./Frontend/.env
+      - ./frontend/.env
     # Override only variables that need routing inside the Docker network
     environment:
       NEXT_PUBLIC_API_URL: "http://localhost:8000/api"
