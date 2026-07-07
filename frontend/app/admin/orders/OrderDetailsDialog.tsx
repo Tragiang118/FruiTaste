@@ -257,8 +257,14 @@ export default function OrderDetailsDialog({ orderId, onUpdate }: OrderDetailsDi
                                 ? 'Đơn hàng bị hệ thống/admin hủy'
                                 : 'Đơn hàng đã bị hủy'}
                     </p>
+                    {order.cancelledReason === 'SYSTEM' && (
+                      <p className="text-[13px] font-bold opacity-90 mt-0.5">Lý do: Quá thời hạn thanh toán (Tự động hủy sau 2 giờ chờ)</p>
+                    )}
+                    {order.cancelledReason && order.cancelledReason !== 'SYSTEM' && order.cancelledReason !== 'ADMIN' && order.cancelledReason !== 'USER' && (
+                      <p className="text-[13px] font-bold opacity-90 mt-0.5">Lý do: {order.cancelledReason}</p>
+                    )}
                     {order.cancelledAt && (
-                      <p className="text-sm font-medium opacity-80 italic">Thời gian hủy: {format(new Date(order.cancelledAt), "HH:mm:ss dd/MM/yyyy", { locale: vi })}</p>
+                      <p className="text-sm font-medium opacity-85 italic">Thời gian hủy: {format(new Date(order.cancelledAt), "HH:mm:ss dd/MM/yyyy", { locale: vi })}</p>
                     )}
                   </div>
                 </div>
