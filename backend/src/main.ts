@@ -23,6 +23,8 @@ async function bootstrap() {
     'http://localhost:3000',
     'http://localhost:3001',
     'http://localhost:3002',
+    'https://fruitaste.page',
+    'https://www.fruitaste.page',
   ];
 
   if (process.env.FRONTEND_URL) {
