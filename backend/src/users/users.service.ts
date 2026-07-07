@@ -8,7 +8,7 @@ import * as crypto from 'crypto';
 import { Cron, CronExpression } from '@nestjs/schedule';
 
 import * as bcrypt from 'bcrypt';
-import * as disposableDomains from 'disposable-email-domains';
+import disposableDomains from 'disposable-email-domains';
 
 const DISPOSABLE_DOMAIN_SET = new Set(disposableDomains);
 
