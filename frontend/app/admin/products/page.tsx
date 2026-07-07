@@ -504,20 +504,22 @@ export default function AdminProductsPage() {
                         <Button
                           variant="ghost"
                           size="icon"
+                          onClick={() => openEditModal(p)}
+                          
+                          className="h-8 w-8 text-blue-500 hover:text-blue-600 hover:bg-blue-50 rounded-xl cursor-pointer transition-all"
+                        >
+                          <Edit size={16} />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           onClick={() => setConfirmDeleteId(p.id)}
                           title="Xóa sản phẩm"
                           className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-xl cursor-pointer transition-all"
                         >
                           <Trash2 size={16} />
                         </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => openEditModal(p)}
-                          className="h-8 w-8 text-blue-500 hover:text-blue-600 hover:bg-blue-50 rounded-xl cursor-pointer transition-all"
-                        >
-                          <Edit size={16} />
-                        </Button>
+
                       </div>
                     </TableCell>
                   </TableRow>
