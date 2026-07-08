@@ -13,7 +13,7 @@ export class ChatController {
   constructor(
     private chatService: ChatService,
     private jwtService: JwtService,
-  ) {}
+  ) { }
 
   // POST /api/chat/query - Trò chuyện với trợ lý ảo và nhận stream kết quả
   @Post('query')
@@ -38,9 +38,7 @@ export class ChatController {
           secret: process.env.JWT_SECRET || 'secretKey',
         });
         userId = payload.sub || payload.id;
-      } catch (e) {
-        // Bỏ qua nếu token không hợp lệ (coi như khách vãng lai)
-      }
+      } catch (e) { }
     }
 
     res.setHeader('Content-Type', 'text/plain; charset=utf-8');

@@ -39,30 +39,6 @@ export class MailService {
     return response.json();
   }
 
-  async sendNewPassword(email: string, newPassword: string) {
-    const html = `
-      <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-        <h2 style="color: #4CAF50;">Xin chào,</h2>
-        <p>Chúng tôi đã nhận được yêu cầu cấp lại mật khẩu cho tài khoản FruiTaste của bạn.</p>
-        <p>Mật khẩu mới của bạn là: <strong style="font-size: 1.2em; color: #ff5722;">${newPassword}</strong></p>
-        <p>Vui lòng đăng nhập bằng mật khẩu này và đổi lại mật khẩu mới trong phần cài đặt tài khoản để đảm bảo tính bảo mật.</p>
-        <br>
-        <p>Trân trọng,</p>
-        <p>Đội ngũ FruiTaste</p>
-      </div>
-    `;
-
-    try {
-      await this.sendMail({
-        to: email,
-        subject: 'Mật khẩu mới của bạn - FruiTaste',
-        html,
-      });
-    } catch (error) {
-      console.error('Error sending email:', error);
-      throw new Error('Không thể gửi email. Vui lòng kiểm tra lại cấu hình.');
-    }
-  }
 
   async sendOtpEmail(email: string, otp: string) {
     const html = `

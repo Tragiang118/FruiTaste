@@ -13,7 +13,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import axios from 'axios';
 import api from '@/lib/axios';
 import { useAuthStore } from '@/lib/store';
 import { toast } from 'sonner';
@@ -155,15 +154,8 @@ export default function ProfileInfo({ user, activeTab }: ProfileInfoProps) {
       if (editingField === 'email') {
         const isEmailChanged = formData.email !== user?.email;
         if (isEmailChanged) {
-          const res = await api.patch('/users/profile/request-email-change', {
+          await api.patch('/users/profile/request-email-change', {
             newEmail: formData.email
-          });
-          const verificationToken = res.data.verificationToken;
-          
-          await axios.post('/api/send', {
-            email: formData.email,
-            firstName: formData.fullName || user?.fullName || 'Người dùng',
-            verificationToken: verificationToken
           });
           
           setIsWaitingVerification(true);

@@ -15,6 +15,7 @@ import { CreateUserDto } from '../users/dto/create-user.dto';
 import { VerifyEmailDto } from './dto/verify-email.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
+import { ResendVerificationDto } from './dto/resend-verification.dto';
 
 import { Throttle } from '@nestjs/throttler';
 
@@ -31,6 +32,11 @@ export class AuthController {
   @Post('verify-email')
   async verifyEmail(@Body() dto: VerifyEmailDto) {
     return this.authService.verifyEmailToken(dto.token);
+  }
+
+  @Post('resend-verification')
+  async resendVerification(@Body() dto: ResendVerificationDto) {
+    return this.authService.resendVerification(dto.email);
   }
 
   @Post('forgot-password')

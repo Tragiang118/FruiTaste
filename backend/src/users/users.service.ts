@@ -1,6 +1,7 @@
 import { ConflictException, Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Prisma, Role } from '@prisma/client';
+import { MailService } from '../mail/mail.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { CreateAddressDto } from './dto/create-address.dto';
 import { UpdateAddressDto } from './dto/update-address.dto';
@@ -45,7 +46,10 @@ export class UsersService {
         throw error;
       }
     }
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private mailService: MailService,
+  ) {}
 
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
   async handleCleanUpUnverifiedAccounts() {
@@ -144,15 +148,34 @@ export class UsersService {
       throw new ConflictException('Email đã được sử dụng bởi tài khoản khác');
     }
 
+    const user = await this.prisma.user.findUnique({ where: { id } });
+    if (!user) {
+      throw new BadRequestException('Người dùng không tồn tại');
+    }
+
     const verificationToken = crypto.randomBytes(32).toString('hex');
 
-    return this.prisma.user.update({
+    const updatedUser = await this.prisma.user.update({
       where: { id },
       data: {
         pendingEmail: newEmail,
         verificationToken: verificationToken,
       },
     });
+
+    // Gửi email xác thực đến email mới
+    try {
+      await this.mailService.sendVerificationEmail(
+        newEmail,
+        user.fullName || 'Người dùng',
+        verificationToken,
+      );
+    } catch (error) {
+      console.error('Failed to send email change verification:', error);
+      throw new BadRequestException('Không thể gửi email xác thực đến địa chỉ mới. Vui lòng thử lại sau.');
+    }
+
+    return updatedUser;
   }
 
   async findAll() {

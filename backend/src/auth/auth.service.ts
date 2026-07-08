@@ -51,6 +51,36 @@ export class AuthService {
     return { message: 'Mã OTP đã được gửi đến email của bạn. Vui lòng kiểm tra hòm thư.' };
   }
 
+  async resendVerification(email: string) {
+    const user = await this.usersService.findOne(email);
+    if (!user) {
+      throw new BadRequestException('Email không tồn tại trên hệ thống');
+    }
+
+    if (user.isEmailVerified) {
+      throw new BadRequestException('Tài khoản đã được xác thực trước đó');
+    }
+
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+
+    // Cập nhật verification token mới vào DB
+    await this.usersService.update(user.id, { verificationToken });
+
+    // Gửi email xác thực
+    try {
+      await this.mailService.sendVerificationEmail(
+        user.email,
+        user.fullName || 'Người dùng',
+        verificationToken
+      );
+    } catch (error) {
+      console.error('Failed to send verification email:', error);
+      throw new BadRequestException('Không thể gửi lại email xác thực. Vui lòng thử lại sau.');
+    }
+
+    return { message: 'Đã gửi lại email xác thực thành công. Vui lòng kiểm tra hộp thư.' };
+  }
+
   async verifyOtp(email: string, otp: string) {
     const user = await this.usersService.findOne(email);
     if (!user) {

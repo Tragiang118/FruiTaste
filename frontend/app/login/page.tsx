@@ -51,6 +51,26 @@ export default function LoginPage() {
   const [otp, setOtp] = useState('');
   const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
 
+  // Resend verification states and handler
+  const [isResendingVerification, setIsResendingVerification] = useState(false);
+  const handleResendVerification = async () => {
+    const email = form.getValues('email');
+    if (!email) {
+      toast.error('Vui lòng nhập email trước.');
+      return;
+    }
+    setIsResendingVerification(true);
+    try {
+      const response = await api.post('/auth/resend-verification', { email });
+      toast.success(response.data.message || 'Mã xác thực mới đã được gửi đến email của bạn.');
+    } catch (err: any) {
+      const message = err.response?.data?.message || 'Không thể gửi lại email xác thực. Vui lòng thử lại sau.';
+      toast.error(message);
+    } finally {
+      setIsResendingVerification(false);
+    }
+  };
+
   const { login, checkAuth } = useAuthStore();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -152,8 +172,18 @@ export default function LoginPage() {
         </CardHeader>
         <CardContent>
           {error && (
-            <div className="text-sm text-red-500 text-center p-3 bg-red-50 rounded-xl mb-5 border border-red-100 font-medium">
-              {error}
+            <div className="text-sm text-red-500 text-center p-3 bg-red-50 rounded-xl mb-5 border border-red-100 font-medium flex flex-col items-center gap-2">
+              <span>{error}</span>
+              {error.includes('xác thực email') && (
+                <button
+                  type="button"
+                  onClick={handleResendVerification}
+                  disabled={isResendingVerification}
+                  className="text-xs text-[#FF6B4A] hover:underline font-semibold cursor-pointer disabled:opacity-50 mt-1"
+                >
+                  {isResendingVerification ? 'Đang gửi lại...' : 'Nhấn vào đây để gửi lại email xác thực'}
+                </button>
+              )}
             </div>
           )}
           
