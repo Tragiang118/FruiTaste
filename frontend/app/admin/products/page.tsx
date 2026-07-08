@@ -191,7 +191,7 @@ export default function AdminProductsPage() {
     setErrors({});
     setEditingProduct({
       name: '',
-      price: 10000,
+      price: 0,
       unit: 'kg',
       stockQuantity: 0,
       mediaUrls: [],
@@ -212,12 +212,16 @@ export default function AdminProductsPage() {
   const handleSaveProduct = async () => {
     const newErrors: Record<string, string> = {};
     if (!editingProduct.name?.trim()) newErrors.name = 'Tên không được để trống';
-    if ((editingProduct.price as any) === '' || editingProduct.price === undefined) {
-      newErrors.price = 'Giá không được để trống';
-    } else if (Number(editingProduct.price) < 1000) {
-      newErrors.price = 'Giá phải từ 1,000 VNĐ';
-    } else if (Number(editingProduct.price) > 3000000) {
-      newErrors.price = 'Giá tối đa 3,000,000 VNĐ';
+    
+    // Chỉ kiểm tra giá bán tối thiểu 1.000đ khi cập nhật sản phẩm có sẵn
+    if (editingProduct.id) {
+      if ((editingProduct.price as any) === '' || editingProduct.price === undefined) {
+        newErrors.price = 'Giá không được để trống';
+      } else if (Number(editingProduct.price) < 1000) {
+        newErrors.price = 'Giá phải từ 1,000 VNĐ';
+      } else if (Number(editingProduct.price) > 3000000) {
+        newErrors.price = 'Giá tối đa 3,000,000 VNĐ';
+      }
     }
 
     if (!editingProduct.unit?.trim()) newErrors.unit = 'Đơn vị không được để trống';
@@ -585,48 +589,81 @@ export default function AdminProductsPage() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <div className="space-y-2 col-span-2">
-                  <label className="text-sm font-bold text-gray-700 ml-1">Giá (VNĐ) (*)</label>
-                  <Input
-                    type="text"
-                    value={(editingProduct.price as any) !== '' ? Number(editingProduct.price).toLocaleString('vi-VN') : ''}
-                    onChange={e => {
-                      const val = e.target.value.replace(/\./g, '');
-                      if (val === '' || /^\d+$/.test(val)) {
-                        setEditingProduct({ ...editingProduct, price: val === '' ? '' as any : Number(val) });
-                      }
-                    }}
-                    className="rounded-2xl border-gray-100 h-9 bg-white font-bold text-primary text-[13px]"
-                  />
-                  {errors.price && <p className="text-red-500 text-[9px] font-bold uppercase ml-2 mt-1">{errors.price}</p>}
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-bold text-gray-700 ml-1">Đơn vị (*)</label>
-                  <Select
-                    value={editingProduct.unit || ''}
-                    onValueChange={(val) => setEditingProduct({ ...editingProduct, unit: val })}
-                  >
-                    <SelectTrigger className="h-9 w-full rounded-2xl border border-gray-100 bg-white px-4 text-[13px] font-bold text-gray-700 transition-all cursor-pointer shadow-none">
-                      <SelectValue placeholder="Chọn đơn vị" />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-2xl border-gray-100 shadow-2xl p-2 bg-white min-w-[200px]">
-                      <SelectGroup>
-                        <SelectLabel className="text-sm font-bold text-gray-700 ml-1">Chọn đơn vị</SelectLabel>
-                        <SelectSeparator className="my-1 bg-gray-50" />
-                        <SelectItem value="kg" className="cursor-pointer rounded-xl font-bold p-2 text-xs focus:bg-primary/5 focus:text-primary">Kg</SelectItem>
-                        <SelectItem value="hộp" className="cursor-pointer rounded-xl font-bold p-2 text-xs focus:bg-primary/5 focus:text-primary">Hộp</SelectItem>
-                        <SelectItem value="quả" className="cursor-pointer rounded-xl font-bold p-2 text-xs focus:bg-primary/5 focus:text-primary">Quả</SelectItem>
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-bold text-gray-700 ml-1">Tồn kho</label>
-                  <div className="h-9 w-full rounded-2xl border border-gray-100 bg-gray-50/50 px-4 flex items-center text-[13px] font-black text-gray-400">
-                    {editingProduct.id ? (editingProduct.stockQuantity || 0) : 0} {editingProduct.unit}
-                    {!editingProduct.id && <span className="ml-2 text-[9px] font-bold text-primary/60 uppercase">(Mặc định 0)</span>}
-                  </div>
-                </div>
+                {editingProduct.id ? (
+                  <>
+                    <div className="space-y-2 col-span-2">
+                      <label className="text-sm font-bold text-gray-700 ml-1">Giá (VNĐ) (*)</label>
+                      <Input
+                        type="text"
+                        value={(editingProduct.price as any) !== '' ? Number(editingProduct.price).toLocaleString('vi-VN') : ''}
+                        onChange={e => {
+                          const val = e.target.value.replace(/\./g, '');
+                          if (val === '' || /^\d+$/.test(val)) {
+                            setEditingProduct({ ...editingProduct, price: val === '' ? '' as any : Number(val) });
+                          }
+                        }}
+                        className="rounded-2xl border-gray-100 h-9 bg-white font-bold text-primary text-[13px]"
+                      />
+                      {errors.price && <p className="text-red-500 text-[9px] font-bold uppercase ml-2 mt-1">{errors.price}</p>}
+                    </div>
+                    <div className="space-y-2 col-span-1">
+                      <label className="text-sm font-bold text-gray-700 ml-1">Đơn vị (*)</label>
+                      <Select
+                        value={editingProduct.unit || ''}
+                        onValueChange={(val) => setEditingProduct({ ...editingProduct, unit: val })}
+                      >
+                        <SelectTrigger className="h-9 w-full rounded-2xl border border-gray-100 bg-white px-4 text-[13px] font-bold text-gray-700 transition-all cursor-pointer shadow-none">
+                          <SelectValue placeholder="Chọn đơn vị" />
+                        </SelectTrigger>
+                        <SelectContent className="rounded-2xl border-gray-100 shadow-2xl p-2 bg-white min-w-[200px]">
+                          <SelectGroup>
+                            <SelectLabel className="text-sm font-bold text-gray-700 ml-1">Chọn đơn vị</SelectLabel>
+                            <SelectSeparator className="my-1 bg-gray-50" />
+                            <SelectItem value="kg" className="cursor-pointer rounded-xl font-bold p-2 text-xs focus:bg-primary/5 focus:text-primary">Kg</SelectItem>
+                            <SelectItem value="hộp" className="cursor-pointer rounded-xl font-bold p-2 text-xs focus:bg-primary/5 focus:text-primary">Hộp</SelectItem>
+                            <SelectItem value="quả" className="cursor-pointer rounded-xl font-bold p-2 text-xs focus:bg-primary/5 focus:text-primary">Quả</SelectItem>
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2 col-span-1">
+                      <label className="text-sm font-bold text-gray-700 ml-1">Tồn kho</label>
+                      <div className="h-9 w-full rounded-2xl border border-gray-100 bg-gray-50/50 px-4 flex items-center text-[13px] font-black text-gray-400">
+                        {editingProduct.stockQuantity || 0} {editingProduct.unit}
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="space-y-2 col-span-2">
+                      <label className="text-sm font-bold text-gray-700 ml-1">Đơn vị (*)</label>
+                      <Select
+                        value={editingProduct.unit || ''}
+                        onValueChange={(val) => setEditingProduct({ ...editingProduct, unit: val })}
+                      >
+                        <SelectTrigger className="h-9 w-full rounded-2xl border border-gray-100 bg-white px-4 text-[13px] font-bold text-gray-700 transition-all cursor-pointer shadow-none">
+                          <SelectValue placeholder="Chọn đơn vị" />
+                        </SelectTrigger>
+                        <SelectContent className="rounded-2xl border-gray-100 shadow-2xl p-2 bg-white min-w-[200px]">
+                          <SelectGroup>
+                            <SelectLabel className="text-sm font-bold text-gray-700 ml-1">Chọn đơn vị</SelectLabel>
+                            <SelectSeparator className="my-1 bg-gray-50" />
+                            <SelectItem value="kg" className="cursor-pointer rounded-xl font-bold p-2 text-xs focus:bg-primary/5 focus:text-primary">Kg</SelectItem>
+                            <SelectItem value="hộp" className="cursor-pointer rounded-xl font-bold p-2 text-xs focus:bg-primary/5 focus:text-primary">Hộp</SelectItem>
+                            <SelectItem value="quả" className="cursor-pointer rounded-xl font-bold p-2 text-xs focus:bg-primary/5 focus:text-primary">Quả</SelectItem>
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2 col-span-2">
+                      <label className="text-sm font-bold text-gray-700 ml-1">Tồn kho</label>
+                      <div className="h-9 w-full rounded-2xl border border-gray-100 bg-gray-50/50 px-4 flex items-center text-[13px] font-black text-gray-400">
+                        0 {editingProduct.unit}
+                        <span className="ml-2 text-[9px] font-bold text-primary/60 uppercase">(Mặc định 0 - Cần nhập kho để thêm tồn & giá)</span>
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
 
               <div className="space-y-2">

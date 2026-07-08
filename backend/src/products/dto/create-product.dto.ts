@@ -10,7 +10,7 @@ export class CreateProductDto {
   description?: string;
 
   @IsNumber({}, { message: 'Giá sản phẩm phải là số' })
-  @Min(1000, { message: 'Giá phải từ 1,000 VNĐ' })
+  @Min(0, { message: 'Giá sản phẩm không được nhỏ hơn 0' })
   @Max(3000000, { message: 'Giá tối đa 3,000,000 VNĐ' })
   @IsNotEmpty({ message: 'Giá không được để trống' })
   price: number;
