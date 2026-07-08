@@ -6,8 +6,8 @@ export class CreateProductDto {
   name: string;
 
   @IsString({ message: 'Mô tả sản phẩm phải là chuỗi' })
-  @IsOptional()
-  description?: string;
+  @IsNotEmpty({ message: 'Mô tả sản phẩm không được để trống' })
+  description: string;
 
   @IsNumber({}, { message: 'Giá sản phẩm phải là số' })
   @Min(0, { message: 'Giá sản phẩm không được nhỏ hơn 0' })

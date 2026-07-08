@@ -226,6 +226,19 @@ export default function AdminProductsPage() {
 
     if (!editingProduct.unit?.trim()) newErrors.unit = 'Đơn vị không được để trống';
 
+    const isRichTextEmpty = (html: string | undefined) => {
+      if (!html) return true;
+      const text = html.replace(/<[^>]*>/g, '').trim();
+      return text.length === 0;
+    };
+
+    if (isRichTextEmpty(editingProduct.description)) {
+      newErrors.description = 'Mô tả sản phẩm không được để trống';
+    }
+
+    if (isRichTextEmpty(editingProduct.healthInfo)) {
+      newErrors.healthInfo = 'Thông tin dinh dưỡng không được để trống';
+    }
 
     if (!editingProduct.mediaUrls?.length) {
       newErrors.image = 'Cần ít nhất 1 ảnh hoặc video cho sản phẩm';
@@ -667,21 +680,23 @@ export default function AdminProductsPage() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-bold text-gray-700 ml-1">Mô tả sản phẩm</label>
+                <label className="text-sm font-bold text-gray-700 ml-1">Mô tả sản phẩm (*)</label>
                 <RichTextEditor
                   placeholder="Nhập mô tả chi tiết về sản phẩm..."
                   value={editingProduct.description || ''}
                   onChange={content => setEditingProduct({ ...editingProduct, description: content })}
                 />
+                {errors.description && <p className="text-red-500 text-[9px] font-bold uppercase ml-2 mt-1">{errors.description}</p>}
               </div>
 
               <div className="space-y-3">
-                <label className="text-sm font-bold text-gray-700 ml-1">Thông tin dinh dưỡng</label>
+                <label className="text-sm font-bold text-gray-700 ml-1">Thông tin dinh dưỡng (*)</label>
                 <RichTextEditor
                   placeholder="Nhập thông tin dinh dưỡng của sản phẩm..."
                   value={editingProduct.healthInfo || ''}
                   onChange={content => setEditingProduct({ ...editingProduct, healthInfo: content })}
                 />
+                {errors.healthInfo && <p className="text-red-500 text-[9px] font-bold uppercase ml-2 mt-1">{errors.healthInfo}</p>}
               </div>
 
               <div className="space-y-3">
