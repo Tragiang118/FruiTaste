@@ -9,13 +9,9 @@ export class DashboardService {
     const dateFilter: any = {};
     
     if (startDate && endDate) {
-      // Điều chỉnh múi giờ Việt Nam (UTC+7)
-      // Local 00:00 = UTC 17:00 ngày hôm trước
-      const start = new Date(startDate);
-      start.setHours(start.getHours() - 7);
-      
-      const end = new Date(endDate);
-      end.setHours(23 - 7, 59, 59, 999);
+      // Thiết lập mốc thời gian độc lập với múi giờ của hệ điều hành server (múi giờ Việt Nam UTC+7)
+      const start = new Date(`${startDate}T00:00:00.000+07:00`);
+      const end = new Date(`${endDate}T23:59:59.999+07:00`);
       
       dateFilter.createdAt = {
         gte: start,
@@ -143,8 +139,9 @@ export class DashboardService {
   }
 
   async getYearlyStats(year: number) {
-    const startDate = new Date(year, 0, 1);
-    const endDate = new Date(year, 11, 31, 23, 59, 59, 999);
+    // Thiết lập mốc thời gian độc lập với múi giờ của hệ điều hành server (múi giờ Việt Nam UTC+7)
+    const startDate = new Date(`${year}-01-01T00:00:00.000+07:00`);
+    const endDate = new Date(`${year}-12-31T23:59:59.999+07:00`);
 
     const orders = await this.prisma.order.findMany({
       where: {
